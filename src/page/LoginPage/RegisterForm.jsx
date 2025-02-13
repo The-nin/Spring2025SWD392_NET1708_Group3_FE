@@ -1,35 +1,106 @@
-import React, { useState } from "react";
+/* eslint-disable react/prop-types */
+import { useState } from "react";
+import { register } from "../../service/register/index"; // Import API đăng ký
+import NotificationModal from "../../components/Notification/NotificationModal";
 
 const RegisterForm = ({ onBackToLogin }) => {
   const [registerData, setRegisterData] = useState({
-    fullName: "",
-    email: "",
+    username: "",
     password: "",
     confirmPassword: "",
     dateOfBirth: "",
-    gender: "", // Giá trị có thể là 'male', 'female', 'other'
+    gender: "",
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [passwordError, setPasswordError] = useState(""); // Lỗi khi xác nhận mật khẩu không trùng
+  const [modalInfo, setModalInfo] = useState({
+    isOpen: false,
+    message: "",
+    type: "success",
+  });
 
-  const handleRegister = (e) => {
+  const isFormValid =
+    registerData.username &&
+    registerData.password &&
+    registerData.confirmPassword &&
+    registerData.dateOfBirth &&
+    registerData.gender &&
+    registerData.password === registerData.confirmPassword;
+
+  const handleRegister = async (e) => {
     e.preventDefault();
-
-    if (registerData.password !== registerData.confirmPassword) {
-      setError("Mật khẩu không khớp!");
-      return;
-    }
-
     setError("");
-    // ... logic đăng ký
+    setSuccess(false);
+
+    if (!isFormValid) return;
+
+    setLoading(true);
+
+    try {
+      const requestData = {
+        username: registerData.username,
+        password: registerData.password,
+        birthday: registerData.dateOfBirth,
+        gender: registerData.gender.toUpperCase(),
+      };
+
+      const response = await register(requestData);
+
+      if (response?.code === 201) {
+        setModalInfo({
+          isOpen: true,
+          message: "Tạo tài khoản thành công! Vui lòng đăng nhập.",
+          type: "success",
+        });
+        setRegisterData({
+          username: "",
+          password: "",
+          confirmPassword: "",
+          dateOfBirth: "",
+          gender: "",
+        });
+        setTimeout(() => {
+          onBackToLogin();
+        }, 2000);
+      } else {
+        setModalInfo({
+          isOpen: true,
+          message: response.message || "Đăng ký thất bại!",
+          type: "error",
+        });
+      }
+    } catch (err) {
+      setModalInfo({
+        isOpen: true,
+        message: "Đăng ký thất bại. Vui lòng thử lại!",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="space-y-6">
+      <NotificationModal
+        isOpen={modalInfo.isOpen}
+        message={modalInfo.message}
+        type={modalInfo.type}
+        onClose={() => {
+          setModalInfo({ ...modalInfo, isOpen: false });
+          if (modalInfo.type === "success") {
+            onBackToLogin();
+          }
+        }}
+      />
       <h2 className="text-2xl font-semibold text-gray-900">
         Create your account
       </h2>
       {error && <p className="text-red-500 text-sm">{error}</p>}
+      {success && <p className="text-green-500 text-sm">{success}</p>}
 
       <form className="space-y-6" onSubmit={handleRegister}>
         <div>
@@ -38,28 +109,17 @@ const RegisterForm = ({ onBackToLogin }) => {
             placeholder="Full Name"
             className="w-full p-3 border-b border-gray-300 bg-transparent text-gray-800 focus:outline-none focus:border-gray-900 placeholder-gray-500"
             required
-            value={registerData.fullName}
+            value={registerData.username}
             onChange={(e) =>
-              setRegisterData({ ...registerData, fullName: e.target.value })
+              setRegisterData({ ...registerData, username: e.target.value })
             }
           />
         </div>
-        <div>
-          <input
-            type="email"
-            placeholder="Email Address"
-            className="w-full p-3 border-b border-gray-300 bg-transparent text-gray-800 focus:outline-none focus:border-gray-900 placeholder-gray-500"
-            required
-            value={registerData.email}
-            onChange={(e) =>
-              setRegisterData({ ...registerData, email: e.target.value })
-            }
-          />
-        </div>
+
         <div className="flex gap-4">
           <div className="flex-1">
             <label className="block text-sm text-gray-600 mb-2">
-              Ngày sinh
+              Date of Birth
             </label>
             <input
               type="date"
@@ -75,9 +135,7 @@ const RegisterForm = ({ onBackToLogin }) => {
             />
           </div>
           <div className="flex-1">
-            <label className="block text-sm text-gray-600 mb-2">
-              Giới tính
-            </label>
+            <label className="block text-sm text-gray-600 mb-2">Gender</label>
             <select
               className="w-full p-3 border-b border-gray-300 bg-transparent text-gray-800 focus:outline-none focus:border-gray-900"
               required
@@ -86,10 +144,10 @@ const RegisterForm = ({ onBackToLogin }) => {
                 setRegisterData({ ...registerData, gender: e.target.value })
               }
             >
-              <option value="">Chọn giới tính</option>
-              <option value="male">Nam</option>
-              <option value="female">Nữ</option>
-              <option value="other">Khác</option>
+              <option value="">Select Gender</option>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+              <option value="OTHER">Other</option>
             </select>
           </div>
         </div>
@@ -112,20 +170,35 @@ const RegisterForm = ({ onBackToLogin }) => {
             className="w-full p-3 border-b border-gray-300 bg-transparent text-gray-800 focus:outline-none focus:border-gray-900 placeholder-gray-500"
             required
             value={registerData.confirmPassword}
-            onChange={(e) =>
+            onChange={(e) => {
+              const value = e.target.value;
               setRegisterData({
                 ...registerData,
-                confirmPassword: e.target.value,
-              })
-            }
+                confirmPassword: value,
+              });
+
+              if (value !== registerData.password) {
+                setPasswordError("Passwords do not match!");
+              } else {
+                setPasswordError("");
+              }
+            }}
           />
+          {passwordError && (
+            <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+          )}
         </div>
 
         <button
           type="submit"
-          className="w-full px-4 py-3 bg-black text-white text-sm font-semibold rounded-md hover:bg-gray-800 transition"
+          disabled={!isFormValid || loading}
+          className={`w-full px-4 py-3 text-sm font-semibold rounded-md transition ${
+            isFormValid && !loading
+              ? "bg-black text-white hover:bg-gray-800"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
         >
-          Create Account
+          {loading ? "Registering..." : "Create Account"}
         </button>
       </form>
 
