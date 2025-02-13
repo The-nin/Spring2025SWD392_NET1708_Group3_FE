@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import LoginModal from "../../page/LoginPage/LoginPage";
 import ShopDropdown from "./ShopDropdown";
 import { FiUser } from "react-icons/fi";
+import { logout } from "../../service/logout";
 
 const Header = () => {
   const [showSearch, setShowSearch] = useState(false);
@@ -22,6 +23,12 @@ const Header = () => {
   const [user, setUser] = useState(null);
   const menuRef = useRef(null);
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("username");
+    if (storedUser) {
+      setUser(storedUser); // Lưu vào state
+    }
+  }, []);
   const handleSearch = () => {
     if (searchValue.trim()) {
       console.log(`Searching for: ${searchValue}`);
@@ -95,8 +102,24 @@ const Header = () => {
     setIsShopDropdownOpen(!isShopDropdownOpen);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
+  const handleLogout = async (e) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem("token");
+    try {
+      const response = await logout(token);
+      console.log("API Response:", response);
+      if (response?.code === 200) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        window.location.reload();
+      } else {
+        setError(response.message);
+      }
+    } catch (err) {
+      console.error("Logout failed:", err);
+      setError("Logout failed");
+    }
     setUser(null);
     setShowUserMenu(false);
   };
