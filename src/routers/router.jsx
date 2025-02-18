@@ -12,8 +12,14 @@ import LoginAdmin from "../page/Admin/LoginAdmin/LoginAdmin";
 import Dashboard from "../page/Admin/Dashboard/Dashboard";
 import CategoryManagement from "../page/Admin/CategoryManagement/CategoryManagement";
 import ProductManagement from "../page/Admin/ProducManagement/ProductManagement";
+import Cart from "../page/CartPage/Cart";
+import NotFound from "../page/NotFoundPage/NotFound";
 
 export const router = createBrowserRouter([
+  {
+    path: "*",
+    element: <NotFound />
+  },
   {
     path: "/",
     element: <RootLayout />,
@@ -41,6 +47,10 @@ export const router = createBrowserRouter([
       {
         path: "/helps",
         element: <HelpPage />,
+      },
+      {
+        path: "/cart",
+        element: <Cart />
       },
     ],
   },
