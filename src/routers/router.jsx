@@ -16,8 +16,14 @@ import EditProduct from "../page/Admin/ProducManagement/EditProduct";
 import AddNewProduct from "../page/Admin/ProducManagement/AddNewProduct";
 import AddNewCategory from "../page/Admin/CategoryManagement/AddNewCategory";
 import EditCategory from "../page/Admin/CategoryManagement/EditCategory";
+import Cart from "../page/CartPage/Cart";
+import NotFound from "../page/NotFoundPage/NotFound";
 
 export const router = createBrowserRouter([
+  {
+    path: "*",
+    element: <NotFound />,
+  },
   {
     path: "/",
     element: <RootLayout />,
@@ -45,6 +51,10 @@ export const router = createBrowserRouter([
       {
         path: "/helps",
         element: <HelpPage />,
+      },
+      {
+        path: "/cart",
+        element: <Cart />,
       },
     ],
   },
