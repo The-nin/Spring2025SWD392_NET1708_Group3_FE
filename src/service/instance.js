@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const instance = axios.create({
   baseURL:
-    "https://spring2025swd392-net1708-3.onrender.com/api/v1/swd392-skincare-products-sales-system",
+    "https://swp391-skincare-products-sales-system.onrender.com/api/v1/swp391-skincare-products-sales-system",
   withCredentials: true,
 });
 
