@@ -1,15 +1,34 @@
-// import React from "react";
 import HeroSection from "../../components/HeroSection/HeroSection";
-import { Pagination } from "antd";
+// import { Pagination } from "antd";
 import { motion } from "framer-motion";
-import { products } from "../LandingPage/ProductList";
 import ProductCardList from "../../components/ProductCardList/ProductCardList";
+import { getAllProduct } from "../../service/product/getAllProduct";
+import { useEffect, useState } from "react";
 
 const ShopPage = () => {
   const fadeIn = {
     hidden: { opacity: 0, y: 50 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
   };
+
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errors, setErrors] = useState(null);
+
+  const fetchAllProduct = async () => {
+    const data = await getAllProduct();
+    if (data.error) {
+      setErrors(data.message);
+    } else {
+      setProducts(data.data);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchAllProduct();
+    console.log(products);
+  }, [products]);
 
   return (
     <>
@@ -33,25 +52,33 @@ const ShopPage = () => {
 
         {/* Product List */}
         <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {products.map((product, index) => (
-              <motion.div
-                key={index}
-                variants={fadeIn}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-              >
-                <ProductCardList {...product} />
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Pagination */}
-          <div className="flex justify-center m-10">
-            <Pagination align="center" defaultCurrent={1} total={50} />
-          </div>
+          {loading ? (
+            <p>Loading products...</p>
+          ) : errors ? (
+            <p>{errors}</p>
+          ) : products.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {products.map((product, index) => (
+                <motion.div
+                  key={index}
+                  variants={fadeIn}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                >
+                  <ProductCardList {...product} />
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <p>No products available.</p> // Handle case where products array is empty
+          )}
         </div>
+
+        {/* Pagination */}
+        {/* <div className="flex justify-center m-10">
+          <Pagination align="center" defaultCurrent={1} total={50} />
+        </div> */}
       </div>
     </>
   );
