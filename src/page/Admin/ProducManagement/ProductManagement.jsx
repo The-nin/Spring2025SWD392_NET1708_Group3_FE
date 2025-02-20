@@ -6,6 +6,8 @@ import {
   getAllProducts,
   deleteProduct,
 } from "../../../service/productManagement";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ProductManagement = () => {
   const navigate = useNavigate();
@@ -65,19 +67,44 @@ const ProductManagement = () => {
     if (!productToDelete) return;
 
     try {
+      setLoading(true);
       const response = await deleteProduct(productToDelete.id);
+
       if (!response.error) {
-        message.success(response.message);
-        fetchProducts({
+        await fetchProducts({
           page: pagination.current,
           pageSize: pagination.pageSize,
         });
+        toast.success("Product deleted successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       } else {
-        message.error(response.message);
+        toast.error(response.message, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       }
     } catch (error) {
-      message.error("Failed to delete product");
+      console.error("Delete error:", error);
+      toast.error("Failed to delete product", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } finally {
+      setLoading(false);
       setDeleteModalVisible(false);
       setProductToDelete(null);
     }
@@ -191,6 +218,7 @@ const ProductManagement = () => {
         </p>
         <p>This action cannot be undone.</p>
       </Modal>
+      <ToastContainer />
     </div>
   );
 };

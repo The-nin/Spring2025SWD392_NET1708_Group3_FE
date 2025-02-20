@@ -3,7 +3,7 @@ import { instance } from "../instance";
 // Public function - no token needed
 export const getAllCategories = async (params) => {
   try {
-    const response = await instance.get("/categories", { params });
+    const response = await instance.get("admin/categories", { params });
     return {
       error: false,
       result: response.result,
@@ -22,7 +22,7 @@ export const getAllCategories = async (params) => {
 export const getCategoryById = async (id) => {
   try {
     const token = localStorage.getItem("token");
-    const response = await instance.get(`/categories/${id}`, {
+    const response = await instance.get(`admin/categories/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -84,7 +84,7 @@ export const addCategory = async (formData) => {
       thumbnail: imageUrl,
     };
 
-    const response = await instance.post("/categories", categoryData, {
+    const response = await instance.post("admin/categories", categoryData, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -148,8 +148,8 @@ export const deleteCategory = async (id) => {
     });
     return {
       error: false,
-      result: response.data.result,
-      message: response.data.message,
+      result: response.result,
+      message: response.message,
     };
   } catch (error) {
     console.error("Delete category error:", error);

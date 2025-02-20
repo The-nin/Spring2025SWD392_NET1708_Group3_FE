@@ -3,7 +3,7 @@ import { instance } from "../instance";
 // Public function - no token needed
 export const getAllProducts = async (params) => {
   try {
-    const response = await instance.get("/products", { params });
+    const response = await instance.get("admin/products", { params });
     return {
       error: false,
       result: response.result,
@@ -22,7 +22,7 @@ export const getAllProducts = async (params) => {
 export const getProductById = async (id) => {
   try {
     const token = localStorage.getItem("token");
-    const response = await instance.get(`/products/${id}`, {
+    const response = await instance.get(`admin/products/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -59,7 +59,7 @@ export const addProduct = async (formData) => {
       thumbnail: imageUrl,
     };
 
-    const response = await instance.post("/products", productData, {
+    const response = await instance.post("admin/products", productData, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -68,8 +68,8 @@ export const addProduct = async (formData) => {
 
     return {
       error: false,
-      result: response.data.result,
-      message: response.data.message,
+      result: response.result,
+      message: response.message,
     };
   } catch (error) {
     console.error("Add product error:", error);
@@ -84,7 +84,7 @@ export const updateProduct = async (id, productData) => {
   try {
     const token = localStorage.getItem("token");
     const response = await instance.put(
-      `/products/${id}`,
+      `admin/products/${id}`,
       {
         name: productData.name,
         price: productData.price,
@@ -120,8 +120,8 @@ export const deleteProduct = async (id) => {
     });
     return {
       error: false,
-      result: response.data.result,
-      message: response.data.message,
+      result: response.result,
+      message: response.message,
     };
   } catch (error) {
     console.error("Delete product error:", error);
@@ -135,7 +135,7 @@ export const deleteProduct = async (id) => {
 export const deleteMultipleProducts = async (ids) => {
   try {
     const token = localStorage.getItem("token");
-    const response = await instance.delete("/products", {
+    const response = await instance.delete("admin/products", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

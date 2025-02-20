@@ -3,6 +3,8 @@ import { Form, Input, InputNumber, Button, Card, message, Upload } from "antd";
 import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { addProduct } from "../../../service/productManagement";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AddNewProduct = () => {
   const navigate = useNavigate();
@@ -47,13 +49,14 @@ const AddNewProduct = () => {
 
         const response = await addProduct(formData);
         if (!response.error) {
-          message.success(response.message);
-          navigate("/admin/product");
+          navigate("/admin/product", {
+            state: { message: response.message, type: "success" },
+          });
         } else {
-          message.error(response.message);
+          toast.error(response.message);
         }
       } catch (error) {
-        message.error("Failed to add product");
+        toast.error("Failed to add product");
       } finally {
         setLoading(false);
       }
@@ -62,6 +65,18 @@ const AddNewProduct = () => {
 
   return (
     <div className="p-6">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <Button
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate("/admin/product")}

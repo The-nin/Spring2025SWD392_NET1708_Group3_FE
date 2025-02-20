@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tooltip, message, Modal, Tag } from "antd";
+import { Table, Button, Space, Tooltip, Modal, Tag } from "antd";
 import { useNavigate } from "react-router-dom";
 import {
   PlusOutlined,
@@ -11,6 +11,8 @@ import {
   getAllCategories,
   deleteCategory,
 } from "../../../service/category/index";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CategoryManagement = () => {
   const navigate = useNavigate();
@@ -40,10 +42,24 @@ const CategoryManagement = () => {
           total: response.result.totalElements,
         });
       } else {
-        message.error(response.message);
+        toast.error(response.message, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       }
     } catch (error) {
-      message.error("Failed to fetch categories");
+      toast.error("Failed to fetch categories", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -71,17 +87,40 @@ const CategoryManagement = () => {
     try {
       setLoading(true);
       const response = await deleteCategory(selectedCategory.id);
+
       if (!response.error) {
-        message.success("Category deleted successfully");
         await fetchCategories({
           page: pagination.current,
           pageSize: pagination.pageSize,
         });
+        toast.success("Category deleted successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       } else {
-        message.error(response.message);
+        toast.error(response.message, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       }
     } catch (error) {
-      message.error("Failed to delete category");
+      console.error("Delete error:", error);
+      toast.error("Failed to delete category", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } finally {
       setLoading(false);
       setDeleteModalVisible(false);
@@ -166,12 +205,7 @@ const CategoryManagement = () => {
         onChange={handleTableChange}
       />
       <Modal
-        title={
-          <div className="flex items-center gap-2 text-red-600">
-            <ExclamationCircleOutlined className="text-xl" />
-            <span>Delete Category</span>
-          </div>
-        }
+        title="Confirm Delete"
         open={deleteModalVisible}
         onOk={handleDeleteConfirm}
         onCancel={() => {
@@ -180,25 +214,14 @@ const CategoryManagement = () => {
         }}
         okText="Delete"
         cancelText="Cancel"
-        okButtonProps={{
-          danger: true,
-          loading: loading,
-        }}
-        centered
-        maskClosable={false}
-        className="confirm-delete-modal"
+        okButtonProps={{ danger: true }}
       >
-        <div className="py-4">
-          <p className="text-lg mb-2">
-            Are you sure you want to delete category{" "}
-            <strong>"{selectedCategory?.name}"</strong>?
-          </p>
-          <p className="text-gray-500">
-            This action cannot be undone and will permanently delete the
-            category.
-          </p>
-        </div>
+        <p>
+          Are you sure you want to delete category "{selectedCategory?.name}"?
+        </p>
+        <p>This action cannot be undone.</p>
       </Modal>
+      <ToastContainer />
     </div>
   );
 };

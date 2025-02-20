@@ -3,6 +3,8 @@ import { Form, Input, Button, Card, message, Upload } from "antd";
 import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { addCategory } from "../../../service/category/index";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AddNewCategory = () => {
   const navigate = useNavigate();
@@ -15,11 +17,10 @@ const AddNewCategory = () => {
         setLoading(true);
         const formData = new FormData();
 
-        // Get file from upload component
         const file = values.thumbnail[0].originFileObj;
 
         if (!file) {
-          message.error("Please select a file");
+          toast.error("Please select a file");
           return;
         }
 
@@ -31,14 +32,15 @@ const AddNewCategory = () => {
 
         const response = await addCategory(formData);
         if (!response.error) {
-          message.success(response.message);
-          navigate("/admin/category");
+          navigate("/admin/category", {
+            state: { message: response.message, type: "success" },
+          });
         } else {
-          message.error(response.message);
+          toast.error(response.message);
         }
       } catch (error) {
         console.error("Error:", error);
-        message.error("Failed to add category");
+        toast.error("Failed to add category");
       } finally {
         setLoading(false);
       }
@@ -54,6 +56,18 @@ const AddNewCategory = () => {
 
   return (
     <div className="h-[calc(100vh-64px)] bg-gray-50">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <div className="p-6">
         <Button
           icon={<ArrowLeftOutlined />}
