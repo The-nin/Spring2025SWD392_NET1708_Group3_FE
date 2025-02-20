@@ -42,22 +42,30 @@ export const getProductById = async (id) => {
   }
 };
 
-export const addProduct = async (productData) => {
+export const addProduct = async (formData) => {
   try {
     const token = localStorage.getItem("token");
-    const response = await instance.post(
-      "/products",
-      {
-        name: productData.name,
-        price: productData.price,
-        description: productData.description,
+
+    // Get the file and form data
+    const requestData = JSON.parse(formData.get("request"));
+    const file = formData.get("thumbnail");
+
+    // Upload to Cloudinary first
+    const imageUrl = await uploadToCloudinary(file);
+
+    // Create the final request data
+    const productData = {
+      ...requestData,
+      thumbnail: imageUrl,
+    };
+
+    const response = await instance.post("/products", productData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    });
+
     return {
       error: false,
       result: response.data.result,
@@ -144,5 +152,30 @@ export const deleteMultipleProducts = async (ids) => {
       error: true,
       message: error.response?.data?.message || "Failed to delete products",
     };
+  }
+};
+
+// Add this function after getAllProducts
+const uploadToCloudinary = async (file) => {
+  try {
+    const CLOUDINARY_UPLOAD_PRESET = "phuocnt-cloudinary";
+    const CLOUDINARY_CLOUD_NAME = "dl5dphe0f";
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+    const data = await response.json();
+    return data.secure_url;
+  } catch (error) {
+    console.error("Cloudinary upload error:", error);
+    throw new Error("Failed to upload image to Cloudinary");
   }
 };

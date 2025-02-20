@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Form, Input, InputNumber, Button, Card, message } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Form, Input, InputNumber, Button, Card, message, Upload } from "antd";
+import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { addProduct } from "../../../service/productManagement";
 
@@ -9,21 +9,54 @@ const AddNewProduct = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  const onFinish = async (values) => {
-    try {
-      setLoading(true);
-      const response = await addProduct(values);
+  const normFile = (e) => {
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e?.fileList;
+  };
 
-      if (!response.error) {
-        message.success(response.message);
-        navigate("/admin/product");
-      } else {
-        message.error(response.message);
+  const onFinish = async (values) => {
+    if (
+      values.name &&
+      values.price &&
+      values.description &&
+      values.thumbnail?.length > 0
+    ) {
+      try {
+        setLoading(true);
+        const formData = new FormData();
+
+        // Get file from upload component
+        const file = values.thumbnail[0].originFileObj;
+
+        if (!file) {
+          message.error("Please select a file");
+          return;
+        }
+
+        formData.append(
+          "request",
+          JSON.stringify({
+            name: values.name,
+            price: values.price,
+            description: values.description,
+          })
+        );
+        formData.append("thumbnail", file);
+
+        const response = await addProduct(formData);
+        if (!response.error) {
+          message.success(response.message);
+          navigate("/admin/product");
+        } else {
+          message.error(response.message);
+        }
+      } catch (error) {
+        message.error("Failed to add product");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      message.error("Failed to add product");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -96,6 +129,23 @@ const AddNewProduct = () => {
               maxLength={500}
               showCount
             />
+          </Form.Item>
+
+          <Form.Item
+            name="thumbnail"
+            label="Thumbnail"
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+            rules={[{ required: true, message: "Please upload an image" }]}
+          >
+            <Upload
+              beforeUpload={() => false}
+              maxCount={1}
+              accept="image/*"
+              listType="picture"
+            >
+              <Button icon={<UploadOutlined />}>Select Image</Button>
+            </Upload>
           </Form.Item>
 
           <Form.Item>
