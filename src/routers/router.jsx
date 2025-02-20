@@ -12,13 +12,17 @@ import LoginAdmin from "../page/Admin/LoginAdmin/LoginAdmin";
 import Dashboard from "../page/Admin/Dashboard/Dashboard";
 import CategoryManagement from "../page/Admin/CategoryManagement/CategoryManagement";
 import ProductManagement from "../page/Admin/ProducManagement/ProductManagement";
+import EditProduct from "../page/Admin/ProducManagement/EditProduct";
+import AddNewProduct from "../page/Admin/ProducManagement/AddNewProduct";
+import AddNewCategory from "../page/Admin/CategoryManagement/AddNewCategory";
+import EditCategory from "../page/Admin/CategoryManagement/EditCategory";
 import Cart from "../page/CartPage/Cart";
 import NotFound from "../page/NotFoundPage/NotFound";
 
 export const router = createBrowserRouter([
   {
     path: "*",
-    element: <NotFound />
+    element: <NotFound />,
   },
   {
     path: "/",
@@ -50,7 +54,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/cart",
-        element: <Cart />
+        element: <Cart />,
       },
     ],
   },
@@ -64,10 +68,9 @@ export const router = createBrowserRouter([
       {
         path: "",
         element: (
-          // <ProtectedAdminRoute>
-          //   <MainPage />
-          // </ProtectedAdminRoute>
-          <MainPage />
+          <ProtectedAdminRoute>
+            <MainPage />
+          </ProtectedAdminRoute>
         ),
         children: [
           {
@@ -76,7 +79,20 @@ export const router = createBrowserRouter([
           },
           {
             path: "category",
-            element: <CategoryManagement />,
+            children: [
+              {
+                path: "",
+                element: <CategoryManagement />,
+              },
+              {
+                path: "add",
+                element: <AddNewCategory />,
+              },
+              {
+                path: "edit/:id",
+                element: <EditCategory />,
+              },
+            ],
           },
           // {
           //   path: "order",
@@ -84,7 +100,20 @@ export const router = createBrowserRouter([
           // },
           {
             path: "product",
-            element: <ProductManagement />,
+            children: [
+              {
+                path: "",
+                element: <ProductManagement />,
+              },
+              {
+                path: "add",
+                element: <AddNewProduct />,
+              },
+              {
+                path: "edit/:id",
+                element: <EditProduct />,
+              },
+            ],
           },
         ],
       },
