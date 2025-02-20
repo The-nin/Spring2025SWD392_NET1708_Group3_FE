@@ -44,17 +44,10 @@ export const getCategoryById = async (id) => {
 
 export const addCategory = async (categoryData) => {
   try {
-    const token =
-      "eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJzd2QzOTIuY29tIiwic3ViIjoiYWRtaW4iLCJleHAiOjE3Mzk2ODIwMjMsImlhdCI6MTczOTY3ODQyMywianRpIjoiZTAzMGRhYmItYzY2OC00MDA4LTg1MjYtYjk2ZjVlNzZjOWU1Iiwic2NvcGUiOiJST0xFX0FETUlOIn0.sT9R03Dciq8-VLfn2AKpED26G63iXbLceUuX6v4bX9ItQ775gPtVGuHJ-TIZdDlhRgAhnTY5sPo8DUeXnZw_Tg";
-    const response = await instance.post(
-      "admin/categories",
-      {
-        name: categoryData.name,
-        description: categoryData.description,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+    const token = localStorage.getItem("token");
+    const response = await instance.post("/categories", formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
         },
       }
     );
