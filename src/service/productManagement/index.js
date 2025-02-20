@@ -44,8 +44,7 @@ export const getProductById = async (id) => {
 
 export const addProduct = async (productData) => {
   try {
-    const token =
-      "eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJzd2QzOTIuY29tIiwic3ViIjoiYWRtaW4iLCJleHAiOjE3Mzk2ODIwMjMsImlhdCI6MTczOTY3ODQyMywianRpIjoiZTAzMGRhYmItYzY2OC00MDA4LTg1MjYtYjk2ZjVlNzZjOWU1Iiwic2NvcGUiOiJST0xFX0FETUlOIn0.sT9R03Dciq8-VLfn2AKpED26G63iXbLceUuX6v4bX9ItQ775gPtVGuHJ-TIZdDlhRgAhnTY5sPo8DUeXnZw_Tg";
+    const token = localStorage.getItem("token");
     const response = await instance.post(
       "/products",
       {
@@ -75,8 +74,7 @@ export const addProduct = async (productData) => {
 
 export const updateProduct = async (id, productData) => {
   try {
-    const token =
-      "eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJzd2QzOTIuY29tIiwic3ViIjoiYWRtaW4iLCJleHAiOjE3Mzk2ODIwMjMsImlhdCI6MTczOTY3ODQyMywianRpIjoiZTAzMGRhYmItYzY2OC00MDA4LTg1MjYtYjk2ZjVlNzZjOWU1Iiwic2NvcGUiOiJST0xFX0FETUlOIn0.sT9R03Dciq8-VLfn2AKpED26G63iXbLceUuX6v4bX9ItQ775gPtVGuHJ-TIZdDlhRgAhnTY5sPo8DUeXnZw_Tg";
+    const token = localStorage.getItem("token");
     const response = await instance.put(
       `/products/${id}`,
       {
@@ -107,7 +105,7 @@ export const updateProduct = async (id, productData) => {
 export const deleteProduct = async (id) => {
   try {
     const token = localStorage.getItem("token");
-    const response = await instance.delete(`/products/${id}`, {
+    const response = await instance.delete(`admin/products/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

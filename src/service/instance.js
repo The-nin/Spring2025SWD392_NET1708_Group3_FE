@@ -1,8 +1,7 @@
 import axios from "axios";
 
 export const instance = axios.create({
-  baseURL:
-    "https://swp391-skincare-products-sales-system.onrender.com/api/v1/swp391-skincare-products-sales-system",
+  baseURL: "http://localhost:8080/api/v1/swd392-skincare-products-sales-system",
   withCredentials: true,
 });
 

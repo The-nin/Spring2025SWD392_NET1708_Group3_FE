@@ -1,5 +1,5 @@
 import React from "react";
-import { Layout, Button, Avatar, Dropdown, Space } from "antd";
+import { Layout, Button, Avatar, Dropdown, Space, message } from "antd";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -7,6 +7,8 @@ import {
   LogoutOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
+import { logout } from "../../service/logout";
+import { useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
 
@@ -16,6 +18,26 @@ const HeaderAdmin = ({
   adminUser,
   handleLogout,
 }) => {
+  const navigate = useNavigate();
+  const onLogout = async () => {
+    try {
+      const token = localStorage.getItem("token"); // Assuming token is stored in localStorage
+      const response = await logout(token);
+
+      if (!response.error) {
+        localStorage.clear();
+        handleLogout();
+        navigate("/admin/login");
+        message.success("Logged out successfully");
+      } else {
+        message.error(response.message || "Logout failed");
+      }
+    } catch (error) {
+      message.error("Failed to logout");
+      console.error("Logout error:", error);
+    }
+  };
+
   const dropdownItems = {
     items: [
       {
@@ -27,7 +49,7 @@ const HeaderAdmin = ({
         key: "2",
         label: "Logout",
         icon: <LogoutOutlined />,
-        onClick: handleLogout,
+        onClick: onLogout,
         danger: true,
       },
     ],

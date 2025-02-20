@@ -68,10 +68,9 @@ export const router = createBrowserRouter([
       {
         path: "",
         element: (
-          // <ProtectedAdminRoute>
-          //   <MainPage />
-          // </ProtectedAdminRoute>
-          <MainPage />
+          <ProtectedAdminRoute>
+            <MainPage />
+          </ProtectedAdminRoute>
         ),
         children: [
           {

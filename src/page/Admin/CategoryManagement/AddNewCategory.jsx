@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Form, Input, Button, Card, message } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Form, Input, Button, Card, message, Upload } from "antd";
+import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { addCategory } from "../../../service/category/index";
 
@@ -10,21 +10,46 @@ const AddNewCategory = () => {
   const [loading, setLoading] = useState(false);
 
   const onFinish = async (values) => {
-    try {
-      setLoading(true);
-      const response = await addCategory(values);
+    if (values.name && values.description && values.thumbnail?.length > 0) {
+      try {
+        setLoading(true);
+        const formData = new FormData();
 
-      if (!response.error) {
-        message.success(response.message);
-        navigate("/admin/category");
-      } else {
-        message.error(response.message);
+        // Get file from upload component
+        const file = values.thumbnail[0].originFileObj;
+
+        if (!file) {
+          message.error("Please select a file");
+          return;
+        }
+
+        formData.append(
+          "request",
+          JSON.stringify({ name: values.name, description: values.description })
+        );
+        formData.append("thumbnail", file);
+
+        const response = await addCategory(formData);
+        if (!response.error) {
+          message.success(response.message);
+          navigate("/admin/category");
+        } else {
+          message.error(response.message);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        message.error("Failed to add category");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      message.error("Failed to add category");
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const normFile = (e) => {
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e?.fileList;
   };
 
   return (
@@ -86,6 +111,23 @@ const AddNewCategory = () => {
                 showCount
                 className="text-base"
               />
+            </Form.Item>
+
+            <Form.Item
+              name="thumbnail"
+              label="Thumbnail"
+              valuePropName="fileList"
+              getValueFromEvent={normFile}
+              rules={[{ required: true, message: "Please upload an image" }]}
+            >
+              <Upload
+                beforeUpload={() => false}
+                maxCount={1}
+                accept="image/*"
+                listType="picture"
+              >
+                <Button icon={<UploadOutlined />}>Select Image</Button>
+              </Upload>
             </Form.Item>
 
             <Form.Item>

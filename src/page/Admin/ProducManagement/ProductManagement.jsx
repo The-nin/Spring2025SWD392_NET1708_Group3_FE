@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tooltip, message } from "antd";
+import { Table, Button, Space, Tooltip, message, Modal } from "antd";
 import { useNavigate } from "react-router-dom";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
@@ -16,6 +16,8 @@ const ProductManagement = () => {
     pageSize: 10,
     total: 0,
   });
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   const fetchProducts = async (params = {}) => {
     try {
@@ -54,37 +56,79 @@ const ProductManagement = () => {
     });
   };
 
-  const handleDelete = async (id) => {
+  const showDeleteConfirm = (product) => {
+    setProductToDelete(product);
+    setDeleteModalVisible(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return;
+
     try {
-      const response = await deleteProduct(id);
+      const response = await deleteProduct(productToDelete.id);
       if (!response.error) {
         message.success(response.message);
-        fetchProducts(pagination);
+        fetchProducts({
+          page: pagination.current,
+          pageSize: pagination.pageSize,
+        });
       } else {
         message.error(response.message);
       }
     } catch (error) {
       message.error("Failed to delete product");
+    } finally {
+      setDeleteModalVisible(false);
+      setProductToDelete(null);
     }
   };
 
   const columns = [
     {
+      title: "Thumbnail",
+      dataIndex: "thumbnail",
+      key: "thumbnail",
+      render: (thumbnail) => (
+        <img
+          src={thumbnail}
+          alt="product"
+          style={{ width: "50px", height: "50px", objectFit: "cover" }}
+        />
+      ),
+    },
+    {
       title: "Product Name",
       dataIndex: "name",
       key: "name",
+      ellipsis: true,
     },
     {
       title: "Price",
       dataIndex: "price",
       key: "price",
-      render: (price) => `$${price.toFixed(2)}`,
+      render: (price) => (price ? `${price.toLocaleString("vi-VN")}đ` : "N/A"),
     },
     {
       title: "Description",
       dataIndex: "description",
       key: "description",
       ellipsis: true,
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <span
+          className={`px-2 py-1 rounded ${
+            status === "ACTIVE"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {status}
+        </span>
+      ),
     },
     {
       title: "Actions",
@@ -102,7 +146,7 @@ const ProductManagement = () => {
             <Button
               danger
               icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record.id)}
+              onClick={() => showDeleteConfirm(record)}
             />
           </Tooltip>
         </Space>
@@ -130,6 +174,23 @@ const ProductManagement = () => {
         loading={loading}
         onChange={handleTableChange}
       />
+      <Modal
+        title="Confirm Delete"
+        open={deleteModalVisible}
+        onOk={handleDeleteConfirm}
+        onCancel={() => {
+          setDeleteModalVisible(false);
+          setProductToDelete(null);
+        }}
+        okText="Delete"
+        cancelText="Cancel"
+        okButtonProps={{ danger: true }}
+      >
+        <p>
+          Are you sure you want to delete product "{productToDelete?.name}"?
+        </p>
+        <p>This action cannot be undone.</p>
+      </Modal>
     </div>
   );
 };
