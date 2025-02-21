@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const ProductCard = ({ tag, name, description, size, price, imgSrc }) => {
   return (
@@ -46,7 +46,7 @@ const ProductCard = ({ tag, name, description, size, price, imgSrc }) => {
       <div className="w-full mt-2">
         <button
           className="w-full bg-black text-white py-2 px-6 rounded-md text-sm opacity-0 group-hover:opacity-100 transition duration-300"
-          onClick={() => alert('Added to cart!')}
+          onClick={() => alert("Added to cart!")}
         >
           Add to your Cart
         </button>

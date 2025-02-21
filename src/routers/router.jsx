@@ -4,6 +4,9 @@ import LoginPage from "../page/LoginPage/LoginPage";
 import LandingPage from "../page/LandingPage/LandingPage";
 import AboutUsPage from "../page/AboutUsPage/AboutUsPage";
 import BlogPage from "../page/BlogPage/BlogPage";
+import Blog1 from "../page/BlogPage/Blog1";
+import Blog2 from "../page/BlogPage/Blog2";
+import Blog3 from "../page/BlogPage/Blog3";
 import ShopPage from "../page/ShopPage/ShopPage";
 import HelpPage from "../page/HelpPage/HelpPage";
 import { ProtectedAdminRoute } from "./ProtectedAdminRoute";
@@ -33,6 +36,18 @@ export const router = createBrowserRouter([
       {
         path: "/blog",
         element: <BlogPage />,
+      },
+      {
+        path: "/blog1",
+        element: <Blog1 />,
+      },
+      {
+        path: "/blog2",
+        element: <Blog2 />,
+      },
+      {
+        path: "/blog3",
+        element: <Blog3 />,
       },
       {
         path: "/shop",

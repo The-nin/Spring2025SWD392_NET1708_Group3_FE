@@ -27,13 +27,13 @@ const AboutUsPage = () => {
   return (
     <div className="bg-gray-100 text-gray-900 min-h-screen">
       {/* Header */}
-      <header className="bg-black text-white py-6 text-center fade-in opacity-0">
+      <header className="bg-black text-white py-6 text-center fade-in">
         <h1 className="text-3xl font-bold">About Us</h1>
         <p className="text-lg mt-2">Learn more about our mission and team</p>
       </header>
 
       {/* About Section */}
-      <section className="container mx-auto my-12 px-6 fade-in opacity-0">
+      <section className="container mx-auto my-12 px-6 fade-in ">
         <div className="bg-white p-8 shadow-lg rounded-lg flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 text-center md:text-left">
             <h2 className="text-3xl font-bold text-black mb-4 text-left">
@@ -61,7 +61,7 @@ const AboutUsPage = () => {
           {/* Image Section */}
           <div className="md:w-1/2 mt-6 md:mt-0 flex justify-center">
             <img
-              src="src\assets\img\hero-landingPage.png" // Local path to image
+              src="src\assets\img\aboutus-whoarewe.webp" // Local path to image
               alt="Who We Are"
               className="rounded-lg shadow-lg w-full max-w-xl transition-transform duration-500 ease-in-out transform hover:scale-105" // Change max-w-sm to max-w-xl or any larger size
             />
@@ -74,7 +74,7 @@ const AboutUsPage = () => {
         <div className="bg-white p-8 shadow-lg rounded-lg flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mt-6 md:mt-0 flex justify-center">
             <img
-              src="src\assets\img\hero-landingPage.png.jpg"
+              src="src/assets/img/aboutus-whywecreate.jpg"
               alt="History"
               className="rounded-lg shadow-lg w-full max-w-xl transition-transform duration-500 ease-in-out transform hover:scale-105" // Change max-w-sm to max-w-xl or any larger size
             />
@@ -164,7 +164,7 @@ const AboutUsPage = () => {
           {/* Image Section */}
           <div className="md:w-1/2 mt-6 md:mt-0 flex justify-center">
             <img
-              src="src\assets\img\hero-landingPage.png" // Local path to image
+              src="src\assets\img\aboutus-vision-mission.webp" // Local path to image
               alt="Who We Are"
               className="rounded-lg shadow-lg w-full max-w-xl transition-transform duration-500 ease-in-out transform hover:scale-105" // Change max-w-sm to max-w-xl or any larger size
             />
@@ -192,27 +192,27 @@ const AboutUsPage = () => {
             {
               name: "John Doe",
               role: "CEO & Founder",
-              image: "src/assets/img/aboutUs-history.jpg",
+              image: "src/assets/img/aboutus-team1.webp",
             },
             {
               name: "Jane Smith",
               role: "Lead Developer",
-              image: "/assets/images/jane-smith.jpg",
+              image: "src/assets/img/aboutus-team2.webp",
             },
             {
               name: "Michael Johnson",
               role: "UI/UX Designer",
-              image: "/assets/images/michael-johnson.jpg",
+              image: "src/assets/img/aboutus-team3.jpg",
             },
             {
               name: "Samroy",
               role: "UI/UX Designer",
-              image: "/assets/images/samroy.jpg",
+              image: "src/assets/img/aboutus-team4.jpg",
             },
             {
               name: "SamroyIsMe",
               role: "UI/UX Designer",
-              image: "/assets/images/samroyisme.jpg",
+              image: "src/assets/img/aboutus-team5.jpg",
             },
           ].map((member, index) => (
             <div
