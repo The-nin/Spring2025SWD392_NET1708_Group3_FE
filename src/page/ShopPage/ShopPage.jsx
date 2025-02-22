@@ -1,5 +1,5 @@
 import HeroSection from "../../components/HeroSection/HeroSection";
-// import { Pagination } from "antd";
+import { Pagination } from "antd";
 import { motion } from "framer-motion";
 import ProductCardList from "../../components/ProductCardList/ProductCardList";
 import { getAllProduct } from "../../service/product/getAllProduct";
@@ -11,24 +11,36 @@ const ShopPage = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
   };
 
+  //product state
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState(null);
+
+  //pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(8);
 
   const fetchAllProduct = async () => {
     const data = await getAllProduct();
     if (data.error) {
       setErrors(data.message);
     } else {
-      setProducts(data.data);
+      setProducts(data.result.productResponses);
     }
     setLoading(false);
   };
 
   useEffect(() => {
     fetchAllProduct();
-    console.log(products);
   }, [products]);
+
+  const indexOfLastProduct = currentPage * pageSize;
+  const indexOfFirstProduct = indexOfLastProduct - pageSize;
+  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  const onPageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   return (
     <>
@@ -53,12 +65,14 @@ const ShopPage = () => {
         {/* Product List */}
         <div>
           {loading ? (
-            <p>Loading products...</p>
+            <p className="flex justify-center alignitems-center ">
+              Loading products...
+            </p>
           ) : errors ? (
-            <p>{errors}</p>
-          ) : products.length > 0 ? (
+            <p className="flex justify-center">{errors}</p>
+          ) : currentProducts?.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {products.map((product, index) => (
+              {currentProducts.map((product, index) => (
                 <motion.div
                   key={index}
                   variants={fadeIn}
@@ -71,14 +85,20 @@ const ShopPage = () => {
               ))}
             </div>
           ) : (
-            <p>No products available.</p> // Handle case where products array is empty
+            <p className="flex justify-center">No products available.</p> // Handle case where products array is empty
           )}
         </div>
 
         {/* Pagination */}
-        {/* <div className="flex justify-center m-10">
-          <Pagination align="center" defaultCurrent={1} total={50} />
-        </div> */}
+        <div className="flex justify-center m-10">
+          <Pagination
+            current={currentPage}
+            pageSize={pageSize}
+            total={products.length}
+            onChange={onPageChange}
+            showSizeChanger={false} // Disable changing the page size
+          />
+        </div>
       </div>
     </>
   );

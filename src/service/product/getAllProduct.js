@@ -6,7 +6,7 @@ export const getAllProduct = async () => {
         return res;
     }
     catch(error) {
-        console.log(error);
+        console.error(error);
         return{
             error: true,
             message: error.response?.data?.message || "Cant get all product"

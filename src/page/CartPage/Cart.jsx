@@ -1,8 +1,20 @@
-// import React from 'react'
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getCart } from "../../service/cart/cart";
 
 function Cart() {
   const [cart, setCart] = useState([]);
+  const [errors, setErrors] = useState(null);
+
+  const fetchCart = async () => {
+    const data = await getCart();
+    setCart(data);
+  };
+
+  useEffect(() => {
+    fetchCart();
+    console.log(cart);
+  }, [cart]);
+
   return (
     <>
       {/* Cart Header */}
@@ -18,75 +30,49 @@ function Cart() {
         <div className="flex justify-center items-center flex-col mt-50">
           You don&apos;t have any items in your cart
         </div>
+      ) : errors ? (
+        <p className="flex justify-center">{errors}</p>
       ) : (
         <div className="container mx-auto p-5">
-          {/* Cart Table */}
-          <table className="w-full border-collapse">
-            {/* Cart Header */}
-            <thead className="border-b-2">
-              <tr>
-                <th className="text-left text-lg pb-2">CART</th>
-                <th className="text-left text-lg pb-2">PRICE</th>
-                <th className="text-left text-lg pb-2 w-[10rem]">QUANTITY</th>
-                <th className="text-left text-lg pb-2">SUB-TOTAL</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Cart Item 1 */}
-              <tr className="border-b">
-                <td className="py-4">
-                  <div className="flex items-center space-x-3">
-                    <img
-                      src="/hand-balm.jpg"
-                      alt="Hand Balm"
-                      className="w-12 h-12 object-contain"
-                    />
-                    <div>
-                      <h4 className="text-sm font-semibold">
-                        Reverence Aromatique Hand Balm
-                      </h4>
-                      <p className="text-sm text-gray-500">75 ml</p>
+          {cart.map((product, index) => (
+            <table key={index} className="w-full border-collapse">
+              <thead className="border-b-2">
+                <tr>
+                  <th className="text-left text-lg pb-2">CART</th>
+                  <th className="text-left text-lg pb-2">PRICE</th>
+                  <th className="text-left text-lg pb-2 w-[10rem]">QUANTITY</th>
+                  <th className="text-left text-lg pb-2">SUB-TOTAL</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className="py-4">
+                    <div className="flex items-center space-x-3">
+                      <img
+                        src={product.thumbnail}
+                        alt="thumbnail"
+                        className="w-12 h-12 object-contain"
+                      />
+                      <div>
+                        <h2 className="text-sm font-semibold">
+                          {product.productName}
+                        </h2>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className="text-sm font-medium">$25</td>
-                <td>
-                  <select className="border p-1">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                  </select>
-                </td>
-                <td className="text-sm font-medium">$25</td>
-              </tr>
-
-              {/* Cart Item 2 */}
-              <tr className="border-b">
-                <td className="py-4">
-                  <div className="flex items-center space-x-3">
-                    <img
-                      src="/skin-care-kit.jpg"
-                      alt="Skin Care Kit"
-                      className="w-12 h-12 object-contain"
-                    />
-                    <div>
-                      <h4 className="text-sm font-semibold">
-                        Classic Skin Care Kit
-                      </h4>
-                      <p className="text-sm text-gray-500">300 ml</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="text-sm font-medium">$85</td>
-                <td className="p-2 w-[10rem]">
-                  <select className="border p-1 w-[6rem]">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                  </select>
-                </td>
-                <td className="text-sm font-medium">$85</td>
-              </tr>
-            </tbody>
-          </table>
+                  </td>
+                  <td className="text-sm font-medium">{product.price}</td>
+                  <td>
+                    <select className="border p-1">
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                    </select>
+                  </td>
+                  <td className="text-sm font-medium">$25</td>{" "}
+                  {/*handle total price */}
+                </tr>
+              </tbody>
+            </table>
+          ))}
 
           {/* Total Section */}
           <div className="flex justify-end mt-5 space-x-[16rem] items-center">

@@ -1,8 +1,7 @@
-// import React from 'react'
-
 import { GoHeart } from "react-icons/go";
+import { addItemToCart } from "../../service/cart/cart";
 
-function ProductCardList({ name, description, size, price, imgSrc }) {
+function ProductCardList({ id, name, description, size, price, thumbnail }) {
   return (
     <div className="group cursor-pointer relative flex flex-col items-center text-center bg-white p-4 hover:shadow-xl transition duration-300 rounded-lg min-h-[480px]">
       {/* Props Tag */}
@@ -15,7 +14,7 @@ function ProductCardList({ name, description, size, price, imgSrc }) {
       {/* Image Section */}
       <div className="h-48 mt-4 flex items-center justify-center relative">
         <img
-          src={imgSrc}
+          src={thumbnail}
           alt={name}
           className="max-w-full max-h-full object-contain"
         />
@@ -52,7 +51,7 @@ function ProductCardList({ name, description, size, price, imgSrc }) {
       <div className="w-full mt-2">
         <button
           className="w-full bg-black text-white py-2 px-6 rounded-md text-sm opacity-0 group-hover:opacity-100 transition duration-300"
-          onClick={() => alert("Added to cart!")}
+          onClick={() => addItemToCart(id)}
         >
           Add to your Cart
         </button>
