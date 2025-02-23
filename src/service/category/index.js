@@ -113,10 +113,12 @@ export const updateCategory = async (id, categoryData) => {
   try {
     const token = localStorage.getItem("token");
     const response = await instance.put(
-      `/categories/${id}`,
+      `admin/categories/${id}`,
       {
         name: categoryData.name,
         description: categoryData.description,
+        status: categoryData.status,
+        thumbnail: categoryData.thumbnail,
       },
       {
         headers: {
@@ -126,8 +128,8 @@ export const updateCategory = async (id, categoryData) => {
     );
     return {
       error: false,
-      result: response.data.result,
-      message: response.data.message,
+      result: response.result,
+      message: response.message,
     };
   } catch (error) {
     console.error("Update category error:", error);

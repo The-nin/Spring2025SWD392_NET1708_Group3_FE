@@ -18,6 +18,9 @@ import AddNewCategory from "../page/Admin/CategoryManagement/AddNewCategory";
 import EditCategory from "../page/Admin/CategoryManagement/EditCategory";
 import Cart from "../page/CartPage/Cart";
 import NotFound from "../page/NotFoundPage/NotFound";
+import BrandManagement from "../page/Admin/Brand/BrandManagement";
+import AddNewBrand from "../page/Admin/Brand/AddNewBrand";
+import EditBrand from "../page/Admin/Brand/EditBrand";
 
 export const router = createBrowserRouter([
   {
@@ -114,6 +117,18 @@ export const router = createBrowserRouter([
                 element: <EditProduct />,
               },
             ],
+          },
+          {
+            path: "brand",
+            element: <BrandManagement />,
+          },
+          {
+            path: "brand/add",
+            element: <AddNewBrand />,
+          },
+          {
+            path: "brand/edit/:id",
+            element: <EditBrand />,
           },
         ],
       },

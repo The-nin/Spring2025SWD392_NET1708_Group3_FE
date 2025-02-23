@@ -2,35 +2,32 @@ import React, { useEffect, useState } from "react";
 import { Table, Button, Space, Tooltip, Modal, Tag } from "antd";
 import { useNavigate } from "react-router-dom";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import {
-  getAllCategories,
-  deleteCategory,
-} from "../../../service/category/index";
+import { getAllBrands, deleteBrand } from "../../../service/brand/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const CategoryManagement = () => {
+const BrandManagement = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0,
   });
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedBrand, setSelectedBrand] = useState(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
-  const fetchCategories = async (params = {}) => {
+  const fetchBrands = async (params = {}) => {
     try {
       setLoading(true);
-      const response = await getAllCategories({
+      const response = await getAllBrands({
         page: params.page - 1 || 0,
         size: params.pageSize || 10,
       });
 
       if (!response.error) {
-        setCategories(response.result.categoryResponses);
+        setBrands(response.result.brandResponses);
         setPagination({
           current: response.result.pageNumber + 1,
           pageSize: response.result.pageSize,
@@ -47,7 +44,7 @@ const CategoryManagement = () => {
         });
       }
     } catch (error) {
-      toast.error("Failed to fetch categories", {
+      toast.error("Failed to fetch brands", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -61,34 +58,34 @@ const CategoryManagement = () => {
   };
 
   useEffect(() => {
-    fetchCategories();
+    fetchBrands();
   }, []);
 
   const handleTableChange = (newPagination) => {
-    fetchCategories({
+    fetchBrands({
       page: newPagination.current,
       pageSize: newPagination.pageSize,
     });
   };
 
-  const showDeleteConfirm = (category) => {
-    setSelectedCategory(category);
+  const showDeleteConfirm = (brand) => {
+    setSelectedBrand(brand);
     setDeleteModalVisible(true);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!selectedCategory) return;
+    if (!selectedBrand) return;
 
     try {
       setLoading(true);
-      const response = await deleteCategory(selectedCategory.id);
+      const response = await deleteBrand(selectedBrand.id);
 
       if (!response.error) {
-        await fetchCategories({
+        await fetchBrands({
           page: pagination.current,
           pageSize: pagination.pageSize,
         });
-        toast.success("Category deleted successfully!", {
+        toast.success("Brand deleted successfully!", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -108,7 +105,7 @@ const CategoryManagement = () => {
       }
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("Failed to delete category", {
+      toast.error("Failed to delete brand", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -119,7 +116,7 @@ const CategoryManagement = () => {
     } finally {
       setLoading(false);
       setDeleteModalVisible(false);
-      setSelectedCategory(null);
+      setSelectedBrand(null);
     }
   };
 
@@ -131,13 +128,13 @@ const CategoryManagement = () => {
       render: (image) => (
         <img
           src={image}
-          alt="category"
+          alt="brand"
           className="w-16 h-16 object-cover rounded"
         />
       ),
     },
     {
-      title: "Category Name",
+      title: "Brand Name",
       dataIndex: "name",
       key: "name",
     },
@@ -164,7 +161,7 @@ const CategoryManagement = () => {
             <Button
               type="primary"
               icon={<EditOutlined />}
-              onClick={() => navigate(`/admin/category/edit/${record.id}`)}
+              onClick={() => navigate(`/admin/brand/edit/${record.id}`)}
             />
           </Tooltip>
           <Tooltip title="Delete">
@@ -182,18 +179,18 @@ const CategoryManagement = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Category Management</h2>
+        <h2 className="text-2xl font-bold">Brand Management</h2>
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => navigate("/admin/category/add")}
+          onClick={() => navigate("/admin/brand/add")}
         >
-          Add New Category
+          Add New Brand
         </Button>
       </div>
       <Table
         columns={columns}
-        dataSource={categories}
+        dataSource={brands}
         rowKey="id"
         pagination={pagination}
         loading={loading}
@@ -205,15 +202,13 @@ const CategoryManagement = () => {
         onOk={handleDeleteConfirm}
         onCancel={() => {
           setDeleteModalVisible(false);
-          setSelectedCategory(null);
+          setSelectedBrand(null);
         }}
         okText="Delete"
         cancelText="Cancel"
         okButtonProps={{ danger: true }}
       >
-        <p>
-          Are you sure you want to delete category "{selectedCategory?.name}"?
-        </p>
+        <p>Are you sure you want to delete brand "{selectedBrand?.name}"?</p>
         <p>This action cannot be undone.</p>
       </Modal>
       <ToastContainer />
@@ -221,4 +216,4 @@ const CategoryManagement = () => {
   );
 };
 
-export default CategoryManagement;
+export default BrandManagement;

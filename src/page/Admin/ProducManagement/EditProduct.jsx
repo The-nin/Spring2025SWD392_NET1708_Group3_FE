@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, InputNumber, Button, Card, message, Spin } from "antd";
+import { Form, Input, InputNumber, Button, Card, Select, Spin } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getProductById,
   updateProduct,
 } from "../../../service/productManagement";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const EditProduct = () => {
   const navigate = useNavigate();
@@ -22,13 +24,25 @@ const EditProduct = () => {
     try {
       const response = await getProductById(id);
       if (!response.error) {
-        form.setFieldsValue(response.result);
+        form.setFieldsValue({
+          name: response.result.name,
+          price: response.result.price,
+          description: response.result.description,
+          status: response.result.status,
+          thumbnail: response.result.thumbnail,
+        });
       } else {
-        message.error(response.message);
+        toast.error(response.message, {
+          position: "top-right",
+          autoClose: 3000,
+        });
         navigate("/admin/product");
       }
     } catch (error) {
-      message.error("Failed to fetch product details");
+      toast.error("Failed to fetch product details", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       navigate("/admin/product");
     } finally {
       setInitialLoading(false);
@@ -41,13 +55,26 @@ const EditProduct = () => {
       const response = await updateProduct(id, values);
 
       if (!response.error) {
-        message.success(response.message);
         navigate("/admin/product");
+        toast.success("Product updated successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       } else {
-        message.error(response.message);
+        toast.error(response.message, {
+          position: "top-right",
+          autoClose: 3000,
+        });
       }
     } catch (error) {
-      message.error("Failed to update product");
+      toast.error("Failed to update product", {
+        position: "top-right",
+        autoClose: 3000,
+      });
     } finally {
       setLoading(false);
     }
@@ -107,7 +134,7 @@ const EditProduct = () => {
               step={0.01}
               placeholder="Enter price"
               formatter={(value) =>
-                `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
               }
               parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
             />
@@ -132,6 +159,28 @@ const EditProduct = () => {
             />
           </Form.Item>
 
+          <Form.Item
+            name="thumbnail"
+            label="Thumbnail URL"
+            rules={[
+              { required: true, message: "Please enter thumbnail URL" },
+              { type: "url", message: "Please enter a valid URL" },
+            ]}
+          >
+            <Input placeholder="Enter thumbnail URL" />
+          </Form.Item>
+
+          <Form.Item
+            name="status"
+            label="Status"
+            rules={[{ required: true, message: "Please select status" }]}
+          >
+            <Select>
+              <Select.Option value="ACTIVE">Active</Select.Option>
+              <Select.Option value="INACTIVE">Inactive</Select.Option>
+            </Select>
+          </Form.Item>
+
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading}>
               Update Product
@@ -139,6 +188,7 @@ const EditProduct = () => {
           </Form.Item>
         </Form>
       </Card>
+      <ToastContainer />
     </div>
   );
 };

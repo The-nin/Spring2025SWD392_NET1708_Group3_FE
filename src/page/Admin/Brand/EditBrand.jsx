@@ -2,14 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Form, Input, Button, Card, Select, Spin } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  getCategoryById,
-  updateCategory,
-} from "../../../service/category/index";
+import { getBrandById, updateBrand } from "../../../service/brand/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const EditCategory = () => {
+const EditBrand = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [form] = Form.useForm();
@@ -17,12 +14,12 @@ const EditCategory = () => {
   const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
-    fetchCategoryDetails();
+    fetchBrandDetails();
   }, [id]);
 
-  const fetchCategoryDetails = async () => {
+  const fetchBrandDetails = async () => {
     try {
-      const response = await getCategoryById(id);
+      const response = await getBrandById(id);
       if (!response.error) {
         form.setFieldsValue({
           name: response.result.name,
@@ -35,14 +32,14 @@ const EditCategory = () => {
           position: "top-right",
           autoClose: 3000,
         });
-        navigate("/admin/category");
+        navigate("/admin/brand");
       }
     } catch (error) {
-      toast.error("Failed to fetch category details", {
+      toast.error("Failed to fetch brand details", {
         position: "top-right",
         autoClose: 3000,
       });
-      navigate("/admin/category");
+      navigate("/admin/brand");
     } finally {
       setInitialLoading(false);
     }
@@ -51,11 +48,11 @@ const EditCategory = () => {
   const onFinish = async (values) => {
     try {
       setLoading(true);
-      const response = await updateCategory(id, values);
+      const response = await updateBrand(id, values);
 
       if (!response.error) {
-        navigate("/admin/category");
-        toast.success("Category updated successfully!", {
+        navigate("/admin/brand");
+        toast.success("Brand updated successfully!", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -70,7 +67,7 @@ const EditCategory = () => {
         });
       }
     } catch (error) {
-      toast.error("Failed to update category", {
+      toast.error("Failed to update brand", {
         position: "top-right",
         autoClose: 3000,
       });
@@ -103,13 +100,13 @@ const EditCategory = () => {
       <div className="p-6">
         <Button
           icon={<ArrowLeftOutlined />}
-          onClick={() => navigate("/admin/category")}
+          onClick={() => navigate("/admin/brand")}
           className="mb-4"
         >
-          Back to Categories
+          Back to Brands
         </Button>
 
-        <Card title="Edit Category" className="max-w-3xl">
+        <Card title="Edit Brand" className="max-w-3xl">
           <Form
             form={form}
             layout="vertical"
@@ -118,13 +115,13 @@ const EditCategory = () => {
           >
             <Form.Item
               name="name"
-              label="Category Name"
+              label="Brand Name"
               rules={[
-                { required: true, message: "Please enter category name" },
+                { required: true, message: "Please enter brand name" },
                 { min: 3, message: "Name must be at least 3 characters" },
               ]}
             >
-              <Input placeholder="Enter category name" />
+              <Input placeholder="Enter brand name" />
             </Form.Item>
 
             <Form.Item
@@ -140,7 +137,7 @@ const EditCategory = () => {
             >
               <Input.TextArea
                 rows={4}
-                placeholder="Enter category description"
+                placeholder="Enter brand description"
                 maxLength={500}
                 showCount
               />
@@ -170,7 +167,7 @@ const EditCategory = () => {
 
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Update Category
+                Update Brand
               </Button>
             </Form.Item>
           </Form>
@@ -180,4 +177,4 @@ const EditCategory = () => {
   );
 };
 
-export default EditCategory;
+export default EditBrand;
