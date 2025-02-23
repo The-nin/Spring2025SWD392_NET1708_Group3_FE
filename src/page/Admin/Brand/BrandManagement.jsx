@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tooltip, Modal, Tag } from "antd";
+import { Table, Button, Space, Tooltip, Modal, Tag, Switch } from "antd";
 import { useNavigate } from "react-router-dom";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { getAllBrands, deleteBrand } from "../../../service/brand/index";
+import { getAllBrands, deleteBrand, updateBrandStatus } from "../../../service/brand/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -120,6 +120,27 @@ const BrandManagement = () => {
     }
   };
 
+  const toggleBrandStatus = async (brand) => {
+    try {
+      setLoading(true);
+      const newStatus = brand.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+      const response = await updateBrandStatus(brand.id, newStatus);
+      if (!response.error) {
+        toast.success("Brand status updated successfully!");
+        fetchBrands({
+          page: pagination.current,
+          pageSize: pagination.pageSize,
+        });
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error("Failed to update brand status");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const columns = [
     {
       title: "Image",
@@ -148,8 +169,13 @@ const BrandManagement = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (
-        <Tag color={status === "ACTIVE" ? "green" : "red"}>{status}</Tag>
+      render: (status, record) => (
+        <Switch
+          checked={status === "ACTIVE"}
+          onChange={() => toggleBrandStatus(record)}
+          checkedChildren="Active"
+          unCheckedChildren="Inactive"
+        />
       ),
     },
     {

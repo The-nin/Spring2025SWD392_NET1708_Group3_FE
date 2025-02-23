@@ -79,29 +79,54 @@ export const addProduct = async (formData) => {
   }
 };
 
-export const updateProduct = async (id, productData) => {
+export const updateProduct = async (id, formData) => {
   try {
     const token = localStorage.getItem("token");
-    const response = await instance.put(
-      `admin/products/${id}`,
-      {
-        name: productData.name,
-        price: productData.price,
-        description: productData.description,
-        status: productData.status,
-        thumbnail: productData.thumbnail,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    
+    // Nếu formData là FormData (có file mới)
+    if (formData instanceof FormData) {
+      const requestData = JSON.parse(formData.get("request"));
+      const file = formData.get("thumbnail");
+      
+      // Nếu có file mới, upload lên Cloudinary
+      let productData = { ...requestData };
+      if (file) {
+        const imageUrl = await uploadToCloudinary(file);
+        productData.thumbnail = imageUrl;
       }
-    );
-    return {
-      error: false,
-      result: response.result,
-      message: response.message,
-    };
+
+      const response = await instance.put(
+        `admin/products/${id}`,
+        productData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return {
+        error: false,
+        result: response.result,
+        message: response.message,
+      };
+    } else {
+      // Xử lý trường hợp không có file mới (giữ nguyên code cũ)
+      const response = await instance.put(
+        `admin/products/${id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return {
+        error: false,
+        result: response.result,
+        message: response.message,
+      };
+    }
   } catch (error) {
     console.error("Update product error:", error);
     return {
@@ -152,6 +177,32 @@ export const deleteMultipleProducts = async (ids) => {
     return {
       error: true,
       message: error.response?.message || "Failed to delete products",
+    };
+  }
+};
+
+export const updateProductStatus = async (productId, status) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await instance.patch(
+      `admin/products/change-status/${productId}?status=${status}`,
+      { status },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
+  } catch (error) {
+    console.error("Update product status error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "Failed to update product status",
     };
   }
 };

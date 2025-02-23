@@ -13,7 +13,24 @@ export const getAllCategories = async (params) => {
     console.error("Get categories error:", error);
     return {
       error: true,
-      message: error.response?.data?.message || "Failed to fetch categories",
+      message: error.response?.message || "Failed to fetch categories",
+    };
+  }
+};
+
+export const getAllCategoriesUser = async (params) => {
+  try {
+    const response = await instance.get("/categories", { params });
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
+  } catch (error) {
+    console.error("Get categories error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "Failed to fetch categories",
     };
   }
 };
@@ -43,7 +60,7 @@ export const getCategoryById = async (id) => {
 };
 
 // Add this new function
-const uploadToCloudinary = async (file) => {
+export const uploadToCloudinary = async (file) => {
   try {
     const CLOUDINARY_UPLOAD_PRESET = "phuocnt-cloudinary";
     const CLOUDINARY_CLOUD_NAME = "dl5dphe0f";
@@ -158,6 +175,32 @@ export const deleteCategory = async (id) => {
     return {
       error: true,
       message: error.response?.data?.message || "Failed to delete category",
+    };
+  }
+};
+
+export const updateCategoryStatus = async (categoryId, status) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await instance.patch(
+      `admin/categories/change-status/${categoryId}?status=${status}`,
+      { status },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
+  } catch (error) {
+    console.error("Update category status error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "Failed to update category status",
     };
   }
 };

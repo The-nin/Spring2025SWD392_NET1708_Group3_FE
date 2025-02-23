@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Card, Select, Spin } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Form, Input, Button, Card, Select, Spin, Upload } from "antd";
+import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getCategoryById,
   updateCategory,
+  uploadToCloudinary,
 } from "../../../service/category/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -15,6 +16,7 @@ const EditCategory = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [currentThumbnail, setCurrentThumbnail] = useState('');
 
   useEffect(() => {
     fetchCategoryDetails();
@@ -28,8 +30,8 @@ const EditCategory = () => {
           name: response.result.name,
           description: response.result.description,
           status: response.result.status,
-          thumbnail: response.result.thumbnail,
         });
+        setCurrentThumbnail(response.result.thumbnail);
       } else {
         toast.error(response.message, {
           position: "top-right",
@@ -48,10 +50,32 @@ const EditCategory = () => {
     }
   };
 
+  const normFile = (e) => {
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e?.fileList;
+  };
+
   const onFinish = async (values) => {
     try {
       setLoading(true);
-      const response = await updateCategory(id, values);
+      let thumbnailUrl = currentThumbnail;
+
+      // Nếu có file ảnh mới được upload
+      if (values.thumbnail?.length > 0) {
+        const file = values.thumbnail[0].originFileObj;
+        const formData = new FormData();
+        formData.append("file", file);
+        thumbnailUrl = await uploadToCloudinary(file);
+      }
+
+      const updateData = {
+        ...values,
+        thumbnail: thumbnailUrl,
+      };
+
+      const response = await updateCategory(id, updateData);
 
       if (!response.error) {
         navigate("/admin/category");
@@ -146,15 +170,31 @@ const EditCategory = () => {
               />
             </Form.Item>
 
+            <Form.Item label="Current Thumbnail">
+              {currentThumbnail && (
+                <img
+                  src={currentThumbnail}
+                  alt="Current thumbnail"
+                  className="max-w-xs mb-4"
+                  style={{ maxHeight: '200px' }}
+                />
+              )}
+            </Form.Item>
+
             <Form.Item
               name="thumbnail"
-              label="Thumbnail URL"
-              rules={[
-                { required: true, message: "Please enter thumbnail URL" },
-                { type: "url", message: "Please enter a valid URL" },
-              ]}
+              label="New Thumbnail"
+              valuePropName="fileList"
+              getValueFromEvent={normFile}
             >
-              <Input placeholder="Enter thumbnail URL" />
+              <Upload
+                beforeUpload={() => false}
+                maxCount={1}
+                accept="image/*"
+                listType="picture"
+              >
+                <Button icon={<UploadOutlined />}>Upload New Image</Button>
+              </Upload>
             </Form.Item>
 
             <Form.Item

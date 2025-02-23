@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tooltip, Modal, Tag } from "antd";
+import { Table, Button, Space, Tooltip, Modal, Tag, Switch } from "antd";
 import { useNavigate } from "react-router-dom";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   getAllCategories,
   deleteCategory,
+  updateCategoryStatus,
 } from "../../../service/category/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -37,24 +38,10 @@ const CategoryManagement = () => {
           total: response.result.totalElements,
         });
       } else {
-        toast.error(response.message, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to fetch categories", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error("Failed to fetch categories");
     } finally {
       setLoading(false);
     }
@@ -71,6 +58,27 @@ const CategoryManagement = () => {
     });
   };
 
+  const toggleCategoryStatus = async (category) => {
+    try {
+      setLoading(true);
+      const newStatus = category.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+      const response = await updateCategoryStatus(category.id, newStatus);
+      if (!response.error) {
+        toast.success("Category status updated successfully!");
+        fetchCategories({
+          page: pagination.current,
+          pageSize: pagination.pageSize,
+        });
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error("Failed to update category status");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const showDeleteConfirm = (category) => {
     setSelectedCategory(category);
     setDeleteModalVisible(true);
@@ -78,44 +86,20 @@ const CategoryManagement = () => {
 
   const handleDeleteConfirm = async () => {
     if (!selectedCategory) return;
-
     try {
       setLoading(true);
       const response = await deleteCategory(selectedCategory.id);
-
       if (!response.error) {
         await fetchCategories({
           page: pagination.current,
           pageSize: pagination.pageSize,
         });
-        toast.success("Category deleted successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        toast.success("Category deleted successfully!");
       } else {
-        toast.error(response.message, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        toast.error(response.message);
       }
     } catch (error) {
-      console.error("Delete error:", error);
-      toast.error("Failed to delete category", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error("Failed to delete category");
     } finally {
       setLoading(false);
       setDeleteModalVisible(false);
@@ -151,8 +135,13 @@ const CategoryManagement = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (
-        <Tag color={status === "ACTIVE" ? "green" : "red"}>{status}</Tag>
+      render: (status, record) => (
+        <Switch
+          checked={status === "ACTIVE"}
+          onChange={() => toggleCategoryStatus(record)}
+          checkedChildren="Active"
+          unCheckedChildren="Inactive"
+        />
       ),
     },
     {

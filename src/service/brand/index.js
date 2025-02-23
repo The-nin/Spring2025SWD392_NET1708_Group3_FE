@@ -83,28 +83,54 @@ export const addBrand = async (formData) => {
   }
 };
 
-export const updateBrand = async (id, brandData) => {
+export const updateBrand = async (id, formData) => {
   try {
     const token = localStorage.getItem("token");
-    const response = await instance.put(
-      `admin/brands/${id}`,
-      {
-        name: brandData.name,
-        description: brandData.description,
-        status: brandData.status,
-        thumbnail: brandData.thumbnail,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    
+    // Nếu formData là FormData (có file mới)
+    if (formData instanceof FormData) {
+      const requestData = JSON.parse(formData.get("request"));
+      const file = formData.get("thumbnail");
+      
+      // Nếu có file mới, upload lên Cloudinary
+      let brandData = { ...requestData };
+      if (file) {
+        const imageUrl = await uploadToCloudinary(file);
+        brandData.thumbnail = imageUrl;
       }
-    );
-    return {
-      error: false,
-      result: response.result,
-      message: response.message,
-    };
+
+      const response = await instance.put(
+        `admin/brands/${id}`,
+        brandData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return {
+        error: false,
+        result: response.result,
+        message: response.message,
+      };
+    } else {
+      // Xử lý trường hợp không có file mới
+      const response = await instance.put(
+        `admin/brands/${id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return {
+        error: false,
+        result: response.result,
+        message: response.message,
+      };
+    }
   } catch (error) {
     console.error("Update brand error:", error);
     return {
@@ -158,5 +184,31 @@ const uploadToCloudinary = async (file) => {
   } catch (error) {
     console.error("Cloudinary upload error:", error);
     throw new Error("Failed to upload image to Cloudinary");
+  }
+};
+
+export const updateBrandStatus = async (brandId, status) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await instance.patch(
+      `admin/brands/change-status/${brandId}?status=${status}`,
+      { status },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
+  } catch (error) {
+    console.error("Update product status error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "Failed to update product status",
+    };
   }
 };

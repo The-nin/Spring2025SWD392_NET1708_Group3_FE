@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, InputNumber, Button, Card, Select, Spin } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Form, Input, InputNumber, Button, Card, Select, Spin, Upload } from "antd";
+import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getProductById,
@@ -15,6 +15,8 @@ const EditProduct = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [imageUrl, setImageUrl] = useState("");
+  const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
     fetchProductDetails();
@@ -29,8 +31,16 @@ const EditProduct = () => {
           price: response.result.price,
           description: response.result.description,
           status: response.result.status,
-          thumbnail: response.result.thumbnail,
         });
+        setImageUrl(response.result.thumbnail);
+        setFileList([
+          {
+            uid: '-1',
+            name: 'thumbnail.png',
+            status: 'done',
+            url: response.result.thumbnail,
+          },
+        ]);
       } else {
         toast.error(response.message, {
           position: "top-right",
@@ -52,7 +62,24 @@ const EditProduct = () => {
   const onFinish = async (values) => {
     try {
       setLoading(true);
-      const response = await updateProduct(id, values);
+      const formData = new FormData();
+      
+      const requestData = {
+        name: values.name,
+        price: values.price,
+        description: values.description,
+        status: values.status,
+      };
+
+      formData.append('request', JSON.stringify(requestData));
+      
+      if (fileList[0]?.originFileObj) {
+        formData.append('thumbnail', fileList[0].originFileObj);
+      } else {
+        requestData.thumbnail = imageUrl;
+      }
+
+      const response = await updateProduct(id, formData);
 
       if (!response.error) {
         navigate("/admin/product");
@@ -78,6 +105,22 @@ const EditProduct = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const uploadProps = {
+    beforeUpload: (file) => {
+      const isImage = file.type.startsWith('image/');
+      if (!isImage) {
+        toast.error('You can only upload image files!');
+        return false;
+      }
+      return false;
+    },
+    onChange: ({ fileList: newFileList }) => {
+      setFileList(newFileList);
+    },
+    fileList,
+    maxCount: 1,
   };
 
   if (initialLoading) {
@@ -160,14 +203,15 @@ const EditProduct = () => {
           </Form.Item>
 
           <Form.Item
-            name="thumbnail"
-            label="Thumbnail URL"
-            rules={[
-              { required: true, message: "Please enter thumbnail URL" },
-              { type: "url", message: "Please enter a valid URL" },
-            ]}
+            label="Thumbnail"
+            rules={[{ required: true, message: 'Please upload a thumbnail' }]}
           >
-            <Input placeholder="Enter thumbnail URL" />
+            <Upload
+              listType="picture"
+              {...uploadProps}
+            >
+              <Button icon={<UploadOutlined />}>Upload Thumbnail</Button>
+            </Upload>
           </Form.Item>
 
           <Form.Item
