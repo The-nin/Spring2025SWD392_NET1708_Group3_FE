@@ -1,15 +1,42 @@
-import React, { useState } from "react";
-import { Form, Input, InputNumber, Button, Card, message, Upload } from "antd";
+import React, { useState, useEffect } from "react";
+import {
+  Form,
+  Input,
+  InputNumber,
+  Button,
+  Card,
+  message,
+  Upload,
+  Select,
+} from "antd";
 import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { addProduct } from "../../../service/productManagement";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getAllCategories } from "../../../service/category";
 
 const AddNewProduct = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const response = await getAllCategories();
+      if (!response.error) {
+        const activeCategories =
+          response.result?.categoryResponses.filter(
+            (category) => category.status === "ACTIVE"
+          ) || [];
+        setCategories(activeCategories);
+      } else {
+        toast.error("Failed to fetch categories");
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const normFile = (e) => {
     if (Array.isArray(e)) {
@@ -23,7 +50,8 @@ const AddNewProduct = () => {
       values.name &&
       values.price &&
       values.description &&
-      values.thumbnail?.length > 0
+      values.thumbnail?.length > 0 &&
+      values.categoryId
     ) {
       try {
         setLoading(true);
@@ -43,6 +71,7 @@ const AddNewProduct = () => {
             name: values.name,
             price: values.price,
             description: values.description,
+            categoryId: values.categoryId,
           })
         );
         formData.append("thumbnail", file);
@@ -64,7 +93,7 @@ const AddNewProduct = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="h-[calc(100vh-64px)] bg-gray-50 p-6 overflow-y-auto">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -77,20 +106,29 @@ const AddNewProduct = () => {
         pauseOnHover
         theme="light"
       />
+
       <Button
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate("/admin/product")}
-        className="mb-4"
+        className="mb-4 hover:bg-gray-100"
       >
         Back to Products
       </Button>
 
-      <Card title="Add New Product" className="max-w-3xl">
+      <Card
+        title={
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Add New Product
+          </h2>
+        }
+        className="max-w-5xl mx-auto shadow-md rounded-lg"
+      >
         <Form
           form={form}
           layout="vertical"
           onFinish={onFinish}
           autoComplete="off"
+          className="space-y-6"
         >
           <Form.Item
             name="name"
@@ -100,7 +138,10 @@ const AddNewProduct = () => {
               { min: 3, message: "Name must be at least 3 characters" },
             ]}
           >
-            <Input placeholder="Enter product name" />
+            <Input
+              placeholder="Enter product name"
+              className="rounded-md h-12"
+            />
           </Form.Item>
 
           <Form.Item
@@ -116,7 +157,7 @@ const AddNewProduct = () => {
             ]}
           >
             <InputNumber
-              className="w-full"
+              className="w-full rounded-md h-12"
               min={0.01}
               step={0.01}
               placeholder="Enter price"
@@ -143,6 +184,22 @@ const AddNewProduct = () => {
               placeholder="Enter product description"
               maxLength={500}
               showCount
+              className="rounded-md"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="categoryId"
+            label="Category"
+            rules={[{ required: true, message: "Please select a category" }]}
+          >
+            <Select
+              placeholder="Select a category"
+              options={categories.map((category) => ({
+                value: category.id,
+                label: category.name,
+              }))}
+              className="w-full rounded-md h-12"
             />
           </Form.Item>
 
@@ -158,13 +215,21 @@ const AddNewProduct = () => {
               maxCount={1}
               accept="image/*"
               listType="picture"
+              className="upload-list-inline"
             >
-              <Button icon={<UploadOutlined />}>Select Image</Button>
+              <Button icon={<UploadOutlined />} className="rounded-md h-12">
+                Select Image
+              </Button>
             </Upload>
           </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading}>
+          <Form.Item className="mt-6">
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              className="w-full md:w-auto px-8 h-12 rounded-md bg-blue-600 hover:bg-blue-700"
+            >
               Add Product
             </Button>
           </Form.Item>

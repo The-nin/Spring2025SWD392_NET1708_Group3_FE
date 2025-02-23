@@ -16,7 +16,6 @@ const HeaderAdmin = ({
   collapsed,
   toggleCollapsed,
   adminUser,
-  handleLogout,
 }) => {
   const navigate = useNavigate();
   const onLogout = async () => {
@@ -26,9 +25,8 @@ const HeaderAdmin = ({
 
       if (!response.error) {
         localStorage.clear();
-        handleLogout();
-        navigate("/admin/login");
         message.success("Logged out successfully");
+        navigate("/admin/login");
       } else {
         message.error(response.message || "Logout failed");
       }

@@ -2,84 +2,83 @@ import React, { useState, useEffect } from "react";
 import { Form, Input, Button, Card, Select, Spin, Upload } from "antd";
 import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  getCategoryById,
-  updateCategory,
-  uploadToCloudinary,
-} from "../../../service/category/index";
+import { getBrandById, updateBrand } from "../../../service/brand/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const EditCategory = () => {
+const EditBrand = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [currentThumbnail, setCurrentThumbnail] = useState('');
+  const [imageUrl, setImageUrl] = useState("");
+  const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
-    fetchCategoryDetails();
+    fetchBrandDetails();
   }, [id]);
 
-  const fetchCategoryDetails = async () => {
+  const fetchBrandDetails = async () => {
     try {
-      const response = await getCategoryById(id);
+      const response = await getBrandById(id);
       if (!response.error) {
         form.setFieldsValue({
           name: response.result.name,
           description: response.result.description,
           status: response.result.status,
         });
-        setCurrentThumbnail(response.result.thumbnail);
+        setImageUrl(response.result.thumbnail);
+        setFileList([
+          {
+            uid: '-1',
+            name: 'thumbnail.png',
+            status: 'done',
+            url: response.result.thumbnail,
+          },
+        ]);
       } else {
         toast.error(response.message, {
           position: "top-right",
           autoClose: 3000,
         });
-        navigate("/admin/category");
+        navigate("/admin/brand");
       }
     } catch (error) {
-      toast.error("Failed to fetch category details", {
+      toast.error("Failed to fetch brand details", {
         position: "top-right",
         autoClose: 3000,
       });
-      navigate("/admin/category");
+      navigate("/admin/brand");
     } finally {
       setInitialLoading(false);
     }
   };
 
-  const normFile = (e) => {
-    if (Array.isArray(e)) {
-      return e;
-    }
-    return e?.fileList;
-  };
-
   const onFinish = async (values) => {
     try {
       setLoading(true);
-      let thumbnailUrl = currentThumbnail;
-
-      // Nếu có file ảnh mới được upload
-      if (values.thumbnail?.length > 0) {
-        const file = values.thumbnail[0].originFileObj;
-        const formData = new FormData();
-        formData.append("file", file);
-        thumbnailUrl = await uploadToCloudinary(file);
-      }
-
-      const updateData = {
-        ...values,
-        thumbnail: thumbnailUrl,
+      const formData = new FormData();
+      
+      const requestData = {
+        name: values.name,
+        description: values.description,
+        status: values.status,
       };
 
-      const response = await updateCategory(id, updateData);
+      formData.append('request', JSON.stringify(requestData));
+      
+      if (fileList[0]?.originFileObj) {
+        formData.append('thumbnail', fileList[0].originFileObj);
+      } else {
+        requestData.thumbnail = imageUrl;
+      }
+
+      const response = await updateBrand(id, formData);
 
       if (!response.error) {
-        navigate("/admin/category");
-        toast.success("Category updated successfully!", {
+        navigate("/admin/brand");
+        toast.success("Brand updated successfully!", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -94,13 +93,29 @@ const EditCategory = () => {
         });
       }
     } catch (error) {
-      toast.error("Failed to update category", {
+      toast.error("Failed to update brand", {
         position: "top-right",
         autoClose: 3000,
       });
     } finally {
       setLoading(false);
     }
+  };
+
+  const uploadProps = {
+    beforeUpload: (file) => {
+      const isImage = file.type.startsWith('image/');
+      if (!isImage) {
+        toast.error('You can only upload image files!');
+        return false;
+      }
+      return false;
+    },
+    onChange: ({ fileList: newFileList }) => {
+      setFileList(newFileList);
+    },
+    fileList,
+    maxCount: 1,
   };
 
   if (initialLoading) {
@@ -127,13 +142,13 @@ const EditCategory = () => {
       <div className="p-6">
         <Button
           icon={<ArrowLeftOutlined />}
-          onClick={() => navigate("/admin/category")}
+          onClick={() => navigate("/admin/brand")}
           className="mb-4"
         >
-          Back to Categories
+          Back to Brands
         </Button>
 
-        <Card title="Edit Category" className="max-w-3xl">
+        <Card title="Edit Brand" className="max-w-3xl">
           <Form
             form={form}
             layout="vertical"
@@ -142,13 +157,13 @@ const EditCategory = () => {
           >
             <Form.Item
               name="name"
-              label="Category Name"
+              label="Brand Name"
               rules={[
-                { required: true, message: "Please enter category name" },
+                { required: true, message: "Please enter brand name" },
                 { min: 3, message: "Name must be at least 3 characters" },
               ]}
             >
-              <Input placeholder="Enter category name" />
+              <Input placeholder="Enter brand name" />
             </Form.Item>
 
             <Form.Item
@@ -164,37 +179,10 @@ const EditCategory = () => {
             >
               <Input.TextArea
                 rows={4}
-                placeholder="Enter category description"
+                placeholder="Enter brand description"
                 maxLength={500}
                 showCount
               />
-            </Form.Item>
-
-            <Form.Item label="Current Thumbnail">
-              {currentThumbnail && (
-                <img
-                  src={currentThumbnail}
-                  alt="Current thumbnail"
-                  className="max-w-xs mb-4"
-                  style={{ maxHeight: '200px' }}
-                />
-              )}
-            </Form.Item>
-
-            <Form.Item
-              name="thumbnail"
-              label="New Thumbnail"
-              valuePropName="fileList"
-              getValueFromEvent={normFile}
-            >
-              <Upload
-                beforeUpload={() => false}
-                maxCount={1}
-                accept="image/*"
-                listType="picture"
-              >
-                <Button icon={<UploadOutlined />}>Upload New Image</Button>
-              </Upload>
             </Form.Item>
 
             <Form.Item
@@ -208,9 +196,21 @@ const EditCategory = () => {
               </Select>
             </Form.Item>
 
+            <Form.Item
+              label="Thumbnail"
+              rules={[{ required: true, message: 'Please upload a thumbnail' }]}
+            >
+              <Upload
+                listType="picture"
+                {...uploadProps}
+              >
+                <Button icon={<UploadOutlined />}>Upload Thumbnail</Button>
+              </Upload>
+            </Form.Item>
+
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Update Category
+                Update Brand
               </Button>
             </Form.Item>
           </Form>
@@ -220,4 +220,4 @@ const EditCategory = () => {
   );
 };
 
-export default EditCategory;
+export default EditBrand;

@@ -1,28 +1,28 @@
 import { instance } from "../instance";
 
 // Public function - no token needed
-export const getAllProducts = async (params) => {
+export const getAllBrands = async (params) => {
   try {
-    const response = await instance.get("admin/products", { params });
+    const response = await instance.get("admin/brands", { params });
     return {
       error: false,
       result: response.result,
       message: response.message,
     };
   } catch (error) {
-    console.error("Get products error:", error);
+    console.error("Get brands error:", error);
     return {
       error: true,
-      message: error.response?.message || "Failed to fetch products",
+      message: error.response?.data?.message || "Failed to fetch brands",
     };
   }
 };
 
 // Admin functions - require token
-export const getProductById = async (id) => {
+export const getBrandById = async (id) => {
   try {
     const token = localStorage.getItem("token");
-    const response = await instance.get(`admin/products/${id}`, {
+    const response = await instance.get(`admin/brands/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -33,15 +33,15 @@ export const getProductById = async (id) => {
       message: response.message,
     };
   } catch (error) {
-    console.error("Get product error:", error);
+    console.error("Get brand error:", error);
     return {
       error: true,
-      message: error.response?.message || "Failed to fetch product details",
+      message: error.response?.data?.message || "Failed to fetch brand details",
     };
   }
 };
 
-export const addProduct = async (formData) => {
+export const addBrand = async (formData) => {
   try {
     const token = localStorage.getItem("token");
 
@@ -53,12 +53,12 @@ export const addProduct = async (formData) => {
     const imageUrl = await uploadToCloudinary(file);
 
     // Create the final request data
-    const productData = {
+    const brandData = {
       ...requestData,
       thumbnail: imageUrl,
     };
 
-    const response = await instance.post("admin/products", productData, {
+    const response = await instance.post("admin/brands", brandData, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -71,15 +71,19 @@ export const addProduct = async (formData) => {
       message: response.message,
     };
   } catch (error) {
-    console.error("Add product error:", error);
+    console.error("Add brand error:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
     return {
       error: true,
-      message: error.response?.message || "Failed to add product",
+      message: error.response?.data?.message || "Failed to add brand",
     };
   }
 };
 
-export const updateProduct = async (id, formData) => {
+export const updateBrand = async (id, formData) => {
   try {
     const token = localStorage.getItem("token");
     
@@ -89,15 +93,15 @@ export const updateProduct = async (id, formData) => {
       const file = formData.get("thumbnail");
       
       // Nếu có file mới, upload lên Cloudinary
-      let productData = { ...requestData };
+      let brandData = { ...requestData };
       if (file) {
         const imageUrl = await uploadToCloudinary(file);
-        productData.thumbnail = imageUrl;
+        brandData.thumbnail = imageUrl;
       }
 
       const response = await instance.put(
-        `admin/products/${id}`,
-        productData,
+        `admin/brands/${id}`,
+        brandData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -111,9 +115,9 @@ export const updateProduct = async (id, formData) => {
         message: response.message,
       };
     } else {
-      // Xử lý trường hợp không có file mới (giữ nguyên code cũ)
+      // Xử lý trường hợp không có file mới
       const response = await instance.put(
-        `admin/products/${id}`,
+        `admin/brands/${id}`,
         formData,
         {
           headers: {
@@ -128,18 +132,18 @@ export const updateProduct = async (id, formData) => {
       };
     }
   } catch (error) {
-    console.error("Update product error:", error);
+    console.error("Update brand error:", error);
     return {
       error: true,
-      message: error.response?.message || "Failed to update product",
+      message: error.response?.data?.message || "Failed to update brand",
     };
   }
 };
 
-export const deleteProduct = async (id) => {
+export const deleteBrand = async (id) => {
   try {
     const token = localStorage.getItem("token");
-    const response = await instance.delete(`admin/products/${id}`, {
+    const response = await instance.delete(`admin/brands/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -150,64 +154,15 @@ export const deleteProduct = async (id) => {
       message: response.message,
     };
   } catch (error) {
-    console.error("Delete product error:", error);
+    console.error("Delete brand error:", error);
     return {
       error: true,
-      message: error.response?.message || "Failed to delete product",
+      message: error.response?.data?.message || "Failed to delete brand",
     };
   }
 };
 
-export const deleteMultipleProducts = async (ids) => {
-  try {
-    const token = localStorage.getItem("token");
-    const response = await instance.delete("admin/products", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      data: { ids },
-    });
-    return {
-      error: false,
-      result: response.data.result,
-      message: response.data.message,
-    };
-  } catch (error) {
-    console.error("Delete products error:", error);
-    return {
-      error: true,
-      message: error.response?.message || "Failed to delete products",
-    };
-  }
-};
-
-export const updateProductStatus = async (productId, status) => {
-  try {
-    const token = localStorage.getItem("token");
-    const response = await instance.patch(
-      `admin/products/change-status/${productId}?status=${status}`,
-      { status },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    return {
-      error: false,
-      result: response.result,
-      message: response.message,
-    };
-  } catch (error) {
-    console.error("Update product status error:", error);
-    return {
-      error: true,
-      message: error.response?.message || "Failed to update product status",
-    };
-  }
-};
-
-// Add this function after getAllProducts
+// Reuse the Cloudinary upload function
 const uploadToCloudinary = async (file) => {
   try {
     const CLOUDINARY_UPLOAD_PRESET = "phuocnt-cloudinary";
@@ -229,5 +184,31 @@ const uploadToCloudinary = async (file) => {
   } catch (error) {
     console.error("Cloudinary upload error:", error);
     throw new Error("Failed to upload image to Cloudinary");
+  }
+};
+
+export const updateBrandStatus = async (brandId, status) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await instance.patch(
+      `admin/brands/change-status/${brandId}?status=${status}`,
+      { status },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
+  } catch (error) {
+    console.error("Update product status error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "Failed to update product status",
+    };
   }
 };

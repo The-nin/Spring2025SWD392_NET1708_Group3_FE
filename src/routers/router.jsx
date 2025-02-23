@@ -21,6 +21,11 @@ import AddNewCategory from "../page/Admin/CategoryManagement/AddNewCategory";
 import EditCategory from "../page/Admin/CategoryManagement/EditCategory";
 import Cart from "../page/CartPage/Cart";
 import NotFound from "../page/NotFoundPage/NotFound";
+import BrandManagement from "../page/Admin/Brand/BrandManagement";
+import AddNewBrand from "../page/Admin/Brand/AddNewBrand";
+import EditBrand from "../page/Admin/Brand/EditBrand";
+import Payment from "../page/PaymentPage/Payment";
+import { ProtectedUserRoute } from "./ProtectedUserRoute";
 
 export const router = createBrowserRouter([
   {
@@ -56,11 +61,19 @@ export const router = createBrowserRouter([
         element: <Blog2 />,
       },
       {
-        path: "/blog3",
-        element: <Blog3 />,
+        path: "/payment",
+        element: (
+          <ProtectedUserRoute>
+            <Payment />
+          </ProtectedUserRoute>
+        ),
       },
       {
         path: "/shop",
+        element: <ShopPage />,
+      },
+      {
+        path: "/shop/:slug",
         element: <ShopPage />,
       },
       {
@@ -69,7 +82,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "/cart",
-        element: <Cart />,
+        element: (
+          <ProtectedUserRoute>
+            <Cart />
+          </ProtectedUserRoute>
+        ),
       },
     ],
   },
@@ -129,6 +146,18 @@ export const router = createBrowserRouter([
                 element: <EditProduct />,
               },
             ],
+          },
+          {
+            path: "brand",
+            element: <BrandManagement />,
+          },
+          {
+            path: "brand/add",
+            element: <AddNewBrand />,
+          },
+          {
+            path: "brand/edit/:id",
+            element: <EditBrand />,
           },
         ],
       },

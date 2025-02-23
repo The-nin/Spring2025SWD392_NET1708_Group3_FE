@@ -3,6 +3,8 @@ import { Layout } from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../../../components/Admin/Sidebar";
 import AdminHeader from "../../../components/Admin/HeaderAdmin";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const { Content } = Layout;
 
@@ -24,6 +26,17 @@ const MainPage = () => {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       <Sidebar
         handleLogout={handleLogout}
         collapsed={collapsed}

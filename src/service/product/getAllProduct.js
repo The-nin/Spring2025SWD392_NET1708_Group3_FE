@@ -1,15 +1,20 @@
 import { instance } from "../instance";
 
-export const getAllProduct = async () => {
-    try{
-        const res = await instance.get("/products");
-        return res;
+export const getAllProduct = async ({ slug } = {}) => {
+  try {
+    const params = {};
+
+    if (slug) {
+      params.categorySlug = slug; // Đúng định dạng mong muốn
     }
-    catch(error) {
-        console.error(error);
-        return{
-            error: true,
-            message: error.response?.data?.message || "Cant get all product"
-        }
-    }
+
+    const res = await instance.get("/products", { params });
+    return res;
+  } catch (error) {
+    console.error(error);
+    return {
+      error: true,
+      message: error.response?.data?.message || "Can't get all products",
+    };
+  }
 };

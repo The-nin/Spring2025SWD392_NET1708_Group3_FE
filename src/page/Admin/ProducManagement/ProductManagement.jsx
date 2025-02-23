@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tooltip, message, Modal } from "antd";
+import { Table, Button, Space, Tooltip, message, Modal, Switch } from "antd";
 import { useNavigate } from "react-router-dom";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   getAllProducts,
   deleteProduct,
+  updateProductStatus,
 } from "../../../service/productManagement";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -20,6 +21,7 @@ const ProductManagement = () => {
   });
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const fetchProducts = async (params = {}) => {
     try {
@@ -28,10 +30,8 @@ const ProductManagement = () => {
         page: params.page - 1 || 0,
         size: params.pageSize || 10,
       });
-
       if (!response.error) {
         setProducts(response.result.productResponses);
-
         setPagination({
           current: response.result.pageNumber + 1,
           pageSize: response.result.pageSize,
@@ -58,55 +58,54 @@ const ProductManagement = () => {
     });
   };
 
+  const toggleStatus = async (product) => {
+    try {
+      setLoading(true);
+      const newStatus = product.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+      const response = await updateProductStatus(product.id, newStatus);
+      if (!response.error) {
+        fetchProducts({
+          page: pagination.current,
+          pageSize: pagination.pageSize,
+        });
+        toast.success("Product status updated successfully!");
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error("Failed to update status");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const showDeleteConfirm = (product) => {
-    setProductToDelete(product);
+    setSelectedProduct(product);
     setDeleteModalVisible(true);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!productToDelete) return;
+    if (!selectedProduct) return;
 
     try {
       setLoading(true);
-      const response = await deleteProduct(productToDelete.id);
+      const response = await deleteProduct(selectedProduct.id);
 
       if (!response.error) {
         await fetchProducts({
           page: pagination.current,
           pageSize: pagination.pageSize,
         });
-        toast.success("Product deleted successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        toast.success("Product deleted successfully!");
       } else {
-        toast.error(response.message, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        toast.error(response.message);
       }
     } catch (error) {
-      console.error("Delete error:", error);
-      toast.error("Failed to delete product", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error("Failed to delete product");
     } finally {
       setLoading(false);
       setDeleteModalVisible(false);
-      setProductToDelete(null);
+      setSelectedProduct(null);
     }
   };
 
@@ -136,25 +135,16 @@ const ProductManagement = () => {
       render: (price) => (price ? `${price.toLocaleString("vi-VN")}đ` : "N/A"),
     },
     {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-      ellipsis: true,
-    },
-    {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (
-        <span
-          className={`px-2 py-1 rounded ${
-            status === "ACTIVE"
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
-        >
-          {status}
-        </span>
+      render: (_, record) => (
+        <Switch
+          checked={record.status === "ACTIVE"}
+          onChange={() => toggleStatus(record)}
+          checkedChildren="ACTIVE"
+          unCheckedChildren="INACTIVE"
+        />
       ),
     },
     {
@@ -207,15 +197,13 @@ const ProductManagement = () => {
         onOk={handleDeleteConfirm}
         onCancel={() => {
           setDeleteModalVisible(false);
-          setProductToDelete(null);
+          setSelectedProduct(null);
         }}
         okText="Delete"
         cancelText="Cancel"
         okButtonProps={{ danger: true }}
       >
-        <p>
-          Are you sure you want to delete product "{productToDelete?.name}"?
-        </p>
+        <p>Are you sure you want to delete product "{selectedProduct?.name}"?</p>
         <p>This action cannot be undone.</p>
       </Modal>
       <ToastContainer />

@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import ProductCardList from "../../components/ProductCardList/ProductCardList";
 import { getAllProduct } from "../../service/product/getAllProduct";
 import { useEffect, useState } from "react";
-
+import { useParams } from "react-router-dom";
+import { SiDeluge } from "react-icons/si";
 const ShopPage = () => {
   const fadeIn = {
     hidden: { opacity: 0, y: 50 },
@@ -15,13 +16,14 @@ const ShopPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState(null);
+  const { slug } = useParams(); // ✅ Lấy đúng giá trị của slug
 
   //pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(8);
 
-  const fetchAllProduct = async () => {
-    const data = await getAllProduct();
+  const fetchProduct = async () => {
+    const data = await getAllProduct({ slug });
     if (data.error) {
       setErrors(data.message);
     } else {
@@ -31,12 +33,16 @@ const ShopPage = () => {
   };
 
   useEffect(() => {
-    fetchAllProduct();
-  }, [products]);
+    console.log(slug);
+    fetchProduct();
+  }, [slug]);
 
   const indexOfLastProduct = currentPage * pageSize;
   const indexOfFirstProduct = indexOfLastProduct - pageSize;
-  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+  const currentProducts = products.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
 
   const onPageChange = (page) => {
     setCurrentPage(page);
