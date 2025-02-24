@@ -15,8 +15,23 @@ import LoginAdmin from "../page/Admin/LoginAdmin/LoginAdmin";
 import Dashboard from "../page/Admin/Dashboard/Dashboard";
 import CategoryManagement from "../page/Admin/CategoryManagement/CategoryManagement";
 import ProductManagement from "../page/Admin/ProducManagement/ProductManagement";
+import EditProduct from "../page/Admin/ProducManagement/EditProduct";
+import AddNewProduct from "../page/Admin/ProducManagement/AddNewProduct";
+import AddNewCategory from "../page/Admin/CategoryManagement/AddNewCategory";
+import EditCategory from "../page/Admin/CategoryManagement/EditCategory";
+import Cart from "../page/CartPage/Cart";
+import NotFound from "../page/NotFoundPage/NotFound";
+import BrandManagement from "../page/Admin/Brand/BrandManagement";
+import AddNewBrand from "../page/Admin/Brand/AddNewBrand";
+import EditBrand from "../page/Admin/Brand/EditBrand";
+import Payment from "../page/PaymentPage/Payment";
+import { ProtectedUserRoute } from "./ProtectedUserRoute";
 
 export const router = createBrowserRouter([
+  {
+    path: "*",
+    element: <NotFound />,
+  },
   {
     path: "/",
     element: <RootLayout />,
@@ -46,16 +61,32 @@ export const router = createBrowserRouter([
         element: <Blog2 />,
       },
       {
-        path: "/blog3",
-        element: <Blog3 />,
+        path: "/payment",
+        element: (
+          <ProtectedUserRoute>
+            <Payment />
+          </ProtectedUserRoute>
+        ),
       },
       {
         path: "/shop",
         element: <ShopPage />,
       },
       {
+        path: "/shop/:slug",
+        element: <ShopPage />,
+      },
+      {
         path: "/helps",
         element: <HelpPage />,
+      },
+      {
+        path: "/cart",
+        element: (
+          <ProtectedUserRoute>
+            <Cart />
+          </ProtectedUserRoute>
+        ),
       },
     ],
   },
@@ -69,10 +100,9 @@ export const router = createBrowserRouter([
       {
         path: "",
         element: (
-          // <ProtectedAdminRoute>
-          //   <MainPage />
-          // </ProtectedAdminRoute>
-          <MainPage />
+          <ProtectedAdminRoute>
+            <MainPage />
+          </ProtectedAdminRoute>
         ),
         children: [
           {
@@ -81,7 +111,20 @@ export const router = createBrowserRouter([
           },
           {
             path: "category",
-            element: <CategoryManagement />,
+            children: [
+              {
+                path: "",
+                element: <CategoryManagement />,
+              },
+              {
+                path: "add",
+                element: <AddNewCategory />,
+              },
+              {
+                path: "edit/:id",
+                element: <EditCategory />,
+              },
+            ],
           },
           // {
           //   path: "order",
@@ -89,7 +132,32 @@ export const router = createBrowserRouter([
           // },
           {
             path: "product",
-            element: <ProductManagement />,
+            children: [
+              {
+                path: "",
+                element: <ProductManagement />,
+              },
+              {
+                path: "add",
+                element: <AddNewProduct />,
+              },
+              {
+                path: "edit/:id",
+                element: <EditProduct />,
+              },
+            ],
+          },
+          {
+            path: "brand",
+            element: <BrandManagement />,
+          },
+          {
+            path: "brand/add",
+            element: <AddNewBrand />,
+          },
+          {
+            path: "brand/edit/:id",
+            element: <EditBrand />,
           },
         ],
       },

@@ -1,9 +1,31 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getAllCategoriesUser } from "../../service/category/index";
 
 const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
   const dropdownRef = useRef(null);
+  const [categories, setCategories] = useState([]);
 
+  const fetchCategories = async () => {
+    try {
+      const response = await getAllCategoriesUser();
+      console.log(response);
+      if (response) {
+        setCategories(response.result.categoryResponses);
+      } else {
+        console.error("Failed to fetch categories:", response.message);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  // Gọi API khi component mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  // Xử lý click ngoài để đóng dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -20,7 +42,7 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose, shopButtonRef]);
 
-  // Tạo hàm xử lý click vào link
+  // Hàm xử lý click vào link
   const handleLinkClick = () => {
     onClose();
   };
@@ -38,6 +60,7 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
           <div>
             <h3 className="font-medium text-gray-900 mb-4">Category</h3>
             <ul className="space-y-3">
+              {/* Shop All là mục tĩnh */}
               <li>
                 <Link
                   to="/shop"
@@ -47,78 +70,18 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
                   Shop All
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/shop/cleanse"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Cleanse
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/exfoliate"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Exfoliate
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/treat-masque"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Treat & Masque
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/tone"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Tone
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/hydrate"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Hydrate
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/eyes-lips"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Eyes & Lips
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/sun-care"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Sun Care
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/shave"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Shave
-                </Link>
-              </li>
+              {/* Các categories từ API */}
+              {categories.map((category) => (
+                <li key={category.id}>
+                  <Link
+                    to={`/shop/${category.slug}`} // Sử dụng slug để tạo URL động
+                    onClick={handleLinkClick}
+                    className="text-gray-600 hover:text-black"
+                  >
+                    {category.name} {/* Hiển thị tên category */}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

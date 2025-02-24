@@ -3,6 +3,8 @@ import { Layout } from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../../../components/Admin/Sidebar";
 import AdminHeader from "../../../components/Admin/HeaderAdmin";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const { Content } = Layout;
 
@@ -23,7 +25,18 @@ const MainPage = () => {
   };
 
   return (
-    <Layout className="min-h-screen">
+    <Layout style={{ minHeight: "100vh" }}>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       <Sidebar
         handleLogout={handleLogout}
         collapsed={collapsed}
@@ -31,12 +44,9 @@ const MainPage = () => {
       />
       <Layout
         style={{
-          marginLeft: collapsed ? 80 : 250,
+          marginLeft: collapsed ? 80 : 200,
           transition: "all 0.2s",
-          background: "#0f172a",
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
+          background: "#001529",
         }}
       >
         <AdminHeader
@@ -46,16 +56,11 @@ const MainPage = () => {
         />
         <Content
           style={{
-            margin: "24px 16px",
-            padding: 24,
-            flex: 1,
-            background: "#1e293b",
-            borderRadius: 8,
-            color: "#fff",
-            overflow: "auto",
+            minHeight: 280,
+            background: "#f0f2f5",
           }}
         >
-          <Outlet /> {/* ✅ Đảm bảo Dashboard có thể hiển thị */}
+          <Outlet />
         </Content>
       </Layout>
     </Layout>

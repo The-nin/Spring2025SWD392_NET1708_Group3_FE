@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { FaArrowRight } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { products } from "./ProductList";
-import ProductCard from "./ProductCard.jsx"
+import ProductCard from "./ProductCard.jsx";
 import HeroSection from "../../components/HeroSection/HeroSection";
 import img1 from "../../assets/img/hero-photo.png";
 import heroImg from "../../assets/img/hero-landingPage.png";
