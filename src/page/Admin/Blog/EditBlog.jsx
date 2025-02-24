@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Form, Input, Button, Card, Select, Spin, Upload } from "antd";
 import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
-import { getBrandById, updateBrand } from "../../../service/brand/index";
+import { getBlogById, updateBlog } from "../../../service/blog/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const EditBrand = () => {
+const EditBlog = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [form] = Form.useForm();
@@ -16,12 +16,12 @@ const EditBrand = () => {
   const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
-    fetchBrandDetails();
+    fetchBlogDetails();
   }, [id]);
 
-  const fetchBrandDetails = async () => {
+  const fetchBlogDetails = async () => {
     try {
-      const response = await getBrandById(id);
+      const response = await getBlogById(id);
       if (!response.error) {
         form.setFieldsValue({
           name: response.result.name,
@@ -42,14 +42,14 @@ const EditBrand = () => {
           position: "top-right",
           autoClose: 3000,
         });
-        navigate("/admin/brand");
+        navigate("/admin/blog");
       }
     } catch (error) {
-      toast.error("Failed to fetch brand details", {
+      toast.error("Failed to fetch blog details", {
         position: "top-right",
         autoClose: 3000,
       });
-      navigate("/admin/brand");
+      navigate("/admin/blog");
     } finally {
       setInitialLoading(false);
     }
@@ -74,11 +74,11 @@ const EditBrand = () => {
         requestData.thumbnail = imageUrl;
       }
 
-      const response = await updateBrand(id, formData);
+      const response = await updateBlog(id, formData);
 
       if (!response.error) {
-        navigate("/admin/brand");
-        toast.success("Brand updated successfully!", {
+        navigate("/admin/blog");
+        toast.success("Blog updated successfully!", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -93,7 +93,7 @@ const EditBrand = () => {
         });
       }
     } catch (error) {
-      toast.error("Failed to update brand", {
+      toast.error("Failed to update blog", {
         position: "top-right",
         autoClose: 3000,
       });
@@ -142,13 +142,13 @@ const EditBrand = () => {
       <div className="p-6">
         <Button
           icon={<ArrowLeftOutlined />}
-          onClick={() => navigate("/admin/brand")}
+          onClick={() => navigate("/admin/blog")}
           className="mb-4"
         >
-          Back to Brands
+          Back to Blogs
         </Button>
 
-        <Card title="Edit Brand" className="max-w-3xl">
+        <Card title="Edit Blog" className="max-w-3xl">
           <Form
             form={form}
             layout="vertical"
@@ -157,13 +157,13 @@ const EditBrand = () => {
           >
             <Form.Item
               name="name"
-              label="Brand Name"
+              label="Blog Name"
               rules={[
-                { required: true, message: "Please enter brand name" },
+                { required: true, message: "Please enter blog name" },
                 { min: 3, message: "Name must be at least 3 characters" },
               ]}
             >
-              <Input placeholder="Enter brand name" />
+              <Input placeholder="Enter blog name" />
             </Form.Item>
 
             <Form.Item
@@ -179,7 +179,7 @@ const EditBrand = () => {
             >
               <Input.TextArea
                 rows={4}
-                placeholder="Enter brand description"
+                placeholder="Enter blog description"
                 maxLength={500}
                 showCount
               />
@@ -207,7 +207,7 @@ const EditBrand = () => {
 
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Update Brand
+                Update Blog
               </Button>
             </Form.Item>
           </Form>
@@ -217,4 +217,4 @@ const EditBrand = () => {
   );
 };
 
-export default EditBrand;
+export default EditBlog;
