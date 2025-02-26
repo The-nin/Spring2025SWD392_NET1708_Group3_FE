@@ -26,6 +26,7 @@ import AddNewBrand from "../page/Admin/Brand/AddNewBrand";
 import EditBrand from "../page/Admin/Brand/EditBrand";
 import Payment from "../page/PaymentPage/Payment";
 import { ProtectedUserRoute } from "./ProtectedUserRoute";
+import ProductDetail from "../page/ProductPage/ProductDetail";
 
 export const router = createBrowserRouter([
   {
@@ -73,8 +74,16 @@ export const router = createBrowserRouter([
         element: <ShopPage />,
       },
       {
-        path: "/shop/:slug",
+        path: "/shop/category/:slug",
         element: <ShopPage />,
+      },
+      {
+        path: "/shop/brand/:slug",
+        element: <ShopPage />,
+      },
+      {
+        path: "/product/:slug",
+        element: <ProductDetail />,
       },
       {
         path: "/helps",

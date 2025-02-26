@@ -8,6 +8,7 @@ import LoginModal from "../../page/LoginPage/LoginPage";
 import ShopDropdown from "./ShopDropdown";
 import { FiUser } from "react-icons/fi";
 import { logout } from "../../service/logout";
+import { getCart } from "../../service/cart/cart";
 
 const Header = () => {
   const [showSearch, setShowSearch] = useState(false);
@@ -22,6 +23,7 @@ const Header = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [user, setUser] = useState(null);
   const menuRef = useRef(null);
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("username");
@@ -29,6 +31,34 @@ const Header = () => {
       setUser(storedUser); // Lưu vào state
     }
   }, []);
+
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setCartCount(0);
+        return;
+      }
+
+      try {
+        const response = await getCart();
+        if (response.code === 200) {
+          // Count total number of items in the cart
+          const totalItems = response.result.items.length;
+          setCartCount(totalItems);
+        } else {
+          console.error("Failed to fetch cart:", response.message);
+          setCartCount(0);
+        }
+      } catch (error) {
+        console.error("Error fetching cart:", error);
+        setCartCount(0);
+      }
+    };
+
+    fetchCartCount();
+  }, [user]); // Re-fetch when user changes
+
   const handleSearch = () => {
     if (searchValue.trim()) {
       console.log(`Searching for: ${searchValue}`);
@@ -298,9 +328,11 @@ const Header = () => {
                       size={20}
                       className="cursor-pointer text-gray-700 hover:text-black transition-colors"
                     />
-                    <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                      2
-                    </span>
+                    {cartCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                        {cartCount}
+                      </span>
+                    )}
                   </div>
                   <span className="absolute bottom-0 left-0 w-full h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
                 </Link>
