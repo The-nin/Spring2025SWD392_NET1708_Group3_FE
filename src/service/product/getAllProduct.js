@@ -1,14 +1,26 @@
 import { instance } from "../instance";
 
-export const getAllProduct = async ({ slug } = {}) => {
+export const getAllProduct = async ({
+  categorySlug,
+  brandSlug,
+  page = 1,
+  size = 10,
+} = {}) => {
   try {
     const params = {};
-
-    if (slug) {
-      params.categorySlug = slug; // Đúng định dạng mong muốn
+    if (categorySlug) {
+      params.categorySlug = categorySlug;
+    }
+    if (brandSlug) {
+      params.brandSlug = brandSlug;
     }
 
-    const res = await instance.get("/products", { params });
+    const adjustedPage = Math.max(0, page - 1);
+
+    const res = await instance.get(
+      `/products?page=${adjustedPage}&size=${size}`,
+      { params }
+    );
     return res;
   } catch (error) {
     console.error(error);

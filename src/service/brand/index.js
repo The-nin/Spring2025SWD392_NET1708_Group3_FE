@@ -13,7 +13,24 @@ export const getAllBrands = async (params) => {
     console.error("Get brands error:", error);
     return {
       error: true,
-      message: error.response?.data?.message || "Failed to fetch brands",
+      message: error.response?.message || "Failed to fetch brands",
+    };
+  }
+};
+
+export const getAllBrandsUser = async (params) => {
+  try {
+    const response = await instance.get("/brands", { params });
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
+  } catch (error) {
+    console.error("Get brands error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "Failed to fetch brands",
     };
   }
 };
@@ -36,7 +53,7 @@ export const getBrandById = async (id) => {
     console.error("Get brand error:", error);
     return {
       error: true,
-      message: error.response?.data?.message || "Failed to fetch brand details",
+      message: error.response?.message || "Failed to fetch brand details",
     };
   }
 };
@@ -78,7 +95,7 @@ export const addBrand = async (formData) => {
     });
     return {
       error: true,
-      message: error.response?.data?.message || "Failed to add brand",
+      message: error.response?.message || "Failed to add brand",
     };
   }
 };
@@ -86,12 +103,12 @@ export const addBrand = async (formData) => {
 export const updateBrand = async (id, formData) => {
   try {
     const token = localStorage.getItem("token");
-    
+
     // Nếu formData là FormData (có file mới)
     if (formData instanceof FormData) {
       const requestData = JSON.parse(formData.get("request"));
       const file = formData.get("thumbnail");
-      
+
       // Nếu có file mới, upload lên Cloudinary
       let brandData = { ...requestData };
       if (file) {
@@ -99,16 +116,12 @@ export const updateBrand = async (id, formData) => {
         brandData.thumbnail = imageUrl;
       }
 
-      const response = await instance.put(
-        `admin/brands/${id}`,
-        brandData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await instance.put(`admin/brands/${id}`, brandData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       return {
         error: false,
         result: response.result,
@@ -116,15 +129,11 @@ export const updateBrand = async (id, formData) => {
       };
     } else {
       // Xử lý trường hợp không có file mới
-      const response = await instance.put(
-        `admin/brands/${id}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await instance.put(`admin/brands/${id}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return {
         error: false,
         result: response.result,
