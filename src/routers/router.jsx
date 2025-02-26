@@ -29,6 +29,7 @@ import AddNewBlog from "../page/Admin/Blog/AddNewBlog";
 import EditBlog from "../page/Admin/Blog/EditBlog";
 import Payment from "../page/PaymentPage/Payment";
 import { ProtectedUserRoute } from "./ProtectedUserRoute";
+import Consultant from "../page/ConsultantPage/Consultant";
 
 export const router = createBrowserRouter([
   {
@@ -94,6 +95,10 @@ export const router = createBrowserRouter([
             <Cart />
           </ProtectedUserRoute>
         ),
+      },
+      {
+        path: "/skin-consultation",
+        element: <Consultant />,
       },
     ],
   },
