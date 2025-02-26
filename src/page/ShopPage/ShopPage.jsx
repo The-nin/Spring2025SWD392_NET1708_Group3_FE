@@ -16,36 +16,61 @@ const ShopPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState(null);
-  const { slug } = useParams(); // ✅ Lấy đúng giá trị của slug
+  const { slug, type } = useParams(); // Thêm type vào params
 
   //pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(8);
+  const [pageSize, setPageSize] = useState(8);
+  const [totalItems, setTotalItems] = useState(0);
 
   const fetchProduct = async () => {
-    const data = await getAllProduct({ slug });
-    if (data.error) {
-      setErrors(data.message);
-    } else {
-      setProducts(data.result.productResponses);
+    try {
+      // Thay vì tạo URLSearchParams, tạo object params
+      const params = {
+        page: currentPage,
+        size: pageSize,
+      };
+
+      if (slug) {
+        if (window.location.pathname.includes("/brand/")) {
+          params.brandSlug = slug;
+        } else {
+          params.categorySlug = slug;
+        }
+      }
+
+      // Log để debug
+      console.log("API Params:", params);
+
+      const data = await getAllProduct(params);
+      if (data.error) {
+        setErrors(data.message);
+      } else {
+        setProducts(data.result.productResponses);
+        setTotalItems(data.result.totalElements);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      setErrors("Failed to fetch products");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
     console.log(slug);
     fetchProduct();
-  }, [slug]);
-
-  const indexOfLastProduct = currentPage * pageSize;
-  const indexOfFirstProduct = indexOfLastProduct - pageSize;
-  const currentProducts = products.slice(
-    indexOfFirstProduct,
-    indexOfLastProduct
-  );
+  }, [slug, currentPage, pageSize]); // Add currentPage and pageSize as dependencies
 
   const onPageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  // Sửa lại hàm onShowSizeChange
+  const onShowSizeChange = (current, size) => {
+    console.log("Size changed to:", size); // Debug log
+    setPageSize(size);
+    setCurrentPage(1);
   };
 
   return (
@@ -68,17 +93,35 @@ const ShopPage = () => {
           <h1 className="text-4xl ">Essentials For Every Skincare</h1>
         </div>
 
+        {/* Thêm UI chọn số lượng sản phẩm trên trang */}
+        <div className="flex items-center justify-end px-8 gap-2">
+          <span>Show:</span>
+          <select
+            value={pageSize}
+            onChange={(e) =>
+              onShowSizeChange(currentPage, parseInt(e.target.value))
+            }
+            className="border rounded-md p-1"
+          >
+            <option value="4">4</option>
+            <option value="8">8</option>
+            <option value="12">12</option>
+            <option value="16">16</option>
+          </select>
+          <span>items per page</span>
+        </div>
+
         {/* Product List */}
         <div>
           {loading ? (
-            <p className="flex justify-center alignitems-center ">
+            <p className="flex justify-center alignitems-center">
               Loading products...
             </p>
           ) : errors ? (
             <p className="flex justify-center">{errors}</p>
-          ) : currentProducts?.length > 0 ? (
+          ) : products?.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {currentProducts.map((product, index) => (
+              {products.map((product, index) => (
                 <motion.div
                   key={index}
                   variants={fadeIn}
@@ -91,18 +134,21 @@ const ShopPage = () => {
               ))}
             </div>
           ) : (
-            <p className="flex justify-center">No products available.</p> // Handle case where products array is empty
+            <p className="flex justify-center">No products available.</p>
           )}
         </div>
 
-        {/* Pagination */}
+        {/* Update Pagination component */}
         <div className="flex justify-center m-10">
           <Pagination
             current={currentPage}
             pageSize={pageSize}
-            total={products.length}
+            total={totalItems}
             onChange={onPageChange}
-            showSizeChanger={false} // Disable changing the page size
+            showSizeChanger={false}
+            showTotal={(total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`
+            }
           />
         </div>
       </div>

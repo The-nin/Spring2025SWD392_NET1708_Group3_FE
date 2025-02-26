@@ -71,7 +71,7 @@ const AddNewProduct = () => {
             name: values.name,
             price: values.price,
             description: values.description,
-            categoryId: values.categoryId,
+            category_id: values.categoryId,
           })
         );
         formData.append("thumbnail", file);

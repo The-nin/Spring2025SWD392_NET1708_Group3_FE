@@ -1,10 +1,12 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllCategoriesUser } from "../../service/category/index";
+import { getAllBrandsUser } from "../../service/brand/index";
 
 const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
   const dropdownRef = useRef(null);
   const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
 
   const fetchCategories = async () => {
     try {
@@ -20,9 +22,22 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
     }
   };
 
-  // Gọi API khi component mount
+  const fetchBrands = async () => {
+    try {
+      const response = await getAllBrandsUser();
+      if (response && !response.error) {
+        setBrands(response.result.brandResponses);
+      } else {
+        console.error("Failed to fetch brands:", response.message);
+      }
+    } catch (error) {
+      console.error("Error fetching brands:", error);
+    }
+  };
+
   useEffect(() => {
     fetchCategories();
+    fetchBrands();
   }, []);
 
   // Xử lý click ngoài để đóng dropdown
@@ -74,75 +89,41 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
               {categories.map((category) => (
                 <li key={category.id}>
                   <Link
-                    to={`/shop/${category.slug}`} // Sử dụng slug để tạo URL động
+                    to={`/shop/category/${category.slug}`}
                     onClick={handleLinkClick}
                     className="text-gray-600 hover:text-black"
                   >
-                    {category.name} {/* Hiển thị tên category */}
+                    {category.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Skin Type Column */}
+          {/* Brand Column */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-4">Skin Type</h3>
+            <h3 className="font-medium text-gray-900 mb-4">Brand</h3>
             <ul className="space-y-3">
               <li>
                 <Link
-                  to="/shop/normal"
+                  to="/shop"
                   onClick={handleLinkClick}
                   className="text-gray-600 hover:text-black"
                 >
-                  Normal
+                  Shop All
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/shop/dry"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Dry
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/oily"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Oily
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/combination"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Combination
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/sensitive"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Sensitive
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/mature"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Mature
-                </Link>
-              </li>
+              {brands.map((brand) => (
+                <li key={brand.id}>
+                  <Link
+                    to={`/shop/brand/${brand.slug}`}
+                    onClick={handleLinkClick}
+                    className="text-gray-600 hover:text-black"
+                  >
+                    {brand.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
