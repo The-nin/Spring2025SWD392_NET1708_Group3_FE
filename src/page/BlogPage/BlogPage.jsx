@@ -11,7 +11,7 @@ const blogs = [
     description:
       "Starting a skincare routine can feel overwhelming, especially with all the options out there. But don't worry – it's simpler than you think! Whether you're new to skincare or looking to refine your routine, we’ve got you covered with a basic step-by-step guide.",
     link: "/blog1",
-    image: "/assets/img/blogpage-1.jpg", // Updated Image Path
+    image: "src/assets/img/blogpage-1.jpg", // Updated Image Path
   },
   {
     id: 2,
@@ -19,7 +19,7 @@ const blogs = [
     description:
       "Achieving beautiful skin is more than just using products; it’s about understanding what your skin truly needs. Hydration, a balanced diet, and a consistent skincare routine play essential roles in maintaining radiant skin.",
     link: "/blog2",
-    image: "/assets/img/blogpage-2.webp",
+    image: "src/assets/img/blogpage-2.webp",
   },
   {
     id: 3,
@@ -27,7 +27,7 @@ const blogs = [
     description:
       "Acne is one of the most common skin concerns. Fortunately, with the right skincare routine and products, you can tackle acne head-on and achieve clearer skin.",
     link: "/blog3",
-    image: "/assets/img/blogpage-3.webp",
+    image: "src/assets/img/blogpage-3.webp",
   },
 ];
 

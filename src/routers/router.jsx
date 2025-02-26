@@ -24,10 +24,14 @@ import NotFound from "../page/NotFoundPage/NotFound";
 import BrandManagement from "../page/Admin/Brand/BrandManagement";
 import AddNewBrand from "../page/Admin/Brand/AddNewBrand";
 import EditBrand from "../page/Admin/Brand/EditBrand";
+import BlogManagement from "../page/Admin/Blog/BlogManagement";
+import AddNewBlog from "../page/Admin/Blog/AddNewBlog";
+import EditBlog from "../page/Admin/Blog/EditBlog";
 import Payment from "../page/PaymentPage/Payment";
 import { ProtectedUserRoute } from "./ProtectedUserRoute";
 import ProductDetail from "../page/ProductPage/ProductDetail";
 import ProfilePage from "../page/Profile/ProfilePage";
+import Consultant from "../page/ConsultantPage/Consultant";
 
 export const router = createBrowserRouter([
   {
@@ -61,6 +65,10 @@ export const router = createBrowserRouter([
       {
         path: "/blog2",
         element: <Blog2 />,
+      },
+      {
+        path: "/blog3",
+        element: <Blog3 />,
       },
       {
         path: "/payment",
@@ -105,6 +113,10 @@ export const router = createBrowserRouter([
             <Cart />
           </ProtectedUserRoute>
         ),
+      },
+      {
+        path: "/skin-consultation",
+        element: <Consultant />,
       },
     ],
   },
@@ -176,6 +188,18 @@ export const router = createBrowserRouter([
           {
             path: "brand/edit/:id",
             element: <EditBrand />,
+          },
+          {
+            path: "blog",
+            element: <BlogManagement />,
+          },
+          {
+            path: "blog/add",
+            element: <AddNewBlog />,
+          },
+          {
+            path: "blog/edit/:id",
+            element: <EditBlog />,
           },
         ],
       },
