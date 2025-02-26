@@ -13,7 +13,7 @@ export const getAllBrands = async (params) => {
     console.error("Get brands error:", error);
     return {
       error: true,
-      message: error.response?.data?.message || "Failed to fetch brands",
+      message: error.response?.message || "Failed to fetch brands",
     };
   }
 };
@@ -30,7 +30,7 @@ export const getAllBrandsUser = async (params) => {
     console.error("Get brands error:", error);
     return {
       error: true,
-      message: error.response?.data?.message || "Failed to fetch brands",
+      message: error.response?.message || "Failed to fetch brands",
     };
   }
 };
@@ -53,7 +53,7 @@ export const getBrandById = async (id) => {
     console.error("Get brand error:", error);
     return {
       error: true,
-      message: error.response?.data?.message || "Failed to fetch brand details",
+      message: error.response?.message || "Failed to fetch brand details",
     };
   }
 };
@@ -95,7 +95,7 @@ export const addBrand = async (formData) => {
     });
     return {
       error: true,
-      message: error.response?.data?.message || "Failed to add brand",
+      message: error.response?.message || "Failed to add brand",
     };
   }
 };

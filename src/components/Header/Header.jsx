@@ -24,6 +24,7 @@ const Header = () => {
   const [user, setUser] = useState(null);
   const menuRef = useRef(null);
   const [cartCount, setCartCount] = useState(0);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("username");
@@ -142,7 +143,9 @@ const Header = () => {
       if (response?.code === 200) {
         localStorage.removeItem("token");
         localStorage.removeItem("username");
-        window.location.reload();
+        setUser(null);
+        setShowUserMenu(false);
+        window.location.href = "/"; // Redirect to home page
       } else {
         setError(response.message);
       }
@@ -150,8 +153,6 @@ const Header = () => {
       console.error("Logout failed:", err);
       setError("Logout failed");
     }
-    setUser(null);
-    setShowUserMenu(false);
   };
 
   const handleProfileClick = () => {

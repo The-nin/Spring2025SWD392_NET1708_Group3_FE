@@ -1,119 +1,105 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Minus, Plus, Heart, ChevronDown } from "lucide-react";
+import { getProductDetail } from "../../service/product";
+import { addItemToCart } from "../../service/cart/cart";
 import imgProduct from "../../assets/Rectangle 3.png";
+import { toast } from "react-toastify";
 
 const ProductDetail = () => {
+  const { slug } = useParams();
   const [quantity, setQuantity] = useState(1);
+  const [product, setProduct] = useState(null);
   const [mainImage, setMainImage] = useState(imgProduct);
-  const [openSection, setOpenSection] = useState(null);
-  const [isHovered, setIsHovered] = useState(null);
-  const thumbnailImages = [imgProduct, imgProduct, imgProduct, imgProduct];
+  const [isLoading, setIsLoading] = useState(true);
 
-  const toggleSection = (section) => {
-    setOpenSection(openSection === section ? null : section);
+  useEffect(() => {
+    const fetchProductDetail = async () => {
+      try {
+        const response = await getProductDetail(slug);
+        if (!response.error) {
+          setProduct(response.result);
+        } else {
+          toast.error(response.message);
+        }
+      } catch (error) {
+        toast.error("Có lỗi xảy ra khi tải thông tin sản phẩm");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProductDetail();
+  }, [slug]);
+
+  const handleAddToCart = async () => {
+    try {
+      const response = await addItemToCart(product.id, quantity);
+      if (!response.error) {
+        toast.success("Thêm vào giỏ hàng thành công!");
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
+    }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!product) {
+    return <div>Không tìm thấy sản phẩm</div>;
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-8 grid grid-cols-1 md:grid-cols-2 gap-12 bg-white rounded-lg shadow-sm">
       {/* Image Section */}
       <div className="relative space-y-6">
         <div className="w-full h-[500px] rounded-lg overflow-hidden bg-gray-50 transition-all duration-300">
-          {mainImage ? (
+          {product.thumbnail ? (
             <img
-              src={mainImage}
-              alt="Acne Treatment Mask"
+              src={product.thumbnail}
+              alt={product.name}
               className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
             />
           ) : (
             <span className="text-gray-500">No Image Available</span>
           )}
         </div>
-        <div className="flex justify-start space-x-4 mt-4 overflow-x-auto pb-2">
-          {thumbnailImages.map((image, index) => (
-            <div
-              key={index}
-              className={`relative ${
-                isHovered === index ? "scale-105" : ""
-              } transition-all duration-200`}
-              onMouseEnter={() => setIsHovered(index)}
-              onMouseLeave={() => setIsHovered(null)}
-            >
-              <img
-                src={image}
-                alt={`Thumbnail ${index + 1}`}
-                className={`w-20 h-20 rounded-md cursor-pointer object-cover ${
-                  mainImage === image
-                    ? "border-2 border-black"
-                    : "border border-gray-200 hover:border-gray-400"
-                }`}
-                onClick={() => setMainImage(image)}
-              />
-            </div>
-          ))}
-        </div>
 
-        {/* Overview Section */}
-        <div className="mt-8 space-y-3">
-          {[
-            "Product Overview",
-            "How To Use",
-            "Add To Glance",
-            "Ingredients",
-            "Other Details",
-          ].map((section, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg"
-            >
-              <button
-                className="w-full flex justify-between items-center text-left font-medium p-4 hover:bg-gray-50 transition-all duration-300"
-                onClick={() => toggleSection(section)}
-              >
-                <span className="text-gray-800">{section}</span>
-                <ChevronDown
-                  size={20}
-                  className={`transform transition-all duration-300 ease-in-out text-gray-500
-                    ${openSection === section ? "rotate-180" : "rotate-0"}
-                  `}
-                />
-              </button>
-              <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out
-                  ${
-                    openSection === section
-                      ? "max-h-[500px] opacity-100"
-                      : "max-h-0 opacity-0"
-                  }
-                `}
-              >
-                <div className="p-4 bg-gray-50">
-                  <p className="text-gray-600 leading-relaxed">
-                    Details about {section}.
-                  </p>
-                </div>
-              </div>
+        {/* Description Section */}
+        <div className="mt-8">
+          <div className="bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg">
+            <div className="w-full flex justify-between items-center text-left font-medium p-4 bg-gray-50">
+              <span className="text-gray-800">Description</span>
             </div>
-          ))}
+            <div className="p-4">
+              <p className="text-gray-600 leading-relaxed">
+                {product.description}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Product Info Section */}
       <div className="space-y-6">
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold text-gray-800">
-            Lorem Ipsum Dolor
-          </h1>
+          <h1 className="text-4xl font-bold text-gray-800">{product.name}</h1>
           <div className="flex items-center space-x-3">
-            <span className="text-gray-400 line-through text-xl">Rs. 275</span>
-            <span className="text-red-600 text-3xl font-bold">Rs. 262</span>
-            <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-sm">
-              Save 5%
+            <span className="text-red-600 text-3xl font-bold">
+              {new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(product.price)}
             </span>
           </div>
         </div>
 
         <p className="text-gray-600 text-lg leading-relaxed">
-          Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit.
+          {product.description}
         </p>
 
         <div className="space-y-2">
@@ -150,7 +136,10 @@ const ProductDetail = () => {
                   <Plus size={18} />
                 </button>
               </div>
-              <button className="bg-black hover:bg-gray-700 text-white px-8 py-2 rounded-md flex-1 transition-colors duration-300">
+              <button
+                onClick={handleAddToCart}
+                className="bg-black hover:bg-gray-700 text-white px-8 py-2 rounded-md flex-1 transition-colors duration-300"
+              >
                 ADD TO CART
               </button>
               <button className="p-2 border rounded-md hover:border-red-500 hover:text-red-500 transition-all duration-300">

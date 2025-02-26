@@ -27,6 +27,7 @@ import EditBrand from "../page/Admin/Brand/EditBrand";
 import Payment from "../page/PaymentPage/Payment";
 import { ProtectedUserRoute } from "./ProtectedUserRoute";
 import ProductDetail from "../page/ProductPage/ProductDetail";
+import ProfilePage from "../page/Profile/ProfilePage";
 
 export const router = createBrowserRouter([
   {
@@ -66,6 +67,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedUserRoute>
             <Payment />
+          </ProtectedUserRoute>
+        ),
+      },
+      {
+        path: "/profile",
+        element: (
+          <ProtectedUserRoute>
+            <ProfilePage />
           </ProtectedUserRoute>
         ),
       },
