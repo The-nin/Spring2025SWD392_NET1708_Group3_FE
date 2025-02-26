@@ -1,18 +1,58 @@
 import React, { useState } from "react";
-import { Form, Input, Button, Card, message, Upload } from "antd";
+import { Form, Input, Button, Card, message, Upload, DatePicker } from "antd";
 import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { addBlog } from "../../../service/blog/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import dayjs from "dayjs";
+
+const modules = {
+  toolbar: [
+    [{ header: [1, 2, false] }],
+    ["bold", "italic", "underline", "strike"],
+    [{ align: [] }], // Add alignment options
+    [{ list: "ordered" }, { list: "bullet" }],
+    [{ indent: "-1" }, { indent: "+1" }],
+    ["link", "image"],
+    ["clean"],
+  ],
+};
+
+const formats = [
+  "header",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "align",
+  "list",
+  "indent",
+  "link",
+  "image",
+];
+
+// Function to disable past dates
+const disabledDate = (current) => {
+  return current && current.isBefore(dayjs().startOf("day"));
+};
 
 const AddNewBlog = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [content, setContent] = useState("");
 
   const onFinish = async (values) => {
-    if (values.name && values.description && values.thumbnail?.length > 0) {
+    if (
+      values.blogTitle &&
+      values.blogIntroduction &&
+      values.thumbnail?.length > 0 &&
+      content &&
+      values.publishDate
+    ) {
       try {
         setLoading(true);
         const formData = new FormData();
@@ -26,7 +66,12 @@ const AddNewBlog = () => {
 
         formData.append(
           "request",
-          JSON.stringify({ name: values.name, description: values.description })
+          JSON.stringify({
+            name: values.blogTitle,
+            introduction: values.blogIntroduction,
+            description: content, // Use rich text content
+            publishDate: dayjs(values.publishDate).format("YYYY-MM-DD"), // Format date
+          })
         );
         formData.append("thumbnail", file);
 
@@ -44,6 +89,8 @@ const AddNewBlog = () => {
       } finally {
         setLoading(false);
       }
+    } else {
+      toast.error("Please fill all required fields");
     }
   };
 
@@ -60,13 +107,6 @@ const AddNewBlog = () => {
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
       />
       <div className="p-6">
         <Button
@@ -77,50 +117,75 @@ const AddNewBlog = () => {
           Back to Blogs
         </Button>
 
-        <Card
-          title="Add New Blog"
-          className="max-w-6xl mx-auto shadow-md"
-          headStyle={{
-            fontSize: "1.5rem",
-            fontWeight: "bold",
-            borderBottom: "2px solid #f0f0f0",
-          }}
-        >
+        <Card title="Add New Blog" className="max-w-6xl mx-auto shadow-md">
           <Form
             form={form}
             layout="vertical"
             onFinish={onFinish}
             autoComplete="off"
-            className="space-y-4"
           >
             <Form.Item
-              name="name"
-              label="Blog Name"
+              name="blogTitle"
+              label="Blog Title"
               rules={[
-                { required: true, message: "Please enter blog name" },
-                { min: 3, message: "Name must be at least 3 characters" },
+                { required: true, message: "Please enter blog title" },
+                { min: 3, message: "Title must be at least 3 characters" },
               ]}
             >
-              <Input placeholder="Enter blog name" className="h-10 text-base" />
+              <Input placeholder="Enter blog title" />
             </Form.Item>
 
             <Form.Item
-              name="description"
-              label="Description"
+              name="blogIntroduction"
+              label="Blog Introduction"
               rules={[
-                { required: true, message: "Please enter description" },
+                { required: true, message: "Please enter blog introduction" },
                 {
-                  min: 10,
-                  message: "Description must be at least 10 characters",
+                  min: 50,
+                  message: "Introduction must be at least 50 characters",
                 },
               ]}
             >
-              <Input.TextArea
-                rows={6}
-                placeholder="Enter blog description"
-                maxLength={500}
-                showCount
-                className="text-base"
+              <Input.TextArea rows={3} placeholder="Enter blog introduction" />
+            </Form.Item>
+            <Form.Item
+              name="thumbnail"
+              label="Thumbnail"
+              valuePropName="fileList"
+              getValueFromEvent={normFile}
+              rules={[{ required: true, message: "Please upload an image" }]}
+            >
+              <Upload
+                beforeUpload={() => false}
+                maxCount={1}
+                accept="image/*"
+                listType="picture"
+              >
+                <Button icon={<UploadOutlined />}>Select Image</Button>
+              </Upload>
+            </Form.Item>
+
+            <Form.Item label="Blog Content" required>
+              <ReactQuill
+                theme="snow"
+                value={content}
+                onChange={setContent}
+                modules={modules}
+                formats={formats}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="publishDate"
+              label="Publish Date"
+              rules={[
+                { required: true, message: "Please select a publish date" },
+              ]}
+            >
+              <DatePicker
+                format="YYYY-MM-DD"
+                style={{ width: "100%" }}
+                disabledDate={disabledDate}
               />
             </Form.Item>
 
@@ -142,12 +207,7 @@ const AddNewBlog = () => {
             </Form.Item>
 
             <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={loading}
-                className="h-10 px-8 text-base font-medium"
-              >
+              <Button type="primary" htmlType="submit" loading={loading}>
                 Add Blog
               </Button>
             </Form.Item>
