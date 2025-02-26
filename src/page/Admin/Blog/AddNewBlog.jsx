@@ -176,20 +176,6 @@ const AddNewBlog = () => {
             </Form.Item>
 
             <Form.Item
-              name="publishDate"
-              label="Publish Date"
-              rules={[
-                { required: true, message: "Please select a publish date" },
-              ]}
-            >
-              <DatePicker
-                format="YYYY-MM-DD"
-                style={{ width: "100%" }}
-                disabledDate={disabledDate}
-              />
-            </Form.Item>
-
-            <Form.Item
               name="thumbnail"
               label="Thumbnail"
               valuePropName="fileList"
