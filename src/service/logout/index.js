@@ -11,7 +11,7 @@ export const logout = async (token) => {
 
     return {
       error: true,
-      message: error.response?.data?.message || "Logout failed",
+      message: error.response?.message || "Logout failed",
     };
   }
 };

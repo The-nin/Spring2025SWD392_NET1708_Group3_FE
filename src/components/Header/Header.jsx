@@ -198,6 +198,15 @@ const Header = () => {
 
             {/* Right Section: Icons */}
             <div className="flex-1 flex items-center justify-end">
+              {/* Consultation button */}
+              {user ? (
+                <div className="mr-6">
+                  <button className="border border-black rounded-md border-radius px-4 py-3 text-black font-medium hover:bg-zinc-200 hover:text-gray-800 transition duration-300 ease-in-out shadow-lg hover:shadow-xl">
+                    <Link to="/skin-consultation">Consultation</Link>
+                  </button>
+                </div>
+              ) : null}
+
               {/* Search Icon */}
               <div className="relative group" ref={searchRef}>
                 {showSearch ? (
