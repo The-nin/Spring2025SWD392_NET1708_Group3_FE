@@ -88,20 +88,32 @@ function Consultant() {
               <Col span={6}>
                 <Form.Item
                   name="age"
-                  label="Your age"
+                  label="Your Age"
                   rules={[
                     { required: true, message: "Please enter your age" },
                     {
                       type: "number",
                       min: 10,
-                      message: "Age must be greater than 10",
+                      max: 120,
+                      message: "Age must be between 10 and 120",
                     },
                   ]}
                 >
-                  <InputNumber
+                  <Select
+                    showSearch // Allows users to type their age manually
+                    placeholder="Select or Enter Your Age"
                     className="w-full rounded-md h-12"
-                    placeholder="Enter your age here"
-                  />
+                    optionFilterProp="children"
+                    allowClear // Allows clearing selection
+                  >
+                    {Array.from({ length: 111 }, (_, i) => i + 10).map(
+                      (age) => (
+                        <Select.Option key={age} value={age}>
+                          {age}
+                        </Select.Option>
+                      )
+                    )}
+                  </Select>
                 </Form.Item>
               </Col>
             </Row>
@@ -125,7 +137,7 @@ function Consultant() {
                 className="rounded-md"
               />
             </Form.Item>
-            
+
             <Form.Item
               name="type_skin"
               label="Your Skin Type"
