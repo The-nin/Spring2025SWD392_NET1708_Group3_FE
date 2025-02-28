@@ -5,7 +5,6 @@ import {
   Form,
   Image,
   Input,
-  InputNumber,
   Row,
   Select,
   Upload,
@@ -15,9 +14,10 @@ import { useState } from "react";
 
 function Consultant() {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
+  const [showCombinationInputs, setShowCombinationInputs] = useState(false);
 
   const normFile = (e) => {
     if (Array.isArray(e)) {
@@ -44,6 +44,10 @@ function Consultant() {
 
   const onFinish = (values) => {
     console.log("Received values of form: ", values);
+  };
+
+  const handleSkinTypeChange = (value) => {
+    setShowCombinationInputs(value === "COMBINATION_SKIN");
   };
 
   return (
@@ -88,20 +92,32 @@ function Consultant() {
               <Col span={6}>
                 <Form.Item
                   name="age"
-                  label="Your age"
+                  label="Your Age"
                   rules={[
                     { required: true, message: "Please enter your age" },
                     {
                       type: "number",
                       min: 10,
-                      message: "Age must be greater than 10",
+                      max: 120,
+                      message: "Age must be between 10 and 120",
                     },
                   ]}
                 >
-                  <InputNumber
+                  <Select
+                    showSearch
+                    placeholder="Select or Enter Your Age"
                     className="w-full rounded-md h-12"
-                    placeholder="Enter your age here"
-                  />
+                    optionFilterProp="children"
+                    allowClear
+                  >
+                    {Array.from({ length: 111 }, (_, i) => i + 10).map(
+                      (age) => (
+                        <Select.Option key={age} value={age}>
+                          {age}
+                        </Select.Option>
+                      )
+                    )}
+                  </Select>
                 </Form.Item>
               </Col>
             </Row>
@@ -125,15 +141,16 @@ function Consultant() {
                 className="rounded-md"
               />
             </Form.Item>
-            
+
             <Form.Item
               name="type_skin"
               label="Your Skin Type"
               rules={[{ required: true, message: "Please select a category" }]}
             >
               <Select
-                placeholder="Select a Your Skin Type"
+                placeholder="Select Your Skin Type"
                 className="w-full rounded-md h-12"
+                onChange={handleSkinTypeChange}
               >
                 <Select.Option value="NORMAL_SKIN">Normal</Select.Option>
                 <Select.Option value="OILY_SKIN">Oily</Select.Option>
@@ -145,6 +162,86 @@ function Consultant() {
               </Select>
             </Form.Item>
 
+            {showCombinationInputs && (
+              <Row gutter={16}>
+                <Col span={6}>
+                  <Form.Item label="Oily" name="oily_percentage">
+                    <Select
+                      showSearch
+                      placeholder="Enter Your Percentage"
+                      className="w-full rounded-md h-12"
+                      optionFilterProp="children"
+                      allowClear
+                    >
+                      {Array.from({ length: 101 }, (_, i) => i).map((age) => (
+                        <Select.Option key={age} value={age}>
+                          {age}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item label="Dry" name="dry_percentage">
+                    <Select
+                      showSearch
+                      placeholder="Enter Your Percentage"
+                      className="w-full rounded-md h-12"
+                      optionFilterProp="children"
+                      allowClear
+                    >
+                      {Array.from({ length: 101 }, (_, i) => i).map((age) => (
+                        <Select.Option key={age} value={age}>
+                          {age}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item label="Sensitive" name="sensitive_percentage">
+                    <Select
+                      showSearch
+                      placeholder="Enter Your Percentage"
+                      className="w-full rounded-md h-12"
+                      optionFilterProp="children"
+                      allowClear
+                    >
+                      {Array.from({ length: 101 }, (_, i) => i).map((age) => (
+                        <Select.Option key={age} value={age}>
+                          {age}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item label="Normal" name="normal_percentage">
+                    <Select
+                      showSearch
+                      placeholder="Enter Your Percentage"
+                      className="w-full rounded-md h-12"
+                      optionFilterProp="children"
+                      allowClear
+                    >
+                      {Array.from({ length: 101 }, (_, i) => i).map((age) => (
+                        <Select.Option key={age} value={age}>
+                          {age}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+            )}
+
+            <Button
+              type="link"
+              onClick={() => (window.location.href = "/skinquiz")}
+              className="text-blue-600 hover:text-blue-800"
+            >
+              Not sure about your skin type? Take the Skin Quiz!
+            </Button>
             <Form.Item
               name="thumbnail"
               label="Your Image"
@@ -180,7 +277,6 @@ function Consultant() {
                 />
               )}
             </Form.Item>
-
             <Form.Item className="mt-6">
               <Button
                 type="primary"
