@@ -11,31 +11,44 @@ import {
 } from "antd";
 import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { addProduct } from "../../../service/productManagement";
+import { addProduct } from "../../../service/productManagement/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getAllCategories } from "../../../service/category";
+import { getAllCategories } from "../../../service/category/index";
+import { getAllBrandsUser } from "../../../service/brand/index";
 
 const AddNewProduct = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      const response = await getAllCategories();
-      if (!response.error) {
+    const fetchData = async () => {
+      const categoryResponse = await getAllCategories();
+      if (!categoryResponse.error) {
         const activeCategories =
-          response.result?.categoryResponses.filter(
+          categoryResponse.result?.categoryResponses.filter(
             (category) => category.status === "ACTIVE"
           ) || [];
         setCategories(activeCategories);
       } else {
         toast.error("Failed to fetch categories");
       }
+
+      const brandResponse = await getAllBrandsUser();
+      if (!brandResponse.error) {
+        const activeBrands =
+          brandResponse.result?.brandResponses.filter(
+            (brand) => brand.status === "ACTIVE"
+          ) || [];
+        setBrands(activeBrands);
+      } else {
+        toast.error("Failed to fetch brands");
+      }
     };
-    fetchCategories();
+    fetchData();
   }, []);
 
   const normFile = (e) => {
@@ -51,13 +64,13 @@ const AddNewProduct = () => {
       values.price &&
       values.description &&
       values.thumbnail?.length > 0 &&
-      values.categoryId
+      values.categoryId &&
+      values.brandId
     ) {
       try {
         setLoading(true);
         const formData = new FormData();
 
-        // Get file from upload component
         const file = values.thumbnail[0].originFileObj;
 
         if (!file) {
@@ -71,7 +84,8 @@ const AddNewProduct = () => {
             name: values.name,
             price: values.price,
             description: values.description,
-            categoryId: values.categoryId,
+            category_id: values.categoryId,
+            brand_id: values.brandId,
           })
         );
         formData.append("thumbnail", file);
@@ -198,6 +212,21 @@ const AddNewProduct = () => {
               options={categories.map((category) => ({
                 value: category.id,
                 label: category.name,
+              }))}
+              className="w-full rounded-md h-12"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="brandId"
+            label="Brand"
+            rules={[{ required: true, message: "Please select a brand" }]}
+          >
+            <Select
+              placeholder="Select a brand"
+              options={brands.map((brand) => ({
+                value: brand.id,
+                label: brand.name,
               }))}
               className="w-full rounded-md h-12"
             />

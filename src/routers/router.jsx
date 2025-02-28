@@ -29,6 +29,9 @@ import AddNewBlog from "../page/Admin/Blog/AddNewBlog";
 import EditBlog from "../page/Admin/Blog/EditBlog";
 import Payment from "../page/PaymentPage/Payment";
 import { ProtectedUserRoute } from "./ProtectedUserRoute";
+import ProductDetail from "../page/ProductPage/ProductDetail";
+import ProfilePage from "../page/Profile/ProfilePage";
+import Consultant from "../page/ConsultantPage/Consultant";
 
 export const router = createBrowserRouter([
   {
@@ -76,12 +79,28 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: "/profile",
+        element: (
+          <ProtectedUserRoute>
+            <ProfilePage />
+          </ProtectedUserRoute>
+        ),
+      },
+      {
         path: "/shop",
         element: <ShopPage />,
       },
       {
-        path: "/shop/:slug",
+        path: "/shop/category/:slug",
         element: <ShopPage />,
+      },
+      {
+        path: "/shop/brand/:slug",
+        element: <ShopPage />,
+      },
+      {
+        path: "/product/:slug",
+        element: <ProductDetail />,
       },
       {
         path: "/helps",
@@ -94,6 +113,10 @@ export const router = createBrowserRouter([
             <Cart />
           </ProtectedUserRoute>
         ),
+      },
+      {
+        path: "/skin-consultation",
+        element: <Consultant />,
       },
     ],
   },
