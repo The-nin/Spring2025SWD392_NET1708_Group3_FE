@@ -39,6 +39,11 @@ const Sidebar = ({ collapsed, handleLogout }) => {
       icon: <AppstoreOutlined />,
       label: "Blog Management",
     },
+    {
+      key: "/admin/quiz",
+      icon: <AppstoreOutlined />,
+      label: "Quiz Management",
+    },
   ];
 
   return (

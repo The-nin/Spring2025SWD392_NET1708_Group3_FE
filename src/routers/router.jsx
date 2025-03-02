@@ -28,6 +28,8 @@ import EditBrand from "../page/Admin/Brand/EditBrand";
 import BlogManagement from "../page/Admin/Blog/BlogManagement";
 import AddNewBlog from "../page/Admin/Blog/AddNewBlog";
 import EditBlog from "../page/Admin/Blog/EditBlog";
+import QuizManagement from "../page/Admin/Quiz/QuizManagement";
+import AddNewQuiz from "../page/Admin/Quiz/AddNewquiz";
 import Payment from "../page/PaymentPage/Payment";
 import { ProtectedUserRoute } from "./ProtectedUserRoute";
 import ProductDetail from "../page/ProductPage/ProductDetail";
@@ -205,6 +207,14 @@ export const router = createBrowserRouter([
           {
             path: "blog/edit/:id",
             element: <EditBlog />,
+          },
+          {
+            path: "quiz",
+            element: <QuizManagement />,
+          },
+          {
+            path: "quiz/add",
+            element: <AddNewQuiz />,
           },
         ],
       },
