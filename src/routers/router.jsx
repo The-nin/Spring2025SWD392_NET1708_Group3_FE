@@ -35,6 +35,7 @@ import ProfilePage from "../page/Profile/ProfilePage";
 import Consultant from "../page/ConsultantPage/Consultant";
 import OrderManagement from "../page/Admin/OrderManagement/OrderManagement";
 import OrderDetail from "../page/Admin/OrderManagement/OrderDetail";
+import UserManagement from "../page/Admin/UserManagement/UserManagement";
 
 export const router = createBrowserRouter([
   {
@@ -145,6 +146,10 @@ export const router = createBrowserRouter([
           {
             path: "",
             element: <Dashboard />,
+          },
+          {
+            path: "user",
+            element: <UserManagement />,
           },
           {
             path: "category",
