@@ -39,6 +39,11 @@ const Sidebar = ({ collapsed, handleLogout }) => {
       icon: <AppstoreOutlined />,
       label: "Blog Management",
     },
+    {
+      key: "/admin/order",
+      icon: <AppstoreOutlined />,
+      label: "Order Management",
+    },
   ];
 
   return (
