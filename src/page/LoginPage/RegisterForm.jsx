@@ -6,6 +6,7 @@ import NotificationModal from "../../components/Notification/NotificationModal";
 const RegisterForm = ({ onBackToLogin }) => {
   const [registerData, setRegisterData] = useState({
     username: "",
+    email: "",
     password: "",
     confirmPassword: "",
     dateOfBirth: "",
@@ -24,6 +25,7 @@ const RegisterForm = ({ onBackToLogin }) => {
 
   const isFormValid =
     registerData.username &&
+    registerData.email &&
     registerData.password &&
     registerData.confirmPassword &&
     registerData.dateOfBirth &&
@@ -42,6 +44,7 @@ const RegisterForm = ({ onBackToLogin }) => {
     try {
       const requestData = {
         username: registerData.username,
+        email: registerData.email,
         password: registerData.password,
         birthday: registerData.dateOfBirth,
         gender: registerData.gender.toUpperCase(),
@@ -57,6 +60,7 @@ const RegisterForm = ({ onBackToLogin }) => {
         });
         setRegisterData({
           username: "",
+          email: "",
           password: "",
           confirmPassword: "",
           dateOfBirth: "",
@@ -112,6 +116,19 @@ const RegisterForm = ({ onBackToLogin }) => {
             value={registerData.username}
             onChange={(e) =>
               setRegisterData({ ...registerData, username: e.target.value })
+            }
+          />
+        </div>
+
+        <div>
+          <input
+            type="email"
+            placeholder="Email Address"
+            className="w-full p-3 border-b border-gray-300 bg-transparent text-gray-800 focus:outline-none focus:border-gray-900 placeholder-gray-500"
+            required
+            value={registerData.email}
+            onChange={(e) =>
+              setRegisterData({ ...registerData, email: e.target.value })
             }
           />
         </div>
