@@ -217,6 +217,15 @@ const Header = () => {
                   <span className="absolute bottom-0 left-0 w-full h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
                 </Link>
               </div>
+              <div className="relative group">
+                <Link
+                  to="/skinquiz"
+                  className="relative px-6 py-5 hover:text-black h-16 hover:bg-gray-100 transition-colors duration-200 block"
+                >
+                  Skin&apos;s Quiz
+                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
+                </Link>
+              </div>
             </nav>
 
             {/* Center Section: Logo */}
@@ -307,6 +316,13 @@ const Header = () => {
                           onClick={handleProfileClick}
                         >
                           Profile
+                        </Link>
+                        <Link
+                          to="/sonsultant-history"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={handleProfileClick}
+                        >
+                          Consultant History
                         </Link>
                         <button
                           onClick={handleLogout}

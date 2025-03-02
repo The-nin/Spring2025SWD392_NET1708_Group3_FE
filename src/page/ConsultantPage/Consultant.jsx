@@ -2,6 +2,7 @@ import {
   Button,
   Card,
   Col,
+  DatePicker,
   Form,
   Image,
   Input,
@@ -24,6 +25,10 @@ function Consultant() {
       return e;
     }
     return e?.fileList;
+  };
+
+  const onChange = (date, dateString) => {
+    console.log(date, dateString);
   };
 
   const getBase64 = (file) =>
@@ -65,49 +70,132 @@ function Consultant() {
             className="space-y-6"
           >
             <Row>
-              <Col span={18}>
+              <Col span={8}>
                 <Form.Item
-                  name="name"
-                  label="Your Fullname"
+                  name="firstName"
+                  label="First Name"
                   rules={[
-                    { required: true, message: "Please enter your name here" },
+                    {
+                      required: true,
+                      message: "Please enter your first name here",
+                    },
                     {
                       min: 2,
-                      message: "Your name must be at least 1 character",
+                      message: "Your name must be at least 2 character",
                     },
                   ]}
                   className="mr-4"
                 >
                   <Input
-                    placeholder="Enter your fullname"
+                    placeholder="Enter your first name"
                     className="rounded-md h-12"
                   />
                 </Form.Item>
               </Col>
 
-              <Col span={6}>
+              <Col span={8}>
+                <Form.Item
+                  name="lasttName"
+                  label="Last Name"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter your last name here",
+                    },
+                    {
+                      min: 2,
+                      message: "Your name must be at least 2 character",
+                    },
+                  ]}
+                  className="mr-4"
+                >
+                  <Input
+                    placeholder="Enter your last name"
+                    className="rounded-md h-12"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={8}>
                 <Form.Item
                   name="age"
-                  label="Your age"
+                  label="Your Age"
                   rules={[
                     { required: true, message: "Please enter your age" },
                     {
                       type: "number",
                       min: 10,
-                      message: "Age must be greater than 10",
+                      max: 120,
+                      message: "Age must be between 10 and 120",
                     },
                   ]}
                 >
-                  <InputNumber
+                  <Select
+                    showSearch // Allows users to type their age manually
+                    placeholder="Select or Enter Your Age"
                     className="w-full rounded-md h-12"
-                    placeholder="Enter your age here"
+                    optionFilterProp="children"
+                    allowClear // Allows clearing selection
+                  >
+                    {Array.from({ length: 111 }, (_, i) => i + 10).map(
+                      (age) => (
+                        <Select.Option key={age} value={age}>
+                          {age}
+                        </Select.Option>
+                      )
+                    )}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col span={12}>
+                <Form.Item
+                  name="expert"
+                  label="Choose Expert"
+                  rules={[
+                    { required: true, message: "Please select an expert" },
+                  ]}
+                >
+                  <Select
+                    className="w-full rounded-md h-12"
+                    placeholder="Select an expert"
+                  >
+                    <Select.Option value="NONE">None</Select.Option>
+                    <Select.Option value="NORMAL_SKIN">
+                      Nguyen van A
+                    </Select.Option>
+                    <Select.Option value="OILY_SKIN">Thi B</Select.Option>
+                    <Select.Option value="SENSITIVE_SKIN">
+                      Hoang van C
+                    </Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              <Col span={11} className="ml-10">
+                <Form.Item
+                  name="date"
+                  label="Date"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter your first name here",
+                    },
+                  ]}
+                >
+                  <DatePicker
+                    onChange={onChange}
+                    needConfirm showTime
+                    className="w-full rounded-md h-12"
                   />
                 </Form.Item>
               </Col>
             </Row>
 
             <Form.Item
-              name="description"
+              name="skinConditaion"
               label="Description"
               rules={[
                 { required: true, message: "Please enter description" },
@@ -125,29 +213,46 @@ function Consultant() {
                 className="rounded-md"
               />
             </Form.Item>
-            
-            <Form.Item
-              name="type_skin"
-              label="Your Skin Type"
-              rules={[{ required: true, message: "Please select a category" }]}
-            >
-              <Select
-                placeholder="Select a Your Skin Type"
-                className="w-full rounded-md h-12"
-              >
-                <Select.Option value="NORMAL_SKIN">Normal</Select.Option>
-                <Select.Option value="OILY_SKIN">Oily</Select.Option>
-                <Select.Option value="SENSITIVE_SKIN">Sensitive</Select.Option>
-                <Select.Option value="DRY_SKIN">Dry</Select.Option>
-                <Select.Option value="COMBINATION_SKIN">
-                  Combination
-                </Select.Option>
-              </Select>
-            </Form.Item>
+
+            <Row>
+              <Col span={12}>
+                <Form.Item
+                  name="type_skin"
+                  label="Your Skin Type"
+                  rules={[
+                    { required: true, message: "Please select a category" },
+                  ]}
+                >
+                  <Select
+                    placeholder="Select a Your Skin Type"
+                    className="w-full rounded-md h-12"
+                  >
+                    <Select.Option value="NORMAL_SKIN">Normal</Select.Option>
+                    <Select.Option value="OILY_SKIN">Oily</Select.Option>
+                    <Select.Option value="SENSITIVE_SKIN">
+                      Sensitive
+                    </Select.Option>
+                    <Select.Option value="DRY_SKIN">Dry</Select.Option>
+                    <Select.Option value="COMBINATION_SKIN">
+                      Combination
+                    </Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              <Col span={11} className="ml-10">
+                <Form.Item name="allergy" label="Allergy">
+                  <InputNumber
+                    className="w-full rounded-md h-12"
+                    placeholder="Enter input allergy (if have)"
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
             <Form.Item
               name="thumbnail"
-              label="Your Image"
+              label="Your Image (Face skin, product)"
               valuePropName="fileList"
               getValueFromEvent={normFile}
               rules={[{ required: true, message: "Please upload an image" }]}

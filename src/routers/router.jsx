@@ -9,6 +9,7 @@ import Blog2 from "../page/BlogPage/Blog2";
 import Blog3 from "../page/BlogPage/Blog3";
 import ShopPage from "../page/ShopPage/ShopPage";
 import HelpPage from "../page/HelpPage/HelpPage";
+import SkinQuiz from "../page/SkinQuiz/SkinQuiz";
 import { ProtectedAdminRoute } from "./ProtectedAdminRoute";
 import MainPage from "../page/Admin/MainPage/MainPage";
 import LoginAdmin from "../page/Admin/LoginAdmin/LoginAdmin";
@@ -70,6 +71,10 @@ export const router = createBrowserRouter([
       {
         path: "/blog3",
         element: <Blog3 />,
+      },
+      {
+        path: "/skinquiz",
+        element: <SkinQuiz />,
       },
       {
         path: "/payment",
