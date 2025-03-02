@@ -33,6 +33,9 @@ import { ProtectedUserRoute } from "./ProtectedUserRoute";
 import ProductDetail from "../page/ProductPage/ProductDetail";
 import ProfilePage from "../page/Profile/ProfilePage";
 import Consultant from "../page/ConsultantPage/Consultant";
+import OrderManagement from "../page/Admin/OrderManagement/OrderManagement";
+import OrderDetail from "../page/Admin/OrderManagement/OrderDetail";
+import UserManagement from "../page/Admin/UserManagement/UserManagement";
 
 export const router = createBrowserRouter([
   {
@@ -145,6 +148,10 @@ export const router = createBrowserRouter([
             element: <Dashboard />,
           },
           {
+            path: "user",
+            element: <UserManagement />,
+          },
+          {
             path: "category",
             children: [
               {
@@ -161,10 +168,14 @@ export const router = createBrowserRouter([
               },
             ],
           },
-          // {
-          //   path: "order",
-          //   element: <OrderManagement />,
-          // },
+          {
+            path: "order",
+            element: <OrderManagement />,
+          },
+          {
+            path: "orders/:id",
+            element: <OrderDetail />,
+          },
           {
             path: "product",
             children: [
