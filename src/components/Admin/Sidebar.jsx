@@ -5,6 +5,10 @@ import {
   DashboardOutlined,
   ShoppingOutlined,
   AppstoreOutlined,
+  UserOutlined,
+  CopyrightOutlined,
+  FileOutlined,
+  OrderedListOutlined,
 } from "@ant-design/icons";
 
 const { Sider } = Layout;
@@ -20,6 +24,11 @@ const Sidebar = ({ collapsed, handleLogout }) => {
       label: "Dashboard",
     },
     {
+      key: "/admin/user",
+      icon: <UserOutlined />,
+      label: "User Management",
+    },
+    {
       key: "/admin/product",
       icon: <ShoppingOutlined />,
       label: "Product Management",
@@ -31,13 +40,18 @@ const Sidebar = ({ collapsed, handleLogout }) => {
     },
     {
       key: "/admin/brand",
-      icon: <AppstoreOutlined />,
+      icon: <CopyrightOutlined />,
       label: "Brand Management",
     },
     {
       key: "/admin/blog",
-      icon: <AppstoreOutlined />,
+      icon: <FileOutlined />,
       label: "Blog Management",
+    },
+    {
+      key: "/admin/order",
+      icon: <OrderedListOutlined />,
+      label: "Order Management",
     },
   ];
 

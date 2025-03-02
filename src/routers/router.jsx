@@ -9,6 +9,7 @@ import Blog2 from "../page/BlogPage/Blog2";
 import Blog3 from "../page/BlogPage/Blog3";
 import ShopPage from "../page/ShopPage/ShopPage";
 import HelpPage from "../page/HelpPage/HelpPage";
+import SkinQuiz from "../page/SkinQuiz/SkinQuiz";
 import { ProtectedAdminRoute } from "./ProtectedAdminRoute";
 import MainPage from "../page/Admin/MainPage/MainPage";
 import LoginAdmin from "../page/Admin/LoginAdmin/LoginAdmin";
@@ -32,6 +33,9 @@ import { ProtectedUserRoute } from "./ProtectedUserRoute";
 import ProductDetail from "../page/ProductPage/ProductDetail";
 import ProfilePage from "../page/Profile/ProfilePage";
 import Consultant from "../page/ConsultantPage/Consultant";
+import OrderManagement from "../page/Admin/OrderManagement/OrderManagement";
+import OrderDetail from "../page/Admin/OrderManagement/OrderDetail";
+import UserManagement from "../page/Admin/UserManagement/UserManagement";
 
 export const router = createBrowserRouter([
   {
@@ -69,6 +73,10 @@ export const router = createBrowserRouter([
       {
         path: "/blog3",
         element: <Blog3 />,
+      },
+      {
+        path: "/skinquiz",
+        element: <SkinQuiz />,
       },
       {
         path: "/payment",
@@ -140,6 +148,10 @@ export const router = createBrowserRouter([
             element: <Dashboard />,
           },
           {
+            path: "user",
+            element: <UserManagement />,
+          },
+          {
             path: "category",
             children: [
               {
@@ -156,10 +168,14 @@ export const router = createBrowserRouter([
               },
             ],
           },
-          // {
-          //   path: "order",
-          //   element: <OrderManagement />,
-          // },
+          {
+            path: "order",
+            element: <OrderManagement />,
+          },
+          {
+            path: "orders/:id",
+            element: <OrderDetail />,
+          },
           {
             path: "product",
             children: [
