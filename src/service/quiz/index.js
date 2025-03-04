@@ -8,28 +8,26 @@ const handleError = (error, defaultMessage) => {
   };
 };
 
-// ✅ Fetch all blogs (Admin Access Required)
-export const getAllBlogs = async () => {
+export const getAllQuizs = async () => {
   const token = localStorage.getItem("token");
   try {
-    const response = await instance.get("/admin/blog", {
+    const response = await instance.get("/quizs/all", {
       headers: {
         authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
-    console.log(response);
     return response;
   } catch (error) {
-    return handleError(error, "Failed to fetch blogs");
+    return handleError(error, "Failed to fetch quizzes");
   }
 };
 
-// ✅ Fetch blog details by ID (Admin Access Required)
-export const getBlogById = async (id) => {
+// ✅ Fetch quiz details by ID (Admin Access Required)
+export const getQuizById = async (quizId) => {
   const token = localStorage.getItem("token");
   try {
-    const response = await instance.get(`/admin/blog/${id}`, {
+    const response = await instance.get(`/quizs/${quizId}`, {
       headers: {
         authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -41,18 +39,18 @@ export const getBlogById = async (id) => {
       message: response.data?.message,
     };
   } catch (error) {
-    return handleError(error, "Failed to fetch blog details");
+    return handleError(error, "Failed to fetch quiz details");
   }
 };
 
-// ✅ Add a new blog (Admin Access Required) - No File Upload
-export const addBlog = async (blogData) => {
+// ✅ Submit a quiz (Admin Access Required)
+export const submitQuiz = async (quizId, quizData) => {
   const token = localStorage.getItem("token");
 
   try {
-    console.log("📤 Sending Blog Data:", JSON.stringify(blogData, null, 2)); // ✅ Logs the request body
+    console.log("📤 Submitting Quiz:", JSON.stringify(quizData, null, 2)); // ✅ Logs the request body
 
-    const response = await instance.post("/admin/blog", blogData, {
+    const response = await instance.post(`/quizs/submit/${quizId}`, quizData, {
       headers: {
         authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -68,15 +66,15 @@ export const addBlog = async (blogData) => {
     };
   } catch (error) {
     console.error("❌ Error Response:", error.response?.data || error.message);
-    return handleError(error, "Failed to add blog");
+    return handleError(error, "Failed to submit quiz");
   }
 };
 
-// ✅ Update an existing blog (Admin Access Required) - No File Upload
-export const updateBlog = async (id, blogData) => {
+// ✅ Update an existing quiz (Admin Access Required)
+export const updateQuiz = async (quizId, quizData) => {
   const token = localStorage.getItem("token");
   try {
-    const response = await instance.put(`/admin/blog/${id} `, blogData, {
+    const response = await instance.put(`/quizs/${quizId}`, quizData, {
       headers: {
         authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -89,15 +87,15 @@ export const updateBlog = async (id, blogData) => {
       message: response.data?.message,
     };
   } catch (error) {
-    return handleError(error, "Failed to update blog");
+    return handleError(error, "Failed to update quiz");
   }
 };
 
-// ✅ Delete a blog (Admin Access Required)
-export const deleteBlog = async (id) => {
+// ✅ Delete a quiz (Admin Access Required)
+export const deleteQuiz = async (quizId) => {
   const token = localStorage.getItem("token");
   try {
-    const response = await instance.delete(`/admin/blog/${id}`, {
+    const response = await instance.delete(`/quizs/${quizId}`, {
       headers: {
         authorization: `Bearer ${token}`,
       },
@@ -108,33 +106,29 @@ export const deleteBlog = async (id) => {
       message: response.data?.message,
     };
   } catch (error) {
-    return handleError(error, "Failed to delete blog");
+    return handleError(error, "Failed to delete quiz");
   }
 };
 
-// ✅ Update blog status (Admin Access Required)
-export const updateBlogStatus = async (blogId, status) => {
+// ✅ Update quiz status (Admin Access Required)
+export const updateQuizStatus = async (quizId, status) => {
+  const token = localStorage.getItem("token");
   try {
-    const token = localStorage.getItem("token");
     const response = await instance.patch(
-      `/admin/blog/${blogId}?status=${status}`, // Corrected API endpoint
-      { status }, // Send status in the request body
+      `/quizs/${quizId}/status`,
+      { status },
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          authorization: `Bearer ${token}`,
         },
       }
     );
     return {
       error: false,
-      result: response.data?.result, // Ensure correct response data
+      result: response.data?.result,
       message: response.data?.message,
     };
   } catch (error) {
-    console.error("Update blog status error:", error);
-    return {
-      error: true,
-      message: error.response?.data?.message || "Failed to update blog status",
-    };
+    return handleError(error, "Failed to update quiz status");
   }
 };

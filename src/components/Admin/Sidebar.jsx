@@ -5,15 +5,14 @@ import {
   DashboardOutlined,
   ShoppingOutlined,
   AppstoreOutlined,
-  UserOutlined,
-  CopyrightOutlined,
-  FileOutlined,
-  OrderedListOutlined,
+  ReadOutlined, // 📖 New icon for Blog Management
+  QuestionCircleOutlined, // ❓ New icon for Quiz Management
+  GiftOutlined, // 🎁 Icon for Vouchers
 } from "@ant-design/icons";
 
 const { Sider } = Layout;
 
-const Sidebar = ({ collapsed, handleLogout }) => {
+const Sidebar = ({ collapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -22,11 +21,6 @@ const Sidebar = ({ collapsed, handleLogout }) => {
       key: "/admin",
       icon: <DashboardOutlined />,
       label: "Dashboard",
-    },
-    {
-      key: "/admin/user",
-      icon: <UserOutlined />,
-      label: "User Management",
     },
     {
       key: "/admin/product",
@@ -40,18 +34,23 @@ const Sidebar = ({ collapsed, handleLogout }) => {
     },
     {
       key: "/admin/brand",
-      icon: <CopyrightOutlined />,
+      icon: <AppstoreOutlined />,
       label: "Brand Management",
     },
     {
       key: "/admin/blog",
-      icon: <FileOutlined />,
+      icon: <ReadOutlined />, // 📖 New Blog icon
       label: "Blog Management",
     },
     {
-      key: "/admin/order",
-      icon: <OrderedListOutlined />,
-      label: "Order Management",
+      key: "/admin/quiz",
+      icon: <QuestionCircleOutlined />, // ❓ New Quiz icon
+      label: "Quiz Management",
+    },
+    {
+      key: "/admin/voucher",
+      icon: <GiftOutlined />, // 🎁 Voucher icon
+      label: "Voucher Management",
     },
   ];
 
