@@ -1,206 +1,134 @@
 import { instance } from "../instance";
 
-// Public function - no token needed
-export const getAllQuizs = async (params) => {
+const handleError = (error, defaultMessage) => {
+  console.error(defaultMessage, error);
+  return {
+    error: true,
+    message: error?.response?.data?.message || defaultMessage,
+  };
+};
+
+export const getAllQuizs = async () => {
+  const token = localStorage.getItem("token");
   try {
-    const response = await instance.get("admin/quizs", { params });
-    return {
-      error: false,
-      result: response.result,
-      message: response.message,
-    };
+    const response = await instance.get("/quizs/all", {
+      headers: {
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response;
   } catch (error) {
-    console.error("Get quizs error:", error);
-    return {
-      error: true,
-      message: error.response?.data?.message || "Failed to fetch quiz",
-    };
+    return handleError(error, "Failed to fetch quizzes");
   }
 };
 
-// Admin functions - require token
-export const getQuizById = async (id) => {
+// ✅ Fetch quiz details by ID (Admin Access Required)
+export const getQuizById = async (quizId) => {
+  const token = localStorage.getItem("token");
   try {
-    const token = localStorage.getItem("token");
-    const response = await instance.get(`admin/quizs/${id}`, {
+    const response = await instance.get(`/quizs/${quizId}`, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
     return {
       error: false,
-      result: response.result,
-      message: response.message,
+      result: response.data?.result,
+      message: response.data?.message,
     };
   } catch (error) {
-    console.error("Get quiz error:", error);
-    return {
-      error: true,
-      message: error.response?.data?.message || "Failed to fetch quiz details",
-    };
+    return handleError(error, "Failed to fetch quiz details");
   }
 };
 
-export const addQuiz = async (formData) => {
+// ✅ Submit a quiz (Admin Access Required)
+export const submitQuiz = async (quizId, quizData) => {
+  const token = localStorage.getItem("token");
+
   try {
-    const token = localStorage.getItem("token");
+    console.log("📤 Submitting Quiz:", JSON.stringify(quizData, null, 2)); // ✅ Logs the request body
 
-    // Get the file and form data
-    const requestData = JSON.parse(formData.get("request"));
-    const file = formData.get("thumbnail");
-
-    // Upload to Cloudinary first
-    const imageUrl = await uploadToCloudinary(file);
-
-    // Create the final request data
-    const quizData = {
-      ...requestData,
-      thumbnail: imageUrl,
-    };
-
-    const response = await instance.post("admin/quizs", quizData, {
+    const response = await instance.post(`/quizs/submit/${quizId}`, quizData, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("✅ API Response:", response.data); // ✅ Logs the response if successful
+
+    return {
+      error: false,
+      result: response.data?.result,
+      message: response.data?.message,
+    };
+  } catch (error) {
+    console.error("❌ Error Response:", error.response?.data || error.message);
+    return handleError(error, "Failed to submit quiz");
+  }
+};
+
+// ✅ Update an existing quiz (Admin Access Required)
+export const updateQuiz = async (quizId, quizData) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await instance.put(`/quizs/${quizId}`, quizData, {
+      headers: {
+        authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
 
     return {
       error: false,
-      result: response.result,
-      message: response.message,
+      result: response.data?.result,
+      message: response.data?.message,
     };
   } catch (error) {
-    console.error("Add quiz error:", {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-    });
-    return {
-      error: true,
-      message: error.response?.data?.message || "Failed to add quiz",
-    };
+    return handleError(error, "Failed to update quiz");
   }
 };
 
-export const updateQuiz = async (id, formData) => {
+// ✅ Delete a quiz (Admin Access Required)
+export const deleteQuiz = async (quizId) => {
+  const token = localStorage.getItem("token");
   try {
-    const token = localStorage.getItem("token");
-
-    // Nếu formData là FormData (có file mới)
-    if (formData instanceof FormData) {
-      const requestData = JSON.parse(formData.get("request"));
-      const file = formData.get("thumbnail");
-
-      // Nếu có file mới, upload lên Cloudinary
-      let quizData = { ...requestData };
-      if (file) {
-        const imageUrl = await uploadToCloudinary(file);
-        quizData.thumbnail = imageUrl;
-      }
-
-      const response = await instance.put(`admin/quizs/${id}`, quizData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      return {
-        error: false,
-        result: response.result,
-        message: response.message,
-      };
-    } else {
-      // Xử lý trường hợp không có file mới
-      const response = await instance.put(`admin/quizs/${id}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return {
-        error: false,
-        result: response.result,
-        message: response.message,
-      };
-    }
-  } catch (error) {
-    console.error("Update quiz error:", error);
-    return {
-      error: true,
-      message: error.response?.data?.message || "Failed to update quiz",
-    };
-  }
-};
-
-export const deleteQuiz = async (id) => {
-  try {
-    const token = localStorage.getItem("token");
-    const response = await instance.delete(`admin/quizs/${id}`, {
+    const response = await instance.delete(`/quizs/${quizId}`, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        authorization: `Bearer ${token}`,
       },
     });
     return {
       error: false,
-      result: response.result,
-      message: response.message,
+      result: response.data?.result,
+      message: response.data?.message,
     };
   } catch (error) {
-    console.error("Delete quiz error:", error);
-    return {
-      error: true,
-      message: error.response?.data?.message || "Failed to delete quiz",
-    };
+    return handleError(error, "Failed to delete quiz");
   }
 };
 
-// Reuse the Cloudinary upload function
-const uploadToCloudinary = async (file) => {
-  try {
-    const CLOUDINARY_UPLOAD_PRESET = "phuocnt-cloudinary";
-    const CLOUDINARY_CLOUD_NAME = "dl5dphe0f";
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-    const data = await response.json();
-    return data.secure_url;
-  } catch (error) {
-    console.error("Cloudinary upload error:", error);
-    throw new Error("Failed to upload image to Cloudinary");
-  }
-};
-
+// ✅ Update quiz status (Admin Access Required)
 export const updateQuizStatus = async (quizId, status) => {
+  const token = localStorage.getItem("token");
   try {
-    const token = localStorage.getItem("token");
     const response = await instance.patch(
-      `admin/quizs/change-status/${quizId}?status=${status}`,
+      `/quizs/${quizId}/status`,
       { status },
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          authorization: `Bearer ${token}`,
         },
       }
     );
     return {
       error: false,
-      result: response.result,
-      message: response.message,
+      result: response.data?.result,
+      message: response.data?.message,
     };
   } catch (error) {
-    console.error("Update product status error:", error);
-    return {
-      error: true,
-      message: error.response?.message || "Failed to update product status",
-    };
+    return handleError(error, "Failed to update quiz status");
   }
 };

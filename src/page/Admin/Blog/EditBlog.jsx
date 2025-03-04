@@ -1,154 +1,128 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Card, Select, Spin, Upload } from "antd";
-import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
+import { Form, Input, Button, Card, DatePicker } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { getBlogById, updateBlog } from "../../../service/blog/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
+import dayjs from "dayjs";
+
+const modules = {
+  toolbar: [
+    [{ header: [1, 2, false] }],
+    ["bold", "italic", "underline", "strike"],
+    [{ align: [] }],
+    [{ list: "ordered" }, { list: "bullet" }],
+    [{ indent: "-1" }, { indent: "+1" }],
+    ["link", "image"],
+    ["clean"],
+  ],
+};
+
+const formats = [
+  "header",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "align",
+  "list",
+  "indent",
+  "link",
+  "image",
+];
+
+const disabledDate = (current) =>
+  current && current.isBefore(dayjs().startOf("day"));
 
 const EditBlog = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [imageUrl, setImageUrl] = useState("");
-  const [fileList, setFileList] = useState([]);
+  const [content, setContent] = useState("");
 
   useEffect(() => {
-    fetchBlogDetails();
-  }, [id]);
-
-  const fetchBlogDetails = async () => {
-    try {
-      const response = await getBlogById(id);
-      if (!response.error) {
-        form.setFieldsValue({
-          name: response.result.name,
-          description: response.result.description,
-          status: response.result.status,
-        });
-        setImageUrl(response.result.thumbnail);
-        setFileList([
-          {
-            uid: "-1",
-            name: "thumbnail.png",
-            status: "done",
-            url: response.result.thumbnail,
-          },
-        ]);
-      } else {
-        toast.error(response.message, {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        navigate("/admin/blog");
+    const fetchBlog = async () => {
+      try {
+        setLoading(true);
+        const response = await getBlogById(id);
+        if (response && response.result) {
+          const blog = response.result;
+          form.setFieldsValue({
+            blogTitle: blog.blogName,
+            blogIntroduction: blog.description,
+            imageUrl: blog.image,
+            publishDate: dayjs(blog.date),
+          });
+          setContent(blog.content);
+        } else {
+          toast.error("Failed to fetch blog details");
+        }
+      } catch (error) {
+        toast.error("Error loading blog details");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      toast.error("Failed to fetch blog details", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      navigate("/admin/blog");
-    } finally {
-      setInitialLoading(false);
-    }
-  };
+    };
+    fetchBlog();
+  }, [id, form]);
 
   const onFinish = async (values) => {
+    if (
+      !values.blogTitle ||
+      !values.blogIntroduction ||
+      !values.imageUrl?.trim() ||
+      !content.trim()
+    ) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
     try {
       setLoading(true);
-      const formData = new FormData();
-
-      const requestData = {
-        name: values.name,
-        description: values.description,
-        status: values.status,
+      const blogData = {
+        blogName: values.blogTitle,
+        image: values.imageUrl,
+        description: values.blogIntroduction,
+        status: "INACTIVE",
+        date: values.publishDate.toISOString(),
+        content: content,
       };
 
-      formData.append("request", JSON.stringify(requestData));
-
-      if (fileList[0]?.originFileObj) {
-        formData.append("thumbnail", fileList[0].originFileObj);
+      const response = await updateBlog(id, blogData);
+      if (response && response.result) {
+        toast.success("Blog updated successfully!");
+        setTimeout(() => navigate("/admin/blog"), 2000);
       } else {
-        requestData.thumbnail = imageUrl;
-      }
-
-      const response = await updateBlog(id, formData);
-
-      if (!response.error) {
-        navigate("/admin/blog");
-        toast.success("Blog updated successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-      } else {
-        toast.error(response.message, {
-          position: "top-right",
-          autoClose: 3000,
-        });
+        toast.error(response?.message || "Error updating blog");
       }
     } catch (error) {
-      toast.error("Failed to update blog", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      toast.error("Failed to update blog");
     } finally {
       setLoading(false);
     }
   };
 
-  const uploadProps = {
-    beforeUpload: (file) => {
-      const isImage = file.type.startsWith("image/");
-      if (!isImage) {
-        toast.error("You can only upload image files!");
-        return false;
-      }
-      return false;
-    },
-    onChange: ({ fileList: newFileList }) => {
-      setFileList(newFileList);
-    },
-    fileList,
-    maxCount: 1,
-  };
-
-  if (initialLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Spin size="large" />
-      </div>
-    );
-  }
-
   return (
-    <>
+    <div className="h-[calc(100vh-64px)] bg-gray-50">
       <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
       />
       <div className="p-6">
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate("/admin/blog")}
-          className="mb-4"
+          className="mb-4 hover:bg-gray-100"
         >
           Back to Blogs
         </Button>
 
-        <Card title="Edit Blog" className="max-w-3xl">
+        <Card title="Edit Blog" className="max-w-6xl mx-auto shadow-md">
           <Form
             form={form}
             layout="vertical"
@@ -156,53 +130,63 @@ const EditBlog = () => {
             autoComplete="off"
           >
             <Form.Item
-              name="name"
-              label="Blog Name"
+              name="blogTitle"
+              label="Blog Title"
               rules={[
-                { required: true, message: "Please enter blog name" },
-                { min: 3, message: "Name must be at least 3 characters" },
+                { required: true, message: "Please enter blog title" },
+                { min: 3, message: "Title must be at least 3 characters" },
               ]}
             >
-              <Input placeholder="Enter blog name" />
+              <Input placeholder="Enter blog title" />
             </Form.Item>
 
             <Form.Item
-              name="description"
-              label="Description"
+              name="blogIntroduction"
+              label="Blog Introduction"
               rules={[
-                { required: true, message: "Please enter description" },
+                { required: true, message: "Please enter blog introduction" },
                 {
-                  min: 10,
-                  message: "Description must be at least 10 characters",
+                  min: 50,
+                  message: "Introduction must be at least 50 characters",
                 },
               ]}
             >
-              <Input.TextArea
-                rows={4}
-                placeholder="Enter blog description"
-                maxLength={500}
-                showCount
+              <Input.TextArea rows={3} placeholder="Enter blog introduction" />
+            </Form.Item>
+
+            <Form.Item
+              name="imageUrl"
+              label="Thumbnail Image URL"
+              rules={[
+                { required: true, message: "Please enter an image URL" },
+                { type: "url", message: "Please enter a valid URL" },
+              ]}
+            >
+              <Input placeholder="Enter image URL (e.g., https://example.com/image.jpg)" />
+            </Form.Item>
+
+            <Form.Item label="Blog Content" name="content">
+              <ReactQuill
+                theme="snow"
+                value={content}
+                onChange={setContent}
+                modules={modules}
+                formats={formats}
               />
             </Form.Item>
 
             <Form.Item
-              name="status"
-              label="Status"
-              rules={[{ required: true, message: "Please select status" }]}
+              name="publishDate"
+              label="Publish Date"
+              rules={[
+                { required: true, message: "Please select a publish date" },
+              ]}
             >
-              <Select>
-                <Select.Option value="ACTIVE">Active</Select.Option>
-                <Select.Option value="INACTIVE">Inactive</Select.Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              label="Thumbnail"
-              rules={[{ required: true, message: "Please upload a thumbnail" }]}
-            >
-              <Upload listType="picture" {...uploadProps}>
-                <Button icon={<UploadOutlined />}>Upload Thumbnail</Button>
-              </Upload>
+              <DatePicker
+                disabledDate={disabledDate}
+                format="YYYY-MM-DD"
+                className="w-full"
+              />
             </Form.Item>
 
             <Form.Item>
@@ -213,7 +197,7 @@ const EditBlog = () => {
           </Form>
         </Card>
       </div>
-    </>
+    </div>
   );
 };
 

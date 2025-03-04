@@ -1,61 +1,81 @@
 import { useState, useEffect } from "react";
-import { Button, Form, Input, Select, Alert } from "antd";
-import { useNavigate } from "react-router-dom"; //Import useNavigate
+import { useParams, useNavigate } from "react-router-dom";
+import { Button, Form, Input, Select, Alert, Spin } from "antd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
-function QuizAdmin() {
-  const [form] = Form.useForm();
-  const [quizData, setQuizData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); //Initialize useNavigate
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import { getQuizById, updateQuiz } from "../../../service/quiz/index"; // Import API calls
 
-  const defaultQuiz = {
-    question: "What is your skin type?",
-    options: ["Normal", "Oily", "Sensitive", "Dry"],
-    skinTypes: ["NORMAL_SKIN", "OILY_SKIN", "SENSITIVE_SKIN", "DRY_SKIN"],
-  };
+function EditQuiz() {
+  const { quizId } = useParams(); // Get quiz ID from URL
+  const navigate = useNavigate(); // Initialize navigation
+
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [quizData, setQuizData] = useState(null);
 
   useEffect(() => {
-    setQuizData([defaultQuiz]);
-    form.setFieldsValue({ quiz: [defaultQuiz] });
-  }, [form]);
+    const fetchQuizDetails = async () => {
+      setLoading(true);
+      const response = await getQuizById(quizId);
+
+      if (!response.error) {
+        setQuizData(response.result);
+        form.setFieldsValue({ quiz: [response.result] });
+      } else {
+        toast.error("Failed to load quiz details");
+        navigate("/admin/quiz"); // Redirect if error
+      }
+      setLoading(false);
+    };
+
+    fetchQuizDetails();
+  }, [quizId, form, navigate]);
 
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
-      console.log("📤 Submitted Quiz Data:", values.quiz);
+      console.log("📤 Updating Quiz Data:", values.quiz);
 
-      // Simulate API request
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await updateQuiz(quizId, values.quiz[0]);
 
-      setLoading(false);
-      toast.success("Quiz added successfully!");
+      if (!response.error) {
+        toast.success("Quiz updated successfully!");
+        navigate("/admin/quiz"); // Redirect after update
+      } else {
+        toast.error(response.message || "Failed to update quiz");
+      }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Failed to save the quiz");
+      toast.error("Failed to update quiz");
+    } finally {
       setLoading(false);
     }
   };
+
+  if (loading || !quizData) {
+    return (
+      <Spin
+        size="large"
+        className="flex justify-center items-center h-screen"
+      />
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-4">
       <Button
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate("/admin/quiz")}
-        className="mb-4 hover:bg-gray-100"
+        className="mb-4"
       >
         Back to Quizzes
       </Button>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Add New Quiz</h2>
-        {/* Back Button */}
-      </div>
+      <h2 className="text-2xl font-bold mb-4">Edit Quiz</h2>
 
-      {/* Notice Message */}
       <Alert
-        message="Quiz Creation Guidelines"
-        description="Make sure to provide a clear question with at least two options. Each option must be linked to a specific skin type."
+        message="Edit Quiz Information"
+        description="Modify the question and options as needed. Ensure each option is linked to a skin type."
         type="info"
         showIcon
         className="mb-4"
@@ -77,7 +97,7 @@ function QuizAdmin() {
           <Input placeholder="Enter quiz question" />
         </Form.Item>
 
-        {quizData[0]?.options.map((_, index) => (
+        {quizData.options.map((_, index) => (
           <Form.Item key={index} label={`Option ${index + 1}`}>
             <Input.Group compact>
               <Form.Item
@@ -110,7 +130,7 @@ function QuizAdmin() {
 
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading}>
-            Add Quiz
+            Update Quiz
           </Button>
         </Form.Item>
       </Form>
@@ -118,4 +138,4 @@ function QuizAdmin() {
   );
 }
 
-export default QuizAdmin;
+export default EditQuiz;

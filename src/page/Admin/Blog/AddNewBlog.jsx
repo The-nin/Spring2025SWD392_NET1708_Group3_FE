@@ -1,19 +1,20 @@
-import React, { useState } from "react";
-import { Form, Input, Button, Card, message, Upload, DatePicker } from "antd";
-import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
+import React, { useState, useEffect } from "react";
+import { Form, Input, Button, Card, DatePicker } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { addBlog } from "../../../service/blog/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import dayjs from "dayjs";
 
+// Quill Editor Config
 const modules = {
   toolbar: [
     [{ header: [1, 2, false] }],
     ["bold", "italic", "underline", "strike"],
-    [{ align: [] }], // Add alignment options
+    [{ align: [] }],
     [{ list: "ordered" }, { list: "bullet" }],
     [{ indent: "-1" }, { indent: "+1" }],
     ["link", "image"],
@@ -34,10 +35,9 @@ const formats = [
   "image",
 ];
 
-// Function to disable past dates
-const disabledDate = (current) => {
-  return current && current.isBefore(dayjs().startOf("day"));
-};
+// Disable past dates
+const disabledDate = (current) =>
+  current && current.isBefore(dayjs().startOf("day"));
 
 const AddNewBlog = () => {
   const navigate = useNavigate();
@@ -45,60 +45,49 @@ const AddNewBlog = () => {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState("");
 
+  // Ensure form content is updated with Quill value
+  useEffect(() => {
+    form.setFieldsValue({ content });
+  }, [content, form]);
+
+  // Handle Form Submission
   const onFinish = async (values) => {
     if (
-      values.blogTitle &&
-      values.blogIntroduction &&
-      values.thumbnail?.length > 0 &&
-      content &&
-      values.publishDate
+      !values.blogTitle ||
+      !values.blogIntroduction ||
+      !values.imageUrl?.trim() ||
+      !content.trim()
     ) {
-      try {
-        setLoading(true);
-        const formData = new FormData();
-
-        const file = values.thumbnail[0].originFileObj;
-
-        if (!file) {
-          toast.error("Please select a file");
-          return;
-        }
-
-        formData.append(
-          "request",
-          JSON.stringify({
-            name: values.blogTitle,
-            introduction: values.blogIntroduction,
-            description: content, // Use rich text content
-            publishDate: dayjs(values.publishDate).format("YYYY-MM-DD"), // Format date
-          })
-        );
-        formData.append("thumbnail", file);
-
-        const response = await addBlog(formData);
-        if (!response.error) {
-          navigate("/admin/blog", {
-            state: { message: response.message, type: "success" },
-          });
-        } else {
-          toast.error(response.message);
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        toast.error("Failed to add blog");
-      } finally {
-        setLoading(false);
-      }
-    } else {
       toast.error("Please fill all required fields");
+      return;
     }
-  };
 
-  const normFile = (e) => {
-    if (Array.isArray(e)) {
-      return e;
+    try {
+      setLoading(true);
+      const blogData = {
+        blogName: values.blogTitle,
+        image: values.imageUrl,
+        description: values.blogIntroduction,
+        status: "INACTIVE",
+        date: values.publishDate.toISOString(), // ✅ ISO Format Fix
+        content: content,
+      };
+
+      console.log("📤 Sending Blog Data:", blogData);
+      const response = await addBlog(blogData);
+
+      if (response && response.result) {
+        toast.success("Blog added successfully!");
+        setTimeout(() => navigate("/admin/blog"), 2000); // ✅ Delayed navigation for better UX
+      } else {
+        toast.error(response?.message || "Error adding blog");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to add blog");
+    } finally {
+      setLoading(false);
     }
-    return e?.fileList;
   };
 
   return (
@@ -124,6 +113,7 @@ const AddNewBlog = () => {
             onFinish={onFinish}
             autoComplete="off"
           >
+            {/* Blog Title */}
             <Form.Item
               name="blogTitle"
               label="Blog Title"
@@ -135,6 +125,7 @@ const AddNewBlog = () => {
               <Input placeholder="Enter blog title" />
             </Form.Item>
 
+            {/* Blog Introduction */}
             <Form.Item
               name="blogIntroduction"
               label="Blog Introduction"
@@ -148,24 +139,21 @@ const AddNewBlog = () => {
             >
               <Input.TextArea rows={3} placeholder="Enter blog introduction" />
             </Form.Item>
+
+            {/* Image URL */}
             <Form.Item
-              name="thumbnail"
-              label="Thumbnail"
-              valuePropName="fileList"
-              getValueFromEvent={normFile}
-              rules={[{ required: true, message: "Please upload an image" }]}
+              name="imageUrl"
+              label="Thumbnail Image URL"
+              rules={[
+                { required: true, message: "Please enter an image URL" },
+                { type: "url", message: "Please enter a valid URL" },
+              ]}
             >
-              <Upload
-                beforeUpload={() => false}
-                maxCount={1}
-                accept="image/*"
-                listType="picture"
-              >
-                <Button icon={<UploadOutlined />}>Select Image</Button>
-              </Upload>
+              <Input placeholder="Enter image URL (e.g., https://example.com/image.jpg)" />
             </Form.Item>
 
-            <Form.Item label="Blog Content" required>
+            {/* Blog Content */}
+            <Form.Item label="Blog Content" name="content">
               <ReactQuill
                 theme="snow"
                 value={content}
@@ -175,23 +163,22 @@ const AddNewBlog = () => {
               />
             </Form.Item>
 
+            {/* Publish Date */}
             <Form.Item
-              name="thumbnail"
-              label="Thumbnail"
-              valuePropName="fileList"
-              getValueFromEvent={normFile}
-              rules={[{ required: true, message: "Please upload an image" }]}
+              name="publishDate"
+              label="Publish Date"
+              rules={[
+                { required: true, message: "Please select a publish date" },
+              ]}
             >
-              <Upload
-                beforeUpload={() => false}
-                maxCount={1}
-                accept="image/*"
-                listType="picture"
-              >
-                <Button icon={<UploadOutlined />}>Select Image</Button>
-              </Upload>
+              <DatePicker
+                disabledDate={disabledDate}
+                format="YYYY-MM-DD"
+                className="w-full"
+              />
             </Form.Item>
 
+            {/* Submit Button */}
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading}>
                 Add Blog
