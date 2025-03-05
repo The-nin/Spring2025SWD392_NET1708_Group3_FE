@@ -9,6 +9,7 @@ import {
   CopyrightOutlined,
   FileOutlined,
   OrderedListOutlined,
+  CustomerServiceOutlined,
 } from "@ant-design/icons";
 
 const { Sider } = Layout;
@@ -52,6 +53,11 @@ const Sidebar = ({ collapsed, handleLogout }) => {
       key: "/admin/order",
       icon: <OrderedListOutlined />,
       label: "Order Management",
+    },
+    {
+      key: "/admin/service",
+      icon: <CustomerServiceOutlined />,
+      label: "Service Management",
     },
   ];
 

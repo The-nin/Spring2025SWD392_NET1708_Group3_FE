@@ -12,23 +12,34 @@ import {
   Upload,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import moment from "moment";
+import { useEffect, useState } from "react";
+import { createBooking, getAllExperts } from "../../service/booking";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { uploadToCloudinary } from "../../service/productManagement";
+// import { set } from "date-fns";
+import { getServices } from "../../service/serviceManagement";
+import { Link } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function Consultant() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
+  const [fileList, setFileList] = useState([]);
+  const [services, setServices] = useState([]);
+  const [experts, setExperts] = useState([]);
+
+  const navigate = useNavigate();
 
   const normFile = (e) => {
     if (Array.isArray(e)) {
       return e;
     }
-    return e?.fileList;
-  };
-
-  const onChange = (date, dateString) => {
-    console.log(date, dateString);
+    console.log("Uploaded files:", e?.fileList);
+    return e?.fileList || [];
   };
 
   const getBase64 = (file) =>
@@ -47,13 +58,118 @@ function Consultant() {
     setPreviewOpen(true);
   };
 
-  const onFinish = (values) => {
-    console.log("Received values of form: ", values);
+  //Set times
+  const availableTimes = [
+    { start: "08:00", end: "09:00" },
+    { start: "10:00", end: "11:00" },
+    { start: "14:00", end: "15:00" },
+    { start: "16:00", end: "17:00" },
+  ];
+
+  // State để lưu lại khung giờ và ngày đã chọn
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [selectedDate, setSelectedDate] = useState("");
+
+  const handleTimeSelect = (time) => {
+    setSelectedTime(time);
   };
+
+  const handleDateChange = (date, dateString) => {
+    setSelectedDate(dateString);
+  };
+
+  //Call api
+  const onFinish = async (values) => {
+    console.log("Received values of form: ", values);
+
+    try {
+      setLoading(true);
+
+      const imageFiles = values.image.map((fileObj) => fileObj.originFileObj);
+
+      const imageURLs = await Promise.all(
+        imageFiles.map(async (file) => await uploadToCloudinary(file))
+      );
+
+      const bookingData = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        skinType: values.skinType,
+        skinCondition: values.skinCondition,
+        allergy: values.allergy || "",
+        bookDate: values.bookDate.toISOString(),
+        expertId: values.expertId || "",
+        age: values.age,
+        note: values.note || "",
+        skincareServiceId: values.skincareServiceId,
+        imageSkins: imageURLs.map((url) => ({ image: url })),
+      };
+
+      const response = await createBooking(bookingData);
+
+      if (response) {
+        toast.success("Booking created successfully");
+        form.resetFields();
+        setFileList([]);
+      }
+    } catch (error) {
+      console.error("Failed to create booking:", error);
+      toast.error("Failed to create booking");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUploadChange = ({ fileList }) => setFileList(fileList);
+
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+      const data = await getServices();
+      setServices(data);
+    } catch (err) {
+      console.error("Failed to fetch services:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchExperts = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllExperts();
+      setExperts(data);
+    } catch (err) {
+      console.error("Failed to fetch experts:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchExperts();
+  }, []);
 
   return (
     <>
       <div className="">
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
+
         <Card
           title={
             <h2 className="text-2xl font-semibold text-gray-800">
@@ -95,7 +211,7 @@ function Consultant() {
 
               <Col span={8}>
                 <Form.Item
-                  name="lasttName"
+                  name="lastName"
                   label="Last Name"
                   rules={[
                     {
@@ -120,31 +236,12 @@ function Consultant() {
                 <Form.Item
                   name="age"
                   label="Your Age"
-                  rules={[
-                    { required: true, message: "Please enter your age" },
-                    {
-                      type: "number",
-                      min: 10,
-                      max: 120,
-                      message: "Age must be between 10 and 120",
-                    },
-                  ]}
+                  rules={[{ required: true, message: "Please enter your age" }]}
                 >
-                  <Select
-                    showSearch // Allows users to type their age manually
-                    placeholder="Select or Enter Your Age"
+                  <InputNumber
+                    placeholder="Enter Your Age"
                     className="w-full rounded-md h-12"
-                    optionFilterProp="children"
-                    allowClear // Allows clearing selection
-                  >
-                    {Array.from({ length: 111 }, (_, i) => i + 10).map(
-                      (age) => (
-                        <Select.Option key={age} value={age}>
-                          {age}
-                        </Select.Option>
-                      )
-                    )}
-                  </Select>
+                  />
                 </Form.Item>
               </Col>
             </Row>
@@ -152,50 +249,45 @@ function Consultant() {
             <Row>
               <Col span={12}>
                 <Form.Item
-                  name="expert"
+                  name="expertId"
                   label="Choose Expert"
-                  rules={[
-                    { required: true, message: "Please select an expert" },
-                  ]}
+                  className="mr-4"
                 >
                   <Select
                     className="w-full rounded-md h-12"
                     placeholder="Select an expert"
-                  >
-                    <Select.Option value="NONE">None</Select.Option>
-                    <Select.Option value="NORMAL_SKIN">
-                      Nguyen van A
-                    </Select.Option>
-                    <Select.Option value="OILY_SKIN">Thi B</Select.Option>
-                    <Select.Option value="SENSITIVE_SKIN">
-                      Hoang van C
-                    </Select.Option>
-                  </Select>
+                    options={experts.map((expert) => ({
+                      value: expert.id,
+                      label: `${expert.firstName} ${expert.lastName}`,
+                    }))}
+                  />
                 </Form.Item>
               </Col>
 
-              <Col span={11} className="ml-10">
+              <Col span={12}>
                 <Form.Item
-                  name="date"
-                  label="Date"
+                  name="skincareServiceId"
+                  label="Service"
                   rules={[
-                    {
-                      required: true,
-                      message: "Please enter your first name here",
-                    },
+                    { required: true, message: "Please select a service" },
                   ]}
                 >
-                  <DatePicker
-                    onChange={onChange}
-                    needConfirm showTime
+                  <Select
                     className="w-full rounded-md h-12"
+                    placeholder="Select a service"
+                    options={services.map((service) => ({
+                      value: service.id,
+                      label: `${
+                        service.serviceName
+                      } - ${service.price.toLocaleString()}đ`,
+                    }))}
                   />
                 </Form.Item>
               </Col>
             </Row>
 
             <Form.Item
-              name="skinConditaion"
+              name="skinCondition"
               label="Description"
               rules={[
                 { required: true, message: "Please enter description" },
@@ -217,11 +309,60 @@ function Consultant() {
             <Row>
               <Col span={12}>
                 <Form.Item
-                  name="type_skin"
+                  name="bookDate"
+                  label="Booking Date"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter your first name here",
+                    },
+                  ]}
+                >
+                  <DatePicker
+                    onChange={handleDateChange}
+                    needConfirm
+                    disabledDate={(current) => {
+                      return current && current < moment().startOf("day");
+                    }}
+                    className="w-full rounded-md h-12"
+                  />
+                  {/* <TimePicker /> */}
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item>
+                  <div className="flex space-x-2 w-full rounded-md mt-[29px] ml-4">
+                    {availableTimes.map((time, index) => (
+                      <Button
+                        key={index}
+                        className={`h-12 time-option ${
+                          selectedTime?.start === time.start ? "selected" : ""
+                        } text-gray-700`}
+                        type={
+                          selectedTime?.start === time.start
+                            ? "primary"
+                            : "default"
+                        }
+                        onClick={() => handleTimeSelect(time)}
+                      >
+                        {time.start} - {time.end}
+                      </Button>
+                    ))}
+                  </div>
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col span={12}>
+                <Form.Item
+                  name="skinType"
                   label="Your Skin Type"
                   rules={[
                     { required: true, message: "Please select a category" },
                   ]}
+                  className="mr-4"
                 >
                   <Select
                     placeholder="Select a Your Skin Type"
@@ -238,11 +379,20 @@ function Consultant() {
                     </Select.Option>
                   </Select>
                 </Form.Item>
+                <p className="text-sm text-gray-600">
+                  If you don&apos;t know your skin type, please{" "}
+                  <a
+                    onClick={() => navigate("/skinquiz")}
+                    className="text-blue-600 "
+                  >
+                    Click here
+                  </a>
+                </p>
               </Col>
 
-              <Col span={11} className="ml-10">
+              <Col span={12}>
                 <Form.Item name="allergy" label="Allergy">
-                  <InputNumber
+                  <Input
                     className="w-full rounded-md h-12"
                     placeholder="Enter input allergy (if have)"
                   />
@@ -251,40 +401,41 @@ function Consultant() {
             </Row>
 
             <Form.Item
-              name="thumbnail"
+              name="image"
               label="Your Image (Face skin, product)"
               valuePropName="fileList"
-              getValueFromEvent={normFile}
-              rules={[{ required: true, message: "Please upload an image" }]}
+              getValueFromEvent={normFile} // Keep this function to handle file list
+              rules={[{ required: true, message: "Please upload an image" }]} // Validation rule
             >
               <Upload
-                beforeUpload={() => false}
-                // maxCount={1}
+                listType="picture"
+                beforeUpload={() => false} // Prevent immediate upload
+                fileList={fileList} // Bind file list state
+                onChange={handleUploadChange} // Update file list state
+                multiple
                 accept="image/*"
                 onPreview={handlePreview}
-                listType="picture"
                 className="upload-list-inline"
               >
                 <Button icon={<UploadOutlined />} className="rounded-md h-12">
                   Select Image
                 </Button>
               </Upload>
-
-              {previewImage && (
-                <Image
-                  wrapperStyle={{
-                    display: "none",
-                  }}
-                  preview={{
-                    visible: previewOpen,
-                    onVisibleChange: (visible) => setPreviewOpen(visible),
-                    afterOpenChange: (visible) =>
-                      !visible && setPreviewImage(""),
-                  }}
-                  src={previewImage}
-                />
-              )}
             </Form.Item>
+
+            {previewImage && (
+              <Image
+                wrapperStyle={{
+                  display: "none",
+                }}
+                preview={{
+                  visible: previewOpen,
+                  onVisibleChange: (visible) => setPreviewOpen(visible),
+                  afterOpenChange: (visible) => !visible && setPreviewImage(""),
+                }}
+                src={previewImage}
+              />
+            )}
 
             <Form.Item className="mt-6">
               <Button

@@ -11,6 +11,7 @@ import {
   uploadToCloudinary,
 } from "../../service/profile";
 import React from "react";
+import ConsultantHistory from "./ConsultantHistory/ConsultantHistory.jsx";
 
 const EditModal = React.memo(
   ({ editFormData, onClose, onSubmit, onInputChange, onAvatarChange }) => {
@@ -273,6 +274,16 @@ const ProfilePage = () => {
                   My orders
                 </button>
                 <button
+                  onClick={() => setActiveTab("consultant")}
+                  className={`w-full text-left px-4 py-2 rounded-lg ${
+                    activeTab === "consultant"
+                      ? "bg-gray-900 text-white"
+                      : "hover:bg-gray-100"
+                  }`}
+                >
+                  Consultant history
+                </button>
+                <button
                   onClick={() => setActiveTab("addresses")}
                   className={`w-full text-left px-4 py-2 rounded-lg ${
                     activeTab === "addresses"
@@ -346,6 +357,15 @@ const ProfilePage = () => {
                   <h3 className="text-xl font-semibold mb-6">My orders</h3>
                   <Orders />
                   {/* Order history content */}
+                </div>
+              )}
+
+              {activeTab === "consultant" && (
+                <div>
+                  <h3 className="text-xl font-semibold mb-6">
+                    Consultant history
+                  </h3>
+                  <ConsultantHistory />
                 </div>
               )}
 

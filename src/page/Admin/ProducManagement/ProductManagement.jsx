@@ -203,7 +203,9 @@ const ProductManagement = () => {
         cancelText="Cancel"
         okButtonProps={{ danger: true }}
       >
-        <p>Are you sure you want to delete product "{selectedProduct?.name}"?</p>
+        <p>
+          Are you sure you want to delete product "{selectedProduct?.name}"?
+        </p>
         <p>This action cannot be undone.</p>
       </Modal>
       <ToastContainer />
