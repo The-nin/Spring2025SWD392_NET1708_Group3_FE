@@ -3,7 +3,13 @@ import { instance } from "../instance";
 // Public function - no token needed
 export const getAllCategories = async (params) => {
   try {
-    const response = await instance.get("admin/categories", { params });
+    const token = localStorage.getItem("token");
+    const response = await instance.get("admin/categories", {
+      params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return {
       error: false,
       result: response.result,

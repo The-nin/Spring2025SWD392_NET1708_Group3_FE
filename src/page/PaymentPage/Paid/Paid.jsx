@@ -32,7 +32,7 @@ const Paid = ({ selectedAddressId, cartId }) => {
           // window.location.href = response.result.redirectUrl;
           console.log(response.result.redirectUrl);
         } else {
-          navigate("/order-success", {
+          navigate("/my", {
             state: {
               orderId: response.result.orderId,
             },

@@ -1,7 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tooltip, message, Modal, Switch } from "antd";
+import {
+  Table,
+  Button,
+  Space,
+  Tooltip,
+  message,
+  Modal,
+  Switch,
+  Input,
+  Select,
+} from "antd";
 import { useNavigate } from "react-router-dom";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 import {
   getAllProducts,
   deleteProduct,
@@ -22,14 +37,58 @@ const ProductManagement = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [filters, setFilters] = useState({
+    keyword: "",
+    categorySlug: "",
+    brandSlug: "",
+    originSlug: "",
+    sortBy: "",
+    order: "",
+  });
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+
+  const extractFilters = (products) => {
+    const categoriesMap = new Map();
+    const brandsMap = new Map();
+
+    products.forEach((product) => {
+      if (product.category) {
+        categoriesMap.set(product.category.slug, {
+          name: product.category.name,
+          slug: product.category.slug,
+        });
+      }
+      if (product.brand) {
+        brandsMap.set(product.brand.slug, {
+          name: product.brand.name,
+          slug: product.brand.slug,
+          ta,
+        });
+      }
+    });
+
+    setCategories(Array.from(categoriesMap.values()));
+    setBrands(Array.from(brandsMap.values()));
+  };
 
   const fetchProducts = async (params = {}) => {
     try {
       setLoading(true);
-      const response = await getAllProducts({
-        page: params.page - 1 || 0,
+      const queryParams = {
+        page: params.page !== undefined ? params.page - 1 : 0,
         size: params.pageSize || 10,
-      });
+        ...params,
+      };
+
+      Object.keys(queryParams).forEach(
+        (key) =>
+          (queryParams[key] === undefined || queryParams[key] === "") &&
+          delete queryParams[key]
+      );
+
+      const response = await getAllProducts(queryParams);
       if (!response.error) {
         setProducts(response.result.productResponses);
         setPagination({
@@ -37,6 +96,7 @@ const ProductManagement = () => {
           pageSize: response.result.pageSize,
           total: response.result.totalElements,
         });
+        extractFilters(response.result.productResponses);
       } else {
         message.error(response.message);
       }
@@ -51,11 +111,20 @@ const ProductManagement = () => {
     fetchProducts();
   }, []);
 
-  const handleTableChange = (newPagination) => {
-    fetchProducts({
+  const handleTableChange = (newPagination, tableFilters, sorter) => {
+    const params = {
+      ...filters,
       page: newPagination.current,
       pageSize: newPagination.pageSize,
-    });
+      keyword: filters.keyword,
+    };
+
+    if (sorter.field) {
+      params.sortBy = sorter.field;
+      params.order = sorter.order ? sorter.order.replace("end", "") : undefined;
+    }
+
+    fetchProducts(params);
   };
 
   const toggleStatus = async (product) => {
@@ -109,6 +178,16 @@ const ProductManagement = () => {
     }
   };
 
+  const handleFilterChange = (type, value) => {
+    const newFilters = { ...filters, [type]: value };
+    setFilters(newFilters);
+    fetchProducts({
+      ...newFilters,
+      page: 1,
+      pageSize: pagination.pageSize,
+    });
+  };
+
   const columns = [
     {
       title: "Thumbnail",
@@ -118,7 +197,7 @@ const ProductManagement = () => {
         <img
           src={thumbnail}
           alt="product"
-          style={{ width: "50px", height: "50px", objectFit: "cover" }}
+          className="w-16 h-16 object-cover rounded"
         />
       ),
     },
@@ -126,12 +205,14 @@ const ProductManagement = () => {
       title: "Product Name",
       dataIndex: "name",
       key: "name",
-      ellipsis: true,
+      sorter: true,
+      filterable: true,
     },
     {
       title: "Price",
       dataIndex: "price",
       key: "price",
+      sorter: true,
       render: (price) => (price ? `${price.toLocaleString("vi-VN")}đ` : "N/A"),
     },
     {
@@ -152,6 +233,16 @@ const ProductManagement = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
+          <Tooltip title="Details">
+            <Button
+              type="default"
+              icon={<InfoCircleOutlined />}
+              onClick={() => {
+                setSelectedProduct(record);
+                setDetailModalVisible(true);
+              }}
+            />
+          </Tooltip>
           <Tooltip title="Edit">
             <Button
               type="primary"
@@ -183,11 +274,51 @@ const ProductManagement = () => {
           Add New Product
         </Button>
       </div>
+      <div className="mb-4 flex gap-4">
+        <Input.Search
+          placeholder="Search by keyword"
+          onSearch={(value) => handleFilterChange("keyword", value)}
+          style={{ width: 300 }}
+          allowClear
+        />
+        <Select
+          placeholder="Filter by Category"
+          style={{ width: 200 }}
+          allowClear
+          onChange={(value) => handleFilterChange("categorySlug", value)}
+        >
+          {categories.map((category) => (
+            <Select.Option key={category.slug} value={category.slug}>
+              {category.name}
+            </Select.Option>
+          ))}
+        </Select>
+        {brands.length > 0 && (
+          <Select
+            placeholder="Filter by Brand"
+            style={{ width: 200 }}
+            allowClear
+            onChange={(value) => handleFilterChange("brandSlug", value)}
+          >
+            {brands.map((brand) => (
+              <Select.Option key={brand.slug} value={brand.slug}>
+                {brand.name}
+              </Select.Option>
+            ))}
+          </Select>
+        )}
+      </div>
       <Table
         columns={columns}
         dataSource={products}
         rowKey="id"
-        pagination={pagination}
+        pagination={{
+          ...pagination,
+          showSizeChanger: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`,
+          pageSizeOptions: ["10", "20", "50", "100"],
+        }}
         loading={loading}
         onChange={handleTableChange}
       />
@@ -203,8 +334,47 @@ const ProductManagement = () => {
         cancelText="Cancel"
         okButtonProps={{ danger: true }}
       >
-        <p>Are you sure you want to delete product "{selectedProduct?.name}"?</p>
+        <p>
+          Are you sure you want to delete product "{selectedProduct?.name}"?
+        </p>
         <p>This action cannot be undone.</p>
+      </Modal>
+      <Modal
+        title="Product Details"
+        open={detailModalVisible}
+        onCancel={() => {
+          setDetailModalVisible(false);
+          setSelectedProduct(null);
+        }}
+        footer={null}
+      >
+        {selectedProduct && (
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <img
+                src={selectedProduct.thumbnail}
+                alt={selectedProduct.name}
+                className="w-32 h-32 object-cover rounded"
+              />
+            </div>
+            <div>
+              <h3 className="font-bold">Product Name</h3>
+              <p>{selectedProduct.name}</p>
+            </div>
+            <div>
+              <h3 className="font-bold">Description</h3>
+              <p>{selectedProduct.description}</p>
+            </div>
+            <div>
+              <h3 className="font-bold">Price</h3>
+              <p>{selectedProduct.price?.toLocaleString("vi-VN")}đ</p>
+            </div>
+            <div>
+              <h3 className="font-bold">Status</h3>
+              <p>{selectedProduct.status}</p>
+            </div>
+          </div>
+        )}
       </Modal>
       <ToastContainer />
     </div>

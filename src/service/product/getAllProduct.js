@@ -3,6 +3,7 @@ import { instance } from "../instance";
 export const getAllProduct = async ({
   categorySlug,
   brandSlug,
+  keyword,
   page = 1,
   size = 10,
 } = {}) => {
@@ -14,8 +15,11 @@ export const getAllProduct = async ({
     if (brandSlug) {
       params.brandSlug = brandSlug;
     }
+    if (keyword) {
+      params.keyword = keyword;
+    }
 
-    const adjustedPage = Math.max(0, page - 1);
+    const adjustedPage = Math.max(0, page);
 
     const res = await instance.get(
       `/products?page=${adjustedPage}&size=${size}`,
