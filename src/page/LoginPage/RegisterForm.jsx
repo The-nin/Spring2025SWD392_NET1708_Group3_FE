@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { register } from "../../service/register/index"; // Import API đăng ký
 import NotificationModal from "../../components/Notification/NotificationModal";
+import OTPModal from "./OTPmodal";
 
 const RegisterForm = ({ onBackToLogin }) => {
   const [registerData, setRegisterData] = useState({
@@ -22,6 +23,7 @@ const RegisterForm = ({ onBackToLogin }) => {
     message: "",
     type: "success",
   });
+  const [showOTPModal, setShowOTPModal] = useState(false);
 
   const isFormValid =
     registerData.username &&
@@ -53,22 +55,7 @@ const RegisterForm = ({ onBackToLogin }) => {
       const response = await register(requestData);
 
       if (response?.code === 201) {
-        setModalInfo({
-          isOpen: true,
-          message: "Tạo tài khoản thành công! Vui lòng đăng nhập.",
-          type: "success",
-        });
-        setRegisterData({
-          username: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-          dateOfBirth: "",
-          gender: "",
-        });
-        setTimeout(() => {
-          onBackToLogin();
-        }, 2000);
+        setShowOTPModal(true);
       } else {
         setModalInfo({
           isOpen: true,
@@ -87,6 +74,34 @@ const RegisterForm = ({ onBackToLogin }) => {
     }
   };
 
+  const handleVerifyOTP = async (otp) => {
+    try {
+      setShowOTPModal(false);
+      setModalInfo({
+        isOpen: true,
+        message: "Tạo tài khoản thành công! Vui lòng đăng nhập.",
+        type: "success",
+      });
+      setRegisterData({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        dateOfBirth: "",
+        gender: "",
+      });
+      setTimeout(() => {
+        onBackToLogin();
+      }, 2000);
+    } catch (error) {
+      setModalInfo({
+        isOpen: true,
+        message: "Xác thực thất bại. Vui lòng thử lại!",
+        type: "error",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <NotificationModal
@@ -99,6 +114,11 @@ const RegisterForm = ({ onBackToLogin }) => {
             onBackToLogin();
           }
         }}
+      />
+      <OTPModal
+        isOpen={showOTPModal}
+        onClose={() => setShowOTPModal(false)}
+        onVerify={handleVerifyOTP}
       />
       <h2 className="text-2xl font-semibold text-gray-900">
         Create your account

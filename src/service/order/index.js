@@ -55,7 +55,7 @@ export const deleteOrder = async (orderId) => {
 export const updateOrderStatus = async (orderId, status) => {
   try {
     const response = await instance.patch(
-      `admin/orders/change-status/${orderId}?orderStatus=${status}`,
+      `admin/orders/confirm-order/${orderId}?orderStatus=${status}`,
       { status },
       {
         headers: {

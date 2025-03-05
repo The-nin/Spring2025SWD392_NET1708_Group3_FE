@@ -1,11 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button, Space, Tooltip, Modal, Select, Input } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
-import {
-  getOrderAdmin,
-  deleteOrder,
-  updateOrderStatus,
-} from "../../../service/order";
+import { getOrderAdmin, updateOrderStatus } from "../../../service/order";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
@@ -18,8 +13,6 @@ const OrderManagement = () => {
     pageSize: 10,
     total: 0,
   });
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const navigate = useNavigate();
   const [filters, setFilters] = useState({
     keyword: "",
@@ -99,31 +92,6 @@ const OrderManagement = () => {
     }
   };
 
-  const showDeleteConfirm = (order) => {
-    setSelectedOrder(order);
-    setDeleteModalVisible(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!selectedOrder) return;
-    try {
-      setLoading(true);
-      const response = await deleteOrder(selectedOrder.orderId);
-      if (response && response.code === 200) {
-        toast.success("Order deleted successfully!");
-        fetchOrders();
-      } else {
-        toast.error("Failed to delete order");
-      }
-    } catch (error) {
-      toast.error("Error deleting order");
-    } finally {
-      setLoading(false);
-      setDeleteModalVisible(false);
-      setSelectedOrder(null);
-    }
-  };
-
   const columns = [
     {
       title: "Order ID",
@@ -184,35 +152,29 @@ const OrderManagement = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status, record) => (
-        <Select
-          value={status || "PENDING"}
-          onChange={(value) => handleStatusChange(record.orderId, value)}
-          style={{ width: 120 }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Select.Option value="PENDING">Pending</Select.Option>
-          <Select.Option value="PROCESSING">Processing</Select.Option>
-          <Select.Option value="DONE">Done</Select.Option>
-          <Select.Option value="DELIVERING">Delivering</Select.Option>
-          <Select.Option value="CANCELLED">Cancelled</Select.Option>
-        </Select>
-      ),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <Space onClick={(e) => e.stopPropagation()}>
-          <Tooltip title="Delete">
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => showDeleteConfirm(record)}
-            />
-          </Tooltip>
-        </Space>
-      ),
+      render: (status) => {
+        let color;
+        switch (status) {
+          case "PENDING":
+            color = "text-yellow-500";
+            break;
+          case "PROCESSING":
+            color = "text-blue-500";
+            break;
+          case "DONE":
+            color = "text-green-600";
+            break;
+          case "DELIVERING":
+            color = "text-purple-500";
+            break;
+          case "CANCELLED":
+            color = "text-red-600";
+            break;
+          default:
+            color = "text-gray-500";
+        }
+        return <span className={color}>{status}</span>;
+      },
     },
   ];
 
@@ -292,21 +254,6 @@ const OrderManagement = () => {
           style: { cursor: "pointer" },
         })}
       />
-      <Modal
-        title="Confirm Delete"
-        open={deleteModalVisible}
-        onOk={handleDeleteConfirm}
-        onCancel={() => {
-          setDeleteModalVisible(false);
-          setSelectedOrder(null);
-        }}
-        okText="Delete"
-        cancelText="Cancel"
-        okButtonProps={{ danger: true }}
-      >
-        <p>Are you sure you want to delete order #{selectedOrder?.orderId}?</p>
-        <p>This action cannot be undone.</p>
-      </Modal>
       <ToastContainer />
     </div>
   );

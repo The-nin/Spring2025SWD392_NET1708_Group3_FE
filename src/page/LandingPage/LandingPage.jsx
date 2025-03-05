@@ -80,7 +80,9 @@ const LandingPage = () => {
                 className="border border-black px-8 py-4 flex items-center justify-between min-w-[180px] mt-4"
                 whileHover={{ scale: 1.1 }}
               >
-                <span className="text-gray-700">Read more</span>
+                <Link to="/shop">
+                  <span className="text-gray-700">Read more</span>
+                </Link>
                 <FaArrowRight className="ml-4" />
               </motion.div>
             </Link>
@@ -116,12 +118,12 @@ const LandingPage = () => {
           ))}
         </div>
         <motion.div className="mt-8" whileHover={{ x: 10 }}>
-          <a
-            href="/all-products"
+          <Link
+            to="/shop"
             className="text-sm font-medium underline hover:text-black"
           >
             All Products →
-          </a>
+          </Link>
         </motion.div>
       </motion.div>
 

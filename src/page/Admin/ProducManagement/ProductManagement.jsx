@@ -8,6 +8,7 @@ import {
   Modal,
   Switch,
   Input,
+  Select,
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import {
@@ -45,6 +46,32 @@ const ProductManagement = () => {
     sortBy: "",
     order: "",
   });
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+
+  const extractFilters = (products) => {
+    const categoriesMap = new Map();
+    const brandsMap = new Map();
+
+    products.forEach((product) => {
+      if (product.category) {
+        categoriesMap.set(product.category.slug, {
+          name: product.category.name,
+          slug: product.category.slug,
+        });
+      }
+      if (product.brand) {
+        brandsMap.set(product.brand.slug, {
+          name: product.brand.name,
+          slug: product.brand.slug,
+          ta,
+        });
+      }
+    });
+
+    setCategories(Array.from(categoriesMap.values()));
+    setBrands(Array.from(brandsMap.values()));
+  };
 
   const fetchProducts = async (params = {}) => {
     try {
@@ -52,14 +79,14 @@ const ProductManagement = () => {
       const queryParams = {
         page: params.page !== undefined ? params.page - 1 : 0,
         size: params.pageSize || 10,
+        ...params,
       };
 
-      if (params.keyword) queryParams.keyword = params.keyword;
-      if (params.categorySlug) queryParams.categorySlug = params.categorySlug;
-      if (params.brandSlug) queryParams.brandSlug = params.brandSlug;
-      if (params.originSlug) queryParams.originSlug = params.originSlug;
-      if (params.sortBy) queryParams.sortBy = params.sortBy;
-      if (params.order) queryParams.order = params.order;
+      Object.keys(queryParams).forEach(
+        (key) =>
+          (queryParams[key] === undefined || queryParams[key] === "") &&
+          delete queryParams[key]
+      );
 
       const response = await getAllProducts(queryParams);
       if (!response.error) {
@@ -69,6 +96,7 @@ const ProductManagement = () => {
           pageSize: response.result.pageSize,
           total: response.result.totalElements,
         });
+        extractFilters(response.result.productResponses);
       } else {
         message.error(response.message);
       }
@@ -148,6 +176,16 @@ const ProductManagement = () => {
       setDeleteModalVisible(false);
       setSelectedProduct(null);
     }
+  };
+
+  const handleFilterChange = (type, value) => {
+    const newFilters = { ...filters, [type]: value };
+    setFilters(newFilters);
+    fetchProducts({
+      ...newFilters,
+      page: 1,
+      pageSize: pagination.pageSize,
+    });
   };
 
   const columns = [
@@ -236,22 +274,39 @@ const ProductManagement = () => {
           Add New Product
         </Button>
       </div>
-      <div className="mb-4">
+      <div className="mb-4 flex gap-4">
         <Input.Search
           placeholder="Search by keyword"
-          onSearch={(value) => {
-            const params = {
-              page: pagination.current,
-              pageSize: pagination.pageSize,
-            };
-            if (value) {
-              params.keyword = value;
-            }
-            fetchProducts(params);
-          }}
+          onSearch={(value) => handleFilterChange("keyword", value)}
           style={{ width: 300 }}
           allowClear
         />
+        <Select
+          placeholder="Filter by Category"
+          style={{ width: 200 }}
+          allowClear
+          onChange={(value) => handleFilterChange("categorySlug", value)}
+        >
+          {categories.map((category) => (
+            <Select.Option key={category.slug} value={category.slug}>
+              {category.name}
+            </Select.Option>
+          ))}
+        </Select>
+        {brands.length > 0 && (
+          <Select
+            placeholder="Filter by Brand"
+            style={{ width: 200 }}
+            allowClear
+            onChange={(value) => handleFilterChange("brandSlug", value)}
+          >
+            {brands.map((brand) => (
+              <Select.Option key={brand.slug} value={brand.slug}>
+                {brand.name}
+              </Select.Option>
+            ))}
+          </Select>
+        )}
       </div>
       <Table
         columns={columns}
