@@ -52,6 +52,11 @@ const Sidebar = ({ collapsed }) => {
       icon: <GiftOutlined />, // 🎁 Voucher icon
       label: "Voucher Management",
     },
+    {
+      key: "/admin/batch",
+      icon: <OrderedListOutlined />,
+      label: "Batch Management",
+    },
   ];
 
   return (

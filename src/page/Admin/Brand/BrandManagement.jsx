@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tooltip, Modal, Tag, Switch } from "antd";
+import { Table, Button, Space, Tooltip, Modal, Tag, Switch, Input } from "antd";
 import { useNavigate } from "react-router-dom";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { getAllBrands, deleteBrand, updateBrandStatus } from "../../../service/brand/index";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
+import {
+  getAllBrands,
+  deleteBrand,
+  updateBrandStatus,
+} from "../../../service/brand/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -17,14 +26,26 @@ const BrandManagement = () => {
   });
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [filters, setFilters] = useState({
+    keyword: "",
+    sortBy: "",
+    order: "",
+  });
 
   const fetchBrands = async (params = {}) => {
     try {
       setLoading(true);
-      const response = await getAllBrands({
-        page: params.page - 1 || 0,
+      const queryParams = {
+        page: params.page !== undefined ? params.page - 1 : 0,
         size: params.pageSize || 10,
-      });
+      };
+
+      if (params.keyword) queryParams.keyword = params.keyword;
+      if (params.sortBy) queryParams.sortBy = params.sortBy;
+      if (params.order) queryParams.order = params.order;
+
+      const response = await getAllBrands(queryParams);
 
       if (!response.error) {
         setBrands(response.result.brandResponses);
@@ -61,11 +82,19 @@ const BrandManagement = () => {
     fetchBrands();
   }, []);
 
-  const handleTableChange = (newPagination) => {
-    fetchBrands({
+  const handleTableChange = (newPagination, tableFilters, sorter) => {
+    const params = {
+      ...filters,
       page: newPagination.current,
       pageSize: newPagination.pageSize,
-    });
+    };
+
+    if (sorter.field) {
+      params.sortBy = sorter.field;
+      params.order = sorter.order ? sorter.order.replace("end", "") : undefined;
+    }
+
+    fetchBrands(params);
   };
 
   const showDeleteConfirm = (brand) => {
@@ -158,12 +187,7 @@ const BrandManagement = () => {
       title: "Brand Name",
       dataIndex: "name",
       key: "name",
-    },
-    {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-      ellipsis: true,
+      sorter: true,
     },
     {
       title: "Status",
@@ -183,6 +207,16 @@ const BrandManagement = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
+          <Tooltip title="Details">
+            <Button
+              type="default"
+              icon={<InfoCircleOutlined />}
+              onClick={() => {
+                setSelectedBrand(record);
+                setDetailModalVisible(true);
+              }}
+            />
+          </Tooltip>
           <Tooltip title="Edit">
             <Button
               type="primary"
@@ -214,11 +248,32 @@ const BrandManagement = () => {
           Add New Brand
         </Button>
       </div>
+      <div className="mb-4">
+        <Input.Search
+          placeholder="Search by brand name"
+          onSearch={(value) => {
+            const params = {
+              page: pagination.current,
+              pageSize: pagination.pageSize,
+              keyword: value,
+            };
+            fetchBrands(params);
+          }}
+          style={{ width: 300 }}
+          allowClear
+        />
+      </div>
       <Table
         columns={columns}
         dataSource={brands}
         rowKey="id"
-        pagination={pagination}
+        pagination={{
+          ...pagination,
+          showSizeChanger: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`,
+          pageSizeOptions: ["10", "20", "50", "100"],
+        }}
         loading={loading}
         onChange={handleTableChange}
       />
@@ -236,6 +291,39 @@ const BrandManagement = () => {
       >
         <p>Are you sure you want to delete brand "{selectedBrand?.name}"?</p>
         <p>This action cannot be undone.</p>
+      </Modal>
+      <Modal
+        title="Brand Details"
+        open={detailModalVisible}
+        onCancel={() => {
+          setDetailModalVisible(false);
+          setSelectedBrand(null);
+        }}
+        footer={null}
+      >
+        {selectedBrand && (
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <img
+                src={selectedBrand.thumbnail}
+                alt={selectedBrand.name}
+                className="w-32 h-32 object-cover rounded"
+              />
+            </div>
+            <div>
+              <h3 className="font-bold">Brand Name</h3>
+              <p>{selectedBrand.name}</p>
+            </div>
+            <div>
+              <h3 className="font-bold">Description</h3>
+              <p>{selectedBrand.description}</p>
+            </div>
+            <div>
+              <h3 className="font-bold">Status</h3>
+              <p>{selectedBrand.status}</p>
+            </div>
+          </div>
+        )}
       </Modal>
       <ToastContainer />
     </div>
