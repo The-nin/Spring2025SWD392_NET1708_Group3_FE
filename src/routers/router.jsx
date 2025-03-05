@@ -39,8 +39,11 @@ import Consultant from "../page/ConsultantPage/Consultant";
 import OrderManagement from "../page/Admin/OrderManagement/OrderManagement";
 import OrderDetail from "../page/Admin/OrderManagement/OrderDetail";
 import UserManagement from "../page/Admin/UserManagement/UserManagement";
+import ServiceManagement from "../page/ServiceManagement/ServiceManagement";
+import AddNewService from "../page/ServiceManagement/AddNewService";
 import BatchManagement from "../page/Admin/BatchManagement/BatchManagement";
 import AddNewBatch from "../page/Admin/BatchManagement/AddNewBatch";
+
 
 export const router = createBrowserRouter([
   {
@@ -73,7 +76,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "/skinquiz",
-        element: <SkinQuiz />,
+        element: (
+          <ProtectedUserRoute>
+            <SkinQuiz />,
+          </ProtectedUserRoute>
+        ),
       },
       {
         path: "/payment",
@@ -121,7 +128,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "/skin-consultation",
-        element: <Consultant />,
+        element: (
+          <ProtectedUserRoute>
+            <Consultant />
+          </ProtectedUserRoute>
+        ),
       },
     ],
   },
@@ -242,6 +253,17 @@ export const router = createBrowserRouter([
             path: "voucher/edit/:id",
             element: <EditVoucher />,
           },
+          path: "service",
+            children: [
+              {
+                path: "",
+                element: <ServiceManagement />,
+              },
+              {
+                path: "add",
+                element: <AddNewService />,
+              },
+            ],
         ],
       },
     ],
