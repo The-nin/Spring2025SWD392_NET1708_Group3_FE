@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Space, Card, message, Button } from "antd";
+import { Table, Space, Card, message, Button, Input } from "antd";
 import { getBatches } from "../../../service/batch/index";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,11 @@ const BatchManagement = () => {
     current: 1,
     pageSize: 10,
   });
+  const [filters, setFilters] = useState({
+    keyword: "",
+    sortBy: "",
+    order: "",
+  });
   const navigate = useNavigate();
 
   const columns = [
@@ -21,6 +26,7 @@ const BatchManagement = () => {
       title: "Mã lô",
       dataIndex: "batchCode",
       key: "batchCode",
+      sorter: true,
     },
     {
       title: "Mã sản phẩm",
@@ -55,11 +61,16 @@ const BatchManagement = () => {
   const fetchBatches = async (params = {}) => {
     setLoading(true);
     try {
-      console.log("Bắt đầu gọi API");
-      const response = await getBatches({
-        page: params.current - 1,
-        size: params.pageSize,
-      });
+      const queryParams = {
+        page: params.current ? params.current - 1 : 0,
+        size: params.pageSize || 10,
+      };
+
+      if (params.keyword) queryParams.keyword = params.keyword;
+      if (params.sortBy) queryParams.sortBy = params.sortBy;
+      if (params.order) queryParams.order = params.order;
+
+      const response = await getBatches(queryParams);
       console.log("Kết quả API:", response);
       if (response && response.result) {
         setBatchData({
@@ -85,24 +96,55 @@ const BatchManagement = () => {
     fetchBatches(pagination);
   }, []);
 
-  const handleTableChange = (newPagination) => {
-    fetchBatches(newPagination);
+  const handleTableChange = (newPagination, tableFilters, sorter) => {
+    const params = {
+      ...filters,
+      ...newPagination,
+    };
+
+    if (sorter.field) {
+      params.sortBy = sorter.field;
+      params.order = sorter.order ? sorter.order.replace("end", "") : undefined;
+    }
+
+    fetchBatches(params);
   };
 
   return (
     <Card
       title="Quản lý lô hàng"
       extra={
-        <Button type="primary" onClick={() => navigate("/admin/batch/add")}>
-          Thêm lô hàng mới
-        </Button>
+        <Space>
+          <Input.Search
+            placeholder="Tìm kiếm theo mã lô"
+            onSearch={(value) => {
+              const params = {
+                current: pagination.current,
+                pageSize: pagination.pageSize,
+                keyword: value,
+              };
+              fetchBatches(params);
+            }}
+            style={{ width: 300 }}
+            allowClear
+          />
+          <Button type="primary" onClick={() => navigate("/admin/batch/add")}>
+            Thêm lô hàng mới
+          </Button>
+        </Space>
       }
     >
       <Table
         columns={columns}
         dataSource={batchData.content}
         rowKey="id"
-        pagination={pagination}
+        pagination={{
+          ...pagination,
+          showSizeChanger: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`,
+          pageSizeOptions: ["10", "20", "50", "100"],
+        }}
         loading={loading}
         onChange={handleTableChange}
       />

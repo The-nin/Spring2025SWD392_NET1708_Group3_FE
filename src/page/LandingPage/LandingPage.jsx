@@ -6,12 +6,23 @@ import ProductCard from "./ProductCard.jsx";
 import HeroSection from "../../components/HeroSection/HeroSection";
 import img1 from "../../assets/img/hero-photo.png";
 import heroImg from "../../assets/img/hero-landingPage.png";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { getLatestProducts } from "../../service/product";
 
 const LandingPage = () => {
+  const [latestProducts, setLatestProducts] = useState([]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
+    fetchLatestProducts();
   }, []);
+
+  const fetchLatestProducts = async () => {
+    const response = await getLatestProducts(4);
+    if (!response.error) {
+      setLatestProducts(response.result || []);
+    }
+  };
 
   const fadeIn = {
     hidden: { opacity: 0, y: 50 },
@@ -92,9 +103,9 @@ const LandingPage = () => {
           for all skin types.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.map((product, index) => (
+          {latestProducts.map((product, index) => (
             <motion.div
-              key={index}
+              key={product.id || index}
               variants={fadeIn}
               initial="hidden"
               whileInView="visible"

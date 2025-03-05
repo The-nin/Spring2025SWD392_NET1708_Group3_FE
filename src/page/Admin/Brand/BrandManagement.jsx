@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tooltip, Modal, Tag, Switch } from "antd";
+import { Table, Button, Space, Tooltip, Modal, Tag, Switch, Input } from "antd";
 import { useNavigate } from "react-router-dom";
 import {
   PlusOutlined,
@@ -27,14 +27,25 @@ const BrandManagement = () => {
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [filters, setFilters] = useState({
+    keyword: "",
+    sortBy: "",
+    order: "",
+  });
 
   const fetchBrands = async (params = {}) => {
     try {
       setLoading(true);
-      const response = await getAllBrands({
-        page: params.page - 1 || 0,
+      const queryParams = {
+        page: params.page !== undefined ? params.page - 1 : 0,
         size: params.pageSize || 10,
-      });
+      };
+
+      if (params.keyword) queryParams.keyword = params.keyword;
+      if (params.sortBy) queryParams.sortBy = params.sortBy;
+      if (params.order) queryParams.order = params.order;
+
+      const response = await getAllBrands(queryParams);
 
       if (!response.error) {
         setBrands(response.result.brandResponses);
@@ -71,11 +82,19 @@ const BrandManagement = () => {
     fetchBrands();
   }, []);
 
-  const handleTableChange = (newPagination) => {
-    fetchBrands({
+  const handleTableChange = (newPagination, tableFilters, sorter) => {
+    const params = {
+      ...filters,
       page: newPagination.current,
       pageSize: newPagination.pageSize,
-    });
+    };
+
+    if (sorter.field) {
+      params.sortBy = sorter.field;
+      params.order = sorter.order ? sorter.order.replace("end", "") : undefined;
+    }
+
+    fetchBrands(params);
   };
 
   const showDeleteConfirm = (brand) => {
@@ -168,6 +187,7 @@ const BrandManagement = () => {
       title: "Brand Name",
       dataIndex: "name",
       key: "name",
+      sorter: true,
     },
     {
       title: "Status",
@@ -228,11 +248,32 @@ const BrandManagement = () => {
           Add New Brand
         </Button>
       </div>
+      <div className="mb-4">
+        <Input.Search
+          placeholder="Search by brand name"
+          onSearch={(value) => {
+            const params = {
+              page: pagination.current,
+              pageSize: pagination.pageSize,
+              keyword: value,
+            };
+            fetchBrands(params);
+          }}
+          style={{ width: 300 }}
+          allowClear
+        />
+      </div>
       <Table
         columns={columns}
         dataSource={brands}
         rowKey="id"
-        pagination={pagination}
+        pagination={{
+          ...pagination,
+          showSizeChanger: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`,
+          pageSizeOptions: ["10", "20", "50", "100"],
+        }}
         loading={loading}
         onChange={handleTableChange}
       />

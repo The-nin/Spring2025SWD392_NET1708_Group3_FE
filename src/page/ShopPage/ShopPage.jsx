@@ -112,60 +112,65 @@ const ShopPage = () => {
         {/* Hero Section  */}
         <HeroSection />
 
-        {/* Search Bar */}
-        <div className="px-8 py-4">
-          <div className="relative max-w-md mx-auto">
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchKeyword}
-              onChange={(e) => setSearchKeyword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-200"
-            />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        {/* Combined Search and Nav Section */}
+        <div className="bg-white p-5">
+          <div className="container mx-auto">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              {/* Categories Navigation */}
+              <div className="flex flex-wrap items-center gap-6">
+                <a
+                  className={`text-gray-700 hover:text-gray-600 transition-colors duration-200 ${
+                    !slug ? "font-bold text-gray-600" : ""
+                  }`}
+                  onClick={() => {
+                    window.location.href = "/shop";
+                  }}
+                >
+                  Shop All
+                </a>
+                {categories.map((category) => (
+                  <a
+                    key={category.id}
+                    className={`text-gray-700 hover:text-gray-600 transition-colors duration-200 ${
+                      slug === category.slug ? "font-bold text-gray-600" : ""
+                    }`}
+                    onClick={() => {
+                      window.location.href = `/shop/category/${category.slug}`;
+                    }}
+                  >
+                    {category.name}
+                  </a>
+                ))}
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative w-full md:w-72">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-200"
                 />
-              </svg>
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Nav product */}
-        <div className="flex flex-wrap gap-8 bg-amber-100 p-5 border-b-2 border-gray-200">
-          <a
-            className={`text-black hover:underline cursor-pointer ${
-              !slug ? "font-bold" : ""
-            }`}
-            onClick={() => {
-              window.location.href = "/shop";
-            }}
-          >
-            Shop All
-          </a>
-          {categories.map((category) => (
-            <a
-              key={category.id}
-              className={`text-black hover:underline cursor-pointer ${
-                slug === category.slug ? "font-bold" : ""
-              }`}
-              onClick={() => {
-                window.location.href = `/shop/category/${category.slug}`;
-              }}
-            >
-              {category.name}
-            </a>
-          ))}
         </div>
 
         {/* Header product */}

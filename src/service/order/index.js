@@ -17,12 +17,17 @@ export const getOrderHistory = async (page = 1, size = 10) => {
   }
 };
 
-export const getOrderAdmin = async (page = 1, size = 10) => {
+export const getOrderAdmin = async (params = {}) => {
   try {
     const response = await instance.get(`admin/orders`, {
       params: {
-        page: page,
-        size,
+        page: params.page || 0,
+        size: params.size || 10,
+        keyword: params.keyword,
+        sortBy: params.sortBy,
+        order: params.order,
+        status: params.status,
+        paymentStatus: params.paymentStatus,
       },
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,

@@ -110,7 +110,7 @@ const RegisterForm = ({ onBackToLogin }) => {
         <div>
           <input
             type="text"
-            placeholder="Full Name"
+            placeholder="Username"
             className="w-full p-3 border-b border-gray-300 bg-transparent text-gray-800 focus:outline-none focus:border-gray-900 placeholder-gray-500"
             required
             value={registerData.username}
@@ -171,7 +171,7 @@ const RegisterForm = ({ onBackToLogin }) => {
         <div>
           <input
             type="password"
-            placeholder="Create Password"
+            placeholder="Password"
             className="w-full p-3 border-b border-gray-300 bg-transparent text-gray-800 focus:outline-none focus:border-gray-900 placeholder-gray-500"
             required
             value={registerData.password}

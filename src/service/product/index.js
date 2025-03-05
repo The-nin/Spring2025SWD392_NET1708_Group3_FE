@@ -11,3 +11,15 @@ export const getProductDetail = async (slug) => {
     };
   }
 };
+
+export const getLatestProducts = async (limit = 4) => {
+  try {
+    const response = await instance.get(`/products/latest?limit=${limit}`);
+    return response;
+  } catch (error) {
+    return {
+      error: true,
+      message: error.response?.data?.message || "Có lỗi xảy ra",
+    };
+  }
+};

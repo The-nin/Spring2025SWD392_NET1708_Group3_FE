@@ -1,8 +1,8 @@
 import React from "react";
 
-const ProductCard = ({ tag, name, description, size, price, imgSrc }) => {
+const ProductCard = ({ tag, name, description, size, price, thumbnail }) => {
   return (
-    <div className="group cursor-pointer relative flex flex-col items-center text-center bg-white p-4 hover:shadow-xl transition duration-300 rounded-lg min-h-[480px]">
+    <div className="group cursor-pointer relative flex flex-col items-center text-center bg-white p-4 hover:shadow-xl transition duration-300 rounded-lg h-[500px] w-[300px]">
       {/* Tag */}
       {tag && (
         <span className="absolute top-2 left-2 text-xs font-semibold bg-gray-100 text-gray-500 px-2 py-1 rounded-full">
@@ -11,33 +11,35 @@ const ProductCard = ({ tag, name, description, size, price, imgSrc }) => {
       )}
 
       {/* Image Section */}
-      <div className="h-48 mt-4 flex items-center justify-center">
+      <div className="w-[200px] h-[200px] mt-4 flex items-center justify-center">
         <img
-          src={imgSrc}
+          src={thumbnail}
           alt={name}
-          className="max-w-full max-h-full object-contain"
+          className="w-full h-full object-contain"
         />
       </div>
 
       {/* Text Section */}
       <div className="flex flex-col items-center mt-4 space-y-2 flex-1 w-full">
         {/* Name */}
-        <div className="h-10 flex items-center justify-center">
-          <h3 className="font-semibold text-lg line-clamp-1">{name}</h3>
+        <div className="h-[40px] w-full flex items-center justify-center">
+          <h3 className="font-semibold text-lg line-clamp-1 px-2">{name}</h3>
         </div>
 
         {/* Description */}
-        <div className="h-12 flex items-center justify-center">
-          <p className="text-sm text-gray-500 line-clamp-2">{description}</p>
+        <div className="h-[48px] w-full flex items-center justify-center">
+          <p className="text-sm text-gray-500 line-clamp-2 px-2">
+            {description}
+          </p>
         </div>
 
         {/* Size */}
-        <div className="h-8 flex items-center justify-center">
+        <div className="h-[32px] w-full flex items-center justify-center">
           <p className="text-sm text-gray-700">{size}</p>
         </div>
 
         {/* Price */}
-        <div className="h-10 flex items-center justify-center">
+        <div className="h-[40px] w-full flex items-center justify-center">
           <p className="font-semibold text-black">${price}</p>
         </div>
       </div>
