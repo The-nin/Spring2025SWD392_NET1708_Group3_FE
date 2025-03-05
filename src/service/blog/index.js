@@ -24,24 +24,19 @@ export const getAllBlogs = async () => {
     return handleError(error, "Failed to fetch blogs");
   }
 };
-
-// ✅ Fetch blog details by ID (Admin Access Required)
 export const getBlogById = async (id) => {
   const token = localStorage.getItem("token");
   try {
-    const response = await instance.get(`/admin/blog/${id}`, {
+    const response = await instance.get(`/blog/${id}`, {
       headers: {
         authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
-    return {
-      error: false,
-      result: response.data?.result,
-      message: response.data?.message,
-    };
+    console.log(response);
+    return response;
   } catch (error) {
-    return handleError(error, "Failed to fetch blog details");
+    return handleError(error, "Failed to fetch blogs");
   }
 };
 
@@ -71,25 +66,19 @@ export const addBlog = async (blogData) => {
     return handleError(error, "Failed to add blog");
   }
 };
-
-// ✅ Update an existing blog (Admin Access Required) - No File Upload
-export const updateBlog = async (id, blogData) => {
+export const updateBlog = async (id, blogData = {}) => {
   const token = localStorage.getItem("token");
   try {
-    const response = await instance.put(`/admin/blog/${id} `, blogData, {
+    const response = await instance.put(`admin/blog/${id}`, blogData, {
       headers: {
         authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
-
-    return {
-      error: false,
-      result: response.data?.result,
-      message: response.data?.message,
-    };
+    console.log(response);
+    return response;
   } catch (error) {
-    return handleError(error, "Failed to update blog");
+    return handleError(error, "Failed to fetch blogs");
   }
 };
 

@@ -5,6 +5,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   LoadingOutlined,
+  EyeOutlined, // 👁️ Added View Icon
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import {
@@ -26,8 +27,8 @@ const BlogManagement = () => {
   });
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [viewModalVisible, setViewModalVisible] = useState(false); // 👁️ View modal state
   const [deletingBlogId, setDeletingBlogId] = useState(null);
-  const [updatingBlogId, setUpdatingBlogId] = useState(null); // Track status update
 
   // Fetch blogs from API
   const fetchBlogs = async () => {
@@ -71,7 +72,6 @@ const BlogManagement = () => {
     setDeleteModalVisible(true);
   };
 
-  // Optimized Delete Function with Local State for Loading
   const handleDeleteConfirm = async () => {
     if (!selectedBlog) return;
 
@@ -80,7 +80,6 @@ const BlogManagement = () => {
       const response = await deleteBlog(selectedBlog.id);
 
       if (!response.error) {
-        // Remove deleted blog from state
         setBlogs((prevBlogs) =>
           prevBlogs.filter((blog) => blog.id !== selectedBlog.id)
         );
@@ -100,14 +99,12 @@ const BlogManagement = () => {
 
   const toggleBlogStatus = async (blog) => {
     try {
-      setLoading(true); // Start loading
+      setLoading(true);
       const newStatus = blog.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-      const response = await updateBlogStatus(blog.id, newStatus); // Call API
+      const response = await updateBlogStatus(blog.id, newStatus);
 
       if (!response.error) {
         toast.success("Blog status updated successfully!");
-
-        // Update local state instead of refetching all blogs
         setBlogs((prevBlogs) =>
           prevBlogs.map((b) =>
             b.id === blog.id ? { ...b, status: newStatus } : b
@@ -119,8 +116,14 @@ const BlogManagement = () => {
     } catch (error) {
       toast.error("Failed to update blog status");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
+  };
+
+  // Show View Modal
+  const showViewModal = (blog) => {
+    setSelectedBlog(blog);
+    setViewModalVisible(true);
   };
 
   const columns = [
@@ -169,33 +172,36 @@ const BlogManagement = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (_, record) =>
-        deletingBlogId === record.id ? null : ( // Hide while deleting
-          <Space>
-            <Tooltip title="Edit">
-              <Button
-                type="primary"
-                icon={<EditOutlined />}
-                onClick={() => navigate(`/admin/blog/edit/${record.id}`)}
-                disabled={deletingBlogId === record.id} // Disable while deleting
-              />
-            </Tooltip>
-            <Tooltip title="Delete">
-              <Button
-                danger
-                icon={
-                  deletingBlogId === record.id ? (
-                    <LoadingOutlined />
-                  ) : (
-                    <DeleteOutlined />
-                  )
-                }
-                onClick={() => showDeleteConfirm(record)}
-                disabled={deletingBlogId === record.id} // Disable while deleting
-              />
-            </Tooltip>
-          </Space>
-        ),
+      render: (_, record) => (
+        <Space>
+          {deletingBlogId === record.id ? (
+            <LoadingOutlined style={{ fontSize: 20 }} />
+          ) : (
+            <>
+              <Tooltip title="View">
+                <Button
+                  icon={<EyeOutlined />}
+                  onClick={() => showViewModal(record)}
+                />
+              </Tooltip>
+              <Tooltip title="Edit">
+                <Button
+                  type="primary"
+                  icon={<EditOutlined />}
+                  onClick={() => navigate(`/admin/blog/edit/${record.id}`)}
+                />
+              </Tooltip>
+              <Tooltip title="Delete">
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => showDeleteConfirm(record)}
+                />
+              </Tooltip>
+            </>
+          )}
+        </Space>
+      ),
     },
   ];
 
@@ -219,6 +225,28 @@ const BlogManagement = () => {
         loading={loading}
         onChange={handleTableChange}
       />
+
+      {/* View Blog Modal */}
+      <Modal
+        title="Blog Details"
+        open={viewModalVisible}
+        onCancel={() => setViewModalVisible(false)}
+        footer={null}
+      >
+        {selectedBlog && (
+          <div>
+            <img
+              src={selectedBlog.thumbnail}
+              alt="Blog"
+              className="w-full h-60 object-cover mb-4 rounded"
+            />
+            <h3 className="text-xl font-semibold">{selectedBlog.name}</h3>
+            <p className="text-gray-600">{selectedBlog.description}</p>
+          </div>
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
       <Modal
         title="Confirm Delete"
         open={deleteModalVisible}
