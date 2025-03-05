@@ -193,7 +193,7 @@ const LandingPage = () => {
               introduce you to the lineup range and assist with your choices.
             </p>
             <Link
-              to="/products"
+              to="/about-us"
               className="inline-flex items-center text-black hover:opacity-75 transition-opacity"
             >
               <div className="border border-black px-8 py-4 flex items-center justify-between min-w-[300px]">

@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tooltip, Modal, Tag, Switch } from "antd";
+import { Table, Button, Space, Tooltip, Modal, Switch } from "antd";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  LoadingOutlined,
+  EyeOutlined, // 👁️ Added View Icon
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   getAllBlogs,
   deleteBlog,
@@ -21,41 +27,30 @@ const BlogManagement = () => {
   });
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [viewModalVisible, setViewModalVisible] = useState(false); // 👁️ View modal state
+  const [deletingBlogId, setDeletingBlogId] = useState(null);
 
-  const fetchBlogs = async (params = {}) => {
+  // Fetch blogs from API
+  const fetchBlogs = async () => {
     try {
       setLoading(true);
-      const response = await getAllBlogs({
-        page: params.page - 1 || 0,
-        size: params.pageSize || 10,
-      });
+      const response = await getAllBlogs();
 
       if (!response.error) {
-        setBlogs(response.result.blogResponses);
-        setPagination({
-          current: response.result.pageNumber + 1,
-          pageSize: response.result.pageSize,
-          total: response.result.totalElements,
-        });
+        const sortedBlogs = response.result.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+
+        setBlogs(sortedBlogs);
+        setPagination((prev) => ({
+          ...prev,
+          total: sortedBlogs.length,
+        }));
       } else {
-        toast.error(response.message, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to fetch blogs", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error("Failed to fetch blogs");
     } finally {
       setLoading(false);
     }
@@ -81,44 +76,22 @@ const BlogManagement = () => {
     if (!selectedBlog) return;
 
     try {
-      setLoading(true);
+      setDeletingBlogId(selectedBlog.id);
       const response = await deleteBlog(selectedBlog.id);
 
       if (!response.error) {
-        await fetchBlogs({
-          page: pagination.current,
-          pageSize: pagination.pageSize,
-        });
-        toast.success("Blog deleted successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        setBlogs((prevBlogs) =>
+          prevBlogs.filter((blog) => blog.id !== selectedBlog.id)
+        );
+        setPagination((prev) => ({ ...prev, total: prev.total - 1 }));
+        toast.success("Blog deleted successfully!");
       } else {
-        toast.error(response.message, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        toast.error(response.message);
       }
     } catch (error) {
-      console.error("Delete error:", error);
-      toast.error("Failed to delete blog", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error("Failed to delete blog");
     } finally {
-      setLoading(false);
+      setDeletingBlogId(null);
       setDeleteModalVisible(false);
       setSelectedBlog(null);
     }
@@ -129,12 +102,14 @@ const BlogManagement = () => {
       setLoading(true);
       const newStatus = blog.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
       const response = await updateBlogStatus(blog.id, newStatus);
+
       if (!response.error) {
         toast.success("Blog status updated successfully!");
-        fetchBlogs({
-          page: pagination.current,
-          pageSize: pagination.pageSize,
-        });
+        setBlogs((prevBlogs) =>
+          prevBlogs.map((b) =>
+            b.id === blog.id ? { ...b, status: newStatus } : b
+          )
+        );
       } else {
         toast.error(response.message);
       }
@@ -145,7 +120,19 @@ const BlogManagement = () => {
     }
   };
 
+  // Show View Modal
+  const showViewModal = (blog) => {
+    setSelectedBlog(blog);
+    setViewModalVisible(true);
+  };
+
   const columns = [
+    {
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
+      sorter: (a, b) => a.id - b.id,
+    },
     {
       title: "Image",
       dataIndex: "thumbnail",
@@ -187,20 +174,32 @@ const BlogManagement = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
-          <Tooltip title="Edit">
-            <Button
-              type="primary"
-              icon={<EditOutlined />}
-              onClick={() => navigate(`/admin/blog/edit/${record.id}`)}
-            />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => showDeleteConfirm(record)}
-            />
-          </Tooltip>
+          {deletingBlogId === record.id ? (
+            <LoadingOutlined style={{ fontSize: 20 }} />
+          ) : (
+            <>
+              <Tooltip title="View">
+                <Button
+                  icon={<EyeOutlined />}
+                  onClick={() => showViewModal(record)}
+                />
+              </Tooltip>
+              <Tooltip title="Edit">
+                <Button
+                  type="primary"
+                  icon={<EditOutlined />}
+                  onClick={() => navigate(`/admin/blog/edit/${record.id}`)}
+                />
+              </Tooltip>
+              <Tooltip title="Delete">
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => showDeleteConfirm(record)}
+                />
+              </Tooltip>
+            </>
+          )}
         </Space>
       ),
     },
@@ -226,6 +225,28 @@ const BlogManagement = () => {
         loading={loading}
         onChange={handleTableChange}
       />
+
+      {/* View Blog Modal */}
+      <Modal
+        title="Blog Details"
+        open={viewModalVisible}
+        onCancel={() => setViewModalVisible(false)}
+        footer={null}
+      >
+        {selectedBlog && (
+          <div>
+            <img
+              src={selectedBlog.thumbnail}
+              alt="Blog"
+              className="w-full h-60 object-cover mb-4 rounded"
+            />
+            <h3 className="text-xl font-semibold">{selectedBlog.name}</h3>
+            <p className="text-gray-600">{selectedBlog.description}</p>
+          </div>
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
       <Modal
         title="Confirm Delete"
         open={deleteModalVisible}
@@ -238,10 +259,7 @@ const BlogManagement = () => {
         cancelText="Cancel"
         okButtonProps={{ danger: true }}
       >
-        <p>
-          Are you sure you want to delete blog `&quot;`{selectedBlog?.name}
-          `&quot;`?
-        </p>
+        <p>Are you sure you want to delete blog "{selectedBlog?.name}"?</p>
         <p>This action cannot be undone.</p>
       </Modal>
       <ToastContainer />
