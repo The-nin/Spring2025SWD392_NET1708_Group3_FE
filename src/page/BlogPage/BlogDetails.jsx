@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getBlogById } from "../../service/blog/index"; // Import API call
+import { getBlogById } from "../../service/blog/index";
 import { Spin } from "antd";
+import "react-quill-new/dist/quill.snow.css"; // Ensure Quill styles are loaded
 
 const BlogDetail = () => {
   const { id } = useParams();
@@ -43,12 +44,12 @@ const BlogDetail = () => {
     <div className="bg-gray-100 min-h-screen p-6">
       <div className="max-w-3xl mx-auto bg-white p-6 shadow-lg rounded-lg">
         <h1 className="text-3xl font-bold text-black">{blog.blogName}</h1>
-        <img
-          src={blog.image}
-          alt={blog.blogName}
-          className="w-full rounded-lg mt-4"
+
+        {/* ✅ Properly Render Quill HTML */}
+        <div
+          className="ql-editor mt-4 text-gray-800"
+          dangerouslySetInnerHTML={{ __html: blog.content }}
         />
-        <p className="text-gray-700 mt-4">{blog.description}</p>
       </div>
     </div>
   );

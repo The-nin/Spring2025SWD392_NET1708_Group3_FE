@@ -42,22 +42,27 @@ const EditBlog = () => {
   const { id } = useParams();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState(""); // ✅ State for ReactQuill
 
   useEffect(() => {
     const fetchBlog = async () => {
       try {
         setLoading(true);
         const response = await getBlogById(id);
+
         if (response && response.result) {
           const blog = response.result;
+
+          // ✅ Set form fields
           form.setFieldsValue({
-            blogTitle: blog.blogName,
-            blogIntroduction: blog.description,
-            imageUrl: blog.image,
-            publishDate: dayjs(blog.date),
+            blogTitle: blog.blogName || "",
+            blogIntroduction: blog.description || "",
+            imageUrl: blog.image || "",
+            publishDate: blog.date ? dayjs(blog.date) : null,
           });
-          setContent(blog.content);
+
+          // ✅ Set Quill content correctly
+          setContent(blog.content || "");
         } else {
           toast.error("Failed to fetch blog details");
         }
@@ -67,8 +72,9 @@ const EditBlog = () => {
         setLoading(false);
       }
     };
+
     fetchBlog();
-  }, [id, form]);
+  }, [id]); // ✅ No need to include `form`, it will update automatically
 
   const onFinish = async (values) => {
     if (
@@ -89,7 +95,7 @@ const EditBlog = () => {
         description: values.blogIntroduction,
         status: "INACTIVE",
         date: values.publishDate.toISOString(),
-        content: content,
+        content: content, // ✅ Ensure content is included
       };
 
       const response = await updateBlog(id, blogData);
@@ -165,11 +171,12 @@ const EditBlog = () => {
               <Input placeholder="Enter image URL (e.g., https://example.com/image.jpg)" />
             </Form.Item>
 
-            <Form.Item label="Blog Content" name="content">
+            {/* ✅ ReactQuill - Fixed */}
+            <Form.Item label="Blog Content">
               <ReactQuill
                 theme="snow"
-                value={content}
-                onChange={setContent}
+                value={content} // ✅ Controlled component
+                onChange={(value) => setContent(value)} // ✅ Update state on change
                 modules={modules}
                 formats={formats}
               />

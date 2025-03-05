@@ -24,25 +24,27 @@ const HeroSection = () => {
   ];
 
   return (
-    <Carousel autoplay>
-      {heroImages.map(({ src, link }, index) => (
-        <motion.div
-          key={index}
-          className="h-[500px] text-white font-bold text-center bg-black"
-          variants={fadeIn}
-          initial="hidden"
-          animate="visible"
-        >
-          <Link to={link}>
-            <img
-              className="w-full h-full cursor-pointer"
-              src={src}
-              alt={`hero-${index}`}
-            />
-          </Link>
-        </motion.div>
-      ))}
-    </Carousel>
+    <div className="w-full max-w-7xl mx-auto px-4">
+      <Carousel autoplay>
+        {heroImages.map(({ src, link }, index) => (
+          <motion.div
+            key={index}
+            className="h-[500px] rounded-lg overflow-hidden"
+            variants={fadeIn}
+            initial="hidden"
+            animate="visible"
+          >
+            <Link to={link} className="block w-full h-full">
+              <img
+                className="w-full h-full object-cover cursor-pointer transition-all duration-300 hover:opacity-90"
+                src={src}
+                alt={`hero-${index}`}
+              />
+            </Link>
+          </motion.div>
+        ))}
+      </Carousel>
+    </div>
   );
 };
 
