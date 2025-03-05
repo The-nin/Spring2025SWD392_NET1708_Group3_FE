@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button, Space, Tooltip, Modal, Tag, Switch } from "antd";
 import { useNavigate } from "react-router-dom";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { getAllBrands, deleteBrand, updateBrandStatus } from "../../../service/brand/index";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
+import {
+  getAllBrands,
+  deleteBrand,
+  updateBrandStatus,
+} from "../../../service/brand/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -17,6 +26,7 @@ const BrandManagement = () => {
   });
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
 
   const fetchBrands = async (params = {}) => {
     try {
@@ -160,12 +170,6 @@ const BrandManagement = () => {
       key: "name",
     },
     {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-      ellipsis: true,
-    },
-    {
       title: "Status",
       dataIndex: "status",
       key: "status",
@@ -183,6 +187,16 @@ const BrandManagement = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
+          <Tooltip title="Details">
+            <Button
+              type="default"
+              icon={<InfoCircleOutlined />}
+              onClick={() => {
+                setSelectedBrand(record);
+                setDetailModalVisible(true);
+              }}
+            />
+          </Tooltip>
           <Tooltip title="Edit">
             <Button
               type="primary"
@@ -236,6 +250,39 @@ const BrandManagement = () => {
       >
         <p>Are you sure you want to delete brand "{selectedBrand?.name}"?</p>
         <p>This action cannot be undone.</p>
+      </Modal>
+      <Modal
+        title="Brand Details"
+        open={detailModalVisible}
+        onCancel={() => {
+          setDetailModalVisible(false);
+          setSelectedBrand(null);
+        }}
+        footer={null}
+      >
+        {selectedBrand && (
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <img
+                src={selectedBrand.thumbnail}
+                alt={selectedBrand.name}
+                className="w-32 h-32 object-cover rounded"
+              />
+            </div>
+            <div>
+              <h3 className="font-bold">Brand Name</h3>
+              <p>{selectedBrand.name}</p>
+            </div>
+            <div>
+              <h3 className="font-bold">Description</h3>
+              <p>{selectedBrand.description}</p>
+            </div>
+            <div>
+              <h3 className="font-bold">Status</h3>
+              <p>{selectedBrand.status}</p>
+            </div>
+          </div>
+        )}
       </Modal>
       <ToastContainer />
     </div>

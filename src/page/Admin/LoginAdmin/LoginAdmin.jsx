@@ -10,7 +10,6 @@ const LoginAdmin = () => {
   });
   const [error, setError] = useState("");
 
-  // ✅ Kiểm tra nếu admin đã đăng nhập, chuyển hướng về Dashboard
   useEffect(() => {
     const adminUser = JSON.parse(localStorage.getItem("adminUser"));
     if (adminUser?.token) {
@@ -31,19 +30,13 @@ const LoginAdmin = () => {
       }
 
       if (response?.code === 200) {
-        const { token, role, fullName } = response.result;
-
-        // Lưu thông tin đăng nhập vào localStorage
-        localStorage.setItem(
-          "adminUser",
-          JSON.stringify({
-            username: formData.username,
-            role,
-            fullName,
-            token,
-          })
-        );
-
+        // Kiểm tra role ADMIN
+        if (response.result.roleName !== "ADMIN") {
+          setError("Bạn không có quyền truy cập vào trang quản trị");
+          return;
+        }
+        localStorage.setItem("admin", response.result.roleName);
+        localStorage.setItem("token", response.result.token);
         navigate("/admin");
       } else {
         setError("Tên đăng nhập hoặc mật khẩu không đúng");

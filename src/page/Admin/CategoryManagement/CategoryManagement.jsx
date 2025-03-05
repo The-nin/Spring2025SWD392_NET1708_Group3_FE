@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button, Space, Tooltip, Modal, Tag, Switch } from "antd";
 import { useNavigate } from "react-router-dom";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 import {
   getAllCategories,
   deleteCategory,
@@ -21,6 +26,7 @@ const CategoryManagement = () => {
   });
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
 
   const fetchCategories = async (params = {}) => {
     try {
@@ -149,6 +155,16 @@ const CategoryManagement = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
+          <Tooltip title="Details">
+            <Button
+              type="default"
+              icon={<InfoCircleOutlined />}
+              onClick={() => {
+                setSelectedCategory(record);
+                setDetailModalVisible(true);
+              }}
+            />
+          </Tooltip>
           <Tooltip title="Edit">
             <Button
               type="primary"
@@ -204,6 +220,39 @@ const CategoryManagement = () => {
           Are you sure you want to delete category "{selectedCategory?.name}"?
         </p>
         <p>This action cannot be undone.</p>
+      </Modal>
+      <Modal
+        title="Category Details"
+        open={detailModalVisible}
+        onCancel={() => {
+          setDetailModalVisible(false);
+          setSelectedCategory(null);
+        }}
+        footer={null}
+      >
+        {selectedCategory && (
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <img
+                src={selectedCategory.thumbnail}
+                alt={selectedCategory.name}
+                className="w-32 h-32 object-cover rounded"
+              />
+            </div>
+            <div>
+              <h3 className="font-bold">Category Name</h3>
+              <p>{selectedCategory.name}</p>
+            </div>
+            <div>
+              <h3 className="font-bold">Description</h3>
+              <p>{selectedCategory.description}</p>
+            </div>
+            <div>
+              <h3 className="font-bold">Status</h3>
+              <p>{selectedCategory.status}</p>
+            </div>
+          </div>
+        )}
       </Modal>
       <ToastContainer />
     </div>

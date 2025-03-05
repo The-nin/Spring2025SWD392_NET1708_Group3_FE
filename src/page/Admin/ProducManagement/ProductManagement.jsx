@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button, Space, Tooltip, message, Modal, Switch } from "antd";
 import { useNavigate } from "react-router-dom";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 import {
   getAllProducts,
   deleteProduct,
@@ -22,6 +27,7 @@ const ProductManagement = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
 
   const fetchProducts = async (params = {}) => {
     try {
@@ -118,7 +124,7 @@ const ProductManagement = () => {
         <img
           src={thumbnail}
           alt="product"
-          style={{ width: "50px", height: "50px", objectFit: "cover" }}
+          className="w-16 h-16 object-cover rounded"
         />
       ),
     },
@@ -126,7 +132,6 @@ const ProductManagement = () => {
       title: "Product Name",
       dataIndex: "name",
       key: "name",
-      ellipsis: true,
     },
     {
       title: "Price",
@@ -152,6 +157,16 @@ const ProductManagement = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
+          <Tooltip title="Details">
+            <Button
+              type="default"
+              icon={<InfoCircleOutlined />}
+              onClick={() => {
+                setSelectedProduct(record);
+                setDetailModalVisible(true);
+              }}
+            />
+          </Tooltip>
           <Tooltip title="Edit">
             <Button
               type="primary"
@@ -203,8 +218,47 @@ const ProductManagement = () => {
         cancelText="Cancel"
         okButtonProps={{ danger: true }}
       >
-        <p>Are you sure you want to delete product "{selectedProduct?.name}"?</p>
+        <p>
+          Are you sure you want to delete product "{selectedProduct?.name}"?
+        </p>
         <p>This action cannot be undone.</p>
+      </Modal>
+      <Modal
+        title="Product Details"
+        open={detailModalVisible}
+        onCancel={() => {
+          setDetailModalVisible(false);
+          setSelectedProduct(null);
+        }}
+        footer={null}
+      >
+        {selectedProduct && (
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <img
+                src={selectedProduct.thumbnail}
+                alt={selectedProduct.name}
+                className="w-32 h-32 object-cover rounded"
+              />
+            </div>
+            <div>
+              <h3 className="font-bold">Product Name</h3>
+              <p>{selectedProduct.name}</p>
+            </div>
+            <div>
+              <h3 className="font-bold">Description</h3>
+              <p>{selectedProduct.description}</p>
+            </div>
+            <div>
+              <h3 className="font-bold">Price</h3>
+              <p>{selectedProduct.price?.toLocaleString("vi-VN")}đ</p>
+            </div>
+            <div>
+              <h3 className="font-bold">Status</h3>
+              <p>{selectedProduct.status}</p>
+            </div>
+          </div>
+        )}
       </Modal>
       <ToastContainer />
     </div>

@@ -53,6 +53,11 @@ const Sidebar = ({ collapsed, handleLogout }) => {
       icon: <OrderedListOutlined />,
       label: "Order Management",
     },
+    {
+      key: "/admin/batch",
+      icon: <OrderedListOutlined />,
+      label: "Batch Management",
+    },
   ];
 
   return (
