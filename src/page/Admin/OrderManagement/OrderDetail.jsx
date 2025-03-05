@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Card, Descriptions, Table, Tag, Spin, Button } from "antd";
-import { getOrderDetail } from "../../../service/order"; // Assuming this is your API service
+import { Card, Descriptions, Table, Tag, Spin, Button, Select } from "antd";
+import { getOrderDetail, updateOrderStatus } from "../../../service/order"; // Assuming this is your API service
 import { useParams, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -30,6 +30,74 @@ const OrderDetail = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStatusChange = async (newStatus) => {
+    try {
+      setLoading(true);
+      const response = await updateOrderStatus(id, newStatus);
+      if (response && response.code === 200) {
+        toast.success("Order status updated successfully!");
+        fetchOrderDetail();
+      } else {
+        toast.error("Failed to update order status");
+      }
+    } catch (error) {
+      toast.error("Error updating order status");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getAvailableStatuses = (currentStatus) => {
+    switch (currentStatus) {
+      case "PENDING":
+        return [
+          { value: "PROCESSING", label: "Processing" },
+          { value: "CANCELED", label: "Cancelled" },
+        ];
+      case "PROCESSING":
+        return [
+          { value: "DELIVERING", label: "Delivering" },
+          { value: "CANCELED", label: "Cancelled" },
+        ];
+      case "DELIVERING":
+        return [
+          { value: "DONE", label: "Done" },
+          { value: "CANCELED", label: "Cancelled" },
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const renderOrderStatus = () => {
+    const statusColors = {
+      PENDING: "text-yellow-500",
+      PROCESSING: "text-blue-500",
+      DELIVERING: "text-purple-500",
+      DONE: "text-green-600",
+      CANCELLED: "text-red-600",
+    };
+
+    const currentStatus = orderDetail.status || "PENDING";
+    const availableStatuses = getAvailableStatuses(currentStatus);
+
+    return (
+      <div className="flex items-center gap-4">
+        <span className={statusColors[currentStatus]}>{currentStatus}</span>
+        {availableStatuses.length > 0 &&
+          currentStatus !== "DONE" &&
+          currentStatus !== "CANCELED" && (
+            <Select
+              placeholder="Change status"
+              style={{ width: 150 }}
+              onChange={handleStatusChange}
+              options={availableStatuses}
+            />
+          )}
+      </div>
+    );
   };
 
   const columns = [
@@ -105,7 +173,7 @@ const OrderDetail = () => {
             </Tag>
           </Descriptions.Item>
           <Descriptions.Item label="Order Status">
-            {orderDetail.status || "PENDING"}
+            {renderOrderStatus()}
           </Descriptions.Item>
           <Descriptions.Item label="Order Info" span={3}>
             {orderDetail.orderInfo}

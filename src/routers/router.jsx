@@ -4,9 +4,7 @@ import LoginPage from "../page/LoginPage/LoginPage";
 import LandingPage from "../page/LandingPage/LandingPage";
 import AboutUsPage from "../page/AboutUsPage/AboutUsPage";
 import BlogPage from "../page/BlogPage/BlogPage";
-import Blog1 from "../page/BlogPage/Blog1";
-import Blog2 from "../page/BlogPage/Blog2";
-import Blog3 from "../page/BlogPage/Blog3";
+import BlogDetails from "../page/BlogPage/BlogDetails";
 import ShopPage from "../page/ShopPage/ShopPage";
 import HelpPage from "../page/HelpPage/HelpPage";
 import SkinQuiz from "../page/SkinQuiz/SkinQuiz";
@@ -28,6 +26,11 @@ import EditBrand from "../page/Admin/Brand/EditBrand";
 import BlogManagement from "../page/Admin/Blog/BlogManagement";
 import AddNewBlog from "../page/Admin/Blog/AddNewBlog";
 import EditBlog from "../page/Admin/Blog/EditBlog";
+import QuizManagement from "../page/Admin/Quiz/QuizManagement";
+import AddNewVoucher from "../page/Admin/Voucher/AddNewvoucher";
+import VoucherManagement from "../page/Admin/Voucher/VoucherManagement";
+import EditVoucher from "../page/Admin/Voucher/EditVoucher";
+import AddNewQuiz from "../page/Admin/Quiz/AddNewquiz";
 import Payment from "../page/PaymentPage/Payment";
 import { ProtectedUserRoute } from "./ProtectedUserRoute";
 import ProductDetail from "../page/ProductPage/ProductDetail";
@@ -38,6 +41,9 @@ import OrderDetail from "../page/Admin/OrderManagement/OrderDetail";
 import UserManagement from "../page/Admin/UserManagement/UserManagement";
 import ServiceManagement from "../page/ServiceManagement/ServiceManagement";
 import AddNewService from "../page/ServiceManagement/AddNewService";
+import BatchManagement from "../page/Admin/BatchManagement/BatchManagement";
+import AddNewBatch from "../page/Admin/BatchManagement/AddNewBatch";
+
 
 export const router = createBrowserRouter([
   {
@@ -65,16 +71,8 @@ export const router = createBrowserRouter([
         element: <BlogPage />,
       },
       {
-        path: "/blog1",
-        element: <Blog1 />,
-      },
-      {
-        path: "/blog2",
-        element: <Blog2 />,
-      },
-      {
-        path: "/blog3",
-        element: <Blog3 />,
+        path: "/blog/:id",
+        element: <BlogDetails />,
       },
       {
         path: "/skinquiz",
@@ -228,7 +226,34 @@ export const router = createBrowserRouter([
             element: <EditBlog />,
           },
           {
-            path: "service",
+            path: "batch",
+            element: <BatchManagement />,
+          },
+          {
+            path: "batch/add",
+            element: <AddNewBatch />,
+          },
+          {
+            path: "quiz",
+            element: <QuizManagement />,
+          },
+          {
+            path: "quiz/add",
+            element: <AddNewQuiz />,
+          },
+          {
+            path: "voucher",
+            element: <VoucherManagement />,
+          },
+          {
+            path: "voucher/add",
+            element: <AddNewVoucher />,
+          },
+          {
+            path: "voucher/edit/:id",
+            element: <EditVoucher />,
+          },
+          path: "service",
             children: [
               {
                 path: "",
@@ -239,7 +264,6 @@ export const router = createBrowserRouter([
                 element: <AddNewService />,
               },
             ],
-          },
         ],
       },
     ],

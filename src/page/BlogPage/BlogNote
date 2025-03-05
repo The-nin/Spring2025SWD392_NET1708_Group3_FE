@@ -1,0 +1,267 @@
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { FaArrowRight } from "react-icons/fa";
+import { getAllBlogs } from "../../service/blog/index"; // Import API call
+import { Spin } from "antd";
+
+const BlogPage = () => {
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch blogs from the backend
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const response = await getAllBlogs();
+        if (!response.error && Array.isArray(response.result)) {
+          setBlogs(response.result);
+        } else {
+          console.error("Failed to fetch blogs:", response.message);
+          setBlogs([]); // Ensures it doesn't break if response is invalid
+        }
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+        setBlogs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-gray-100 text-gray-900 min-h-screen">
+      {/* Header */}
+      <motion.header
+        className="bg-black text-white py-6 text-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <h1 className="text-3xl font-bold">Skincare Blog</h1>
+        <p className="text-lg mt-2">
+          Stay updated with the latest skincare tips
+        </p>
+      </motion.header>
+
+      {/* Blog Sections */}
+      {blogs.length === 0 ? (
+        <p className="text-center text-gray-600 mt-6">
+          No blogs available yet.
+        </p>
+      ) : (
+        blogs.map(({ id, title, description, link, image }, index) => (
+          <motion.section
+            key={id}
+            className="container mx-auto my-12 px-6"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: index * 0.1 }}
+            viewport={{ once: true }}
+          >
+            <div className="bg-white p-8 shadow-lg rounded-lg flex flex-col md:flex-row items-center">
+              {/* Text Section */}
+              <div className="md:w-1/2 text-center md:text-left">
+                <h2 className="text-3xl font-bold text-black mb-4 text-left">
+                  {title}
+                </h2>
+                <p className="text-gray-700 text-justify">{description}</p>
+                <Link
+                  to={link}
+                  className="inline-flex items-center text-black hover:opacity-75 transition-opacity"
+                >
+                  <motion.div
+                    className="border border-black px-8 py-4 flex items-center justify-between min-w-[180px] mt-4"
+                    whileHover={{ scale: 1.1 }}
+                  >
+                    <span className="text-gray-700">Read more</span>
+                    <FaArrowRight className="ml-4" />
+                  </motion.div>
+                </Link>
+              </div>
+
+              {/* Image Section */}
+              <motion.div
+                className="md:w-1/2 mt-6 md:mt-0 flex justify-center"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                viewport={{ once: true }}
+              >
+                <img
+                  src={image}
+                  alt={title}
+                  className="rounded-lg shadow-lg w-full max-w-xl transition-transform duration-500 ease-in-out transform hover:scale-105"
+                />
+              </motion.div>
+            </div>
+          </motion.section>
+        ))
+      )}
+    </div>
+  );
+};
+
+export default BlogPage;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import React from "react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { FaArrowRight } from "react-icons/fa";
+
+// Blog data array
+const blogs = [
+  {
+    id: 1,
+    title: "How to Build Your First Skincare Routine: A Step-by-Step Guide",
+    description:
+      "Starting a skincare routine can feel overwhelming, especially with all the options out there. But don't worry – it's simpler than you think! Whether you're new to skincare or looking to refine your routine, we’ve got you covered with a basic step-by-step guide.",
+    link: "/blog1",
+    image: "src/assets/img/blogpage-1.jpg", // Updated Image Path
+  },
+  {
+    id: 2,
+    title: "The Science of Glowing Skin",
+    description:
+      "Achieving beautiful skin is more than just using products; it’s about understanding what your skin truly needs. Hydration, a balanced diet, and a consistent skincare routine play essential roles in maintaining radiant skin.",
+    link: "/blog2",
+    image: "src/assets/img/blogpage-2.webp",
+  },
+  {
+    id: 3,
+    title: "Dealing with Acne: Tips and Best Products to Clear Your Skin",
+    description:
+      "Acne is one of the most common skin concerns. Fortunately, with the right skincare routine and products, you can tackle acne head-on and achieve clearer skin.",
+    link: "/blog3",
+    image: "src/assets/img/blogpage-3.webp",
+  },
+];
+
+const BlogPage = () => {
+  return (
+    <div className="bg-gray-100 text-gray-900 min-h-screen">
+      {/* Header */}
+      <motion.header
+        className="bg-black text-white py-6 text-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <h1 className="text-3xl font-bold">Skincare Blog</h1>
+        <p className="text-lg mt-2">
+          Stay updated with the best skincare tips and advice
+        </p>
+      </motion.header>
+
+      {/* Featured Post */}
+      <motion.div
+        className="mb-8 p-6 bg-white rounded-lg shadow-lg text-center"
+        initial={{ opacity: 0, scale: 0.9 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
+        <h2 className="text-2xl font-semibold">Featured Post</h2>
+        <p className="text-gray-600">
+          Discover the latest insights in skincare and beauty. Scroll to
+          discover.
+        </p>
+      </motion.div>
+
+      {/* Blog Sections */}
+      {blogs.map(({ id, title, description, link, image }) => (
+        <motion.section
+          key={id}
+          className="container mx-auto my-12 px-6"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: id * 0.1 }}
+          viewport={{ once: true }}
+        >
+          <div className="bg-white p-8 shadow-lg rounded-lg flex flex-col md:flex-row items-center">
+            {/* Text Section */}
+            <div className="md:w-1/2 text-center md:text-left">
+              <h2 className="text-3xl font-bold text-black mb-4 text-left">
+                {title}
+              </h2>
+              <p className="text-gray-700 text-justify">{description}</p>
+              <Link
+                to={link}
+                className="inline-flex items-center text-black hover:opacity-75 transition-opacity"
+              >
+                <motion.div
+                  className="border border-black px-8 py-4 flex items-center justify-between min-w-[180px] mt-4"
+                  whileHover={{ scale: 1.1 }}
+                >
+                  <span className="text-gray-700">Read more</span>
+                  <FaArrowRight className="ml-4" />
+                </motion.div>
+              </Link>
+            </div>
+
+            {/* Image Section */}
+            <motion.div
+              className="md:w-1/2 mt-6 md:mt-0 flex justify-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              <img
+                src={image}
+                alt={title}
+                className="rounded-lg shadow-lg w-full max-w-xl transition-transform duration-500 ease-in-out transform hover:scale-105"
+              />
+            </motion.div>
+          </div>
+        </motion.section>
+      ))}
+    </div>
+  );
+};
+
+export default BlogPage;

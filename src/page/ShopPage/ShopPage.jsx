@@ -6,6 +6,7 @@ import { getAllProduct } from "../../service/product/getAllProduct";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { SiDeluge } from "react-icons/si";
+
 const ShopPage = () => {
   const fadeIn = {
     hidden: { opacity: 0, y: 50 },
@@ -23,18 +24,45 @@ const ShopPage = () => {
   const [pageSize, setPageSize] = useState(8);
   const [totalItems, setTotalItems] = useState(0);
 
+  //search state
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [debouncedKeyword, setDebouncedKeyword] = useState("");
+
+  // Thêm state để lưu trữ categories
+  const [categories, setCategories] = useState([]);
+
+  // Thêm debounce effect để tránh gọi API quá nhiều
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedKeyword(searchKeyword);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchKeyword]);
+
+  // Hàm để lấy unique categories từ products
+  const extractUniqueCategories = (products) => {
+    const uniqueCategories = new Map();
+    products.forEach((product) => {
+      if (product.category) {
+        uniqueCategories.set(product.category.id, product.category);
+      }
+    });
+    return Array.from(uniqueCategories.values());
+  };
+
   const fetchProduct = async () => {
     try {
-      // Thay vì tạo URLSearchParams, tạo object params
       const params = {
         page: currentPage,
         size: pageSize,
+        keyword: debouncedKeyword,
       };
 
       if (slug) {
-        if (window.location.pathname.includes("/brand/")) {
+        if (window.location.pathname.includes("/shop/brand/")) {
           params.brandSlug = slug;
-        } else {
+        } else if (window.location.pathname.includes("/shop/category/")) {
           params.categorySlug = slug;
         }
       }
@@ -48,6 +76,11 @@ const ShopPage = () => {
       } else {
         setProducts(data.result.productResponses);
         setTotalItems(data.result.totalElements);
+        // Cập nhật categories
+        const uniqueCategories = extractUniqueCategories(
+          data.result.productResponses
+        );
+        setCategories(uniqueCategories);
       }
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -60,7 +93,7 @@ const ShopPage = () => {
   useEffect(() => {
     console.log(slug);
     fetchProduct();
-  }, [slug, currentPage, pageSize]); // Add currentPage and pageSize as dependencies
+  }, [slug, currentPage, pageSize, debouncedKeyword]); // Thêm debouncedKeyword vào dependencies
 
   const onPageChange = (page) => {
     setCurrentPage(page);
@@ -79,12 +112,65 @@ const ShopPage = () => {
         {/* Hero Section  */}
         <HeroSection />
 
-        {/* Nav product */}
-        <div className="flex gap-8 bg-amber-100 p-5 border-b-2 border-gray-200">
-          <a className="text-black hover:underline cursor-pointer">Shop All</a>
-          <a className="text-black hover:underline cursor-pointer">Toner</a>
-          <a className="text-black hover:underline cursor-pointer">Moister</a>
-          <a className="text-black hover:underline cursor-pointer">Serum</a>
+        {/* Combined Search and Nav Section */}
+        <div className="bg-white p-5">
+          <div className="container mx-auto">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              {/* Categories Navigation */}
+              <div className="flex flex-wrap items-center gap-6">
+                <a
+                  className={`text-gray-700 hover:text-gray-600 transition-colors duration-200 ${
+                    !slug ? "font-bold text-gray-600" : ""
+                  }`}
+                  onClick={() => {
+                    window.location.href = "/shop";
+                  }}
+                >
+                  Shop All
+                </a>
+                {categories.map((category) => (
+                  <a
+                    key={category.id}
+                    className={`text-gray-700 hover:text-gray-600 transition-colors duration-200 ${
+                      slug === category.slug ? "font-bold text-gray-600" : ""
+                    }`}
+                    onClick={() => {
+                      window.location.href = `/shop/category/${category.slug}`;
+                    }}
+                  >
+                    {category.name}
+                  </a>
+                ))}
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative w-full md:w-72">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-200"
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Header product */}

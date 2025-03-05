@@ -60,13 +60,6 @@ const Header = () => {
     fetchCartCount();
   }, [user]); // Re-fetch when user changes
 
-  const handleSearch = () => {
-    if (searchValue.trim()) {
-      console.log(`Searching for: ${searchValue}`);
-      // Ví dụ: window.location.href = `/search?query=${searchValue}`;
-    }
-  };
-
   const handleClickOutside = (event) => {
     if (searchRef.current && !searchRef.current.contains(event.target)) {
       if (!searchValue.trim()) {
@@ -246,39 +239,6 @@ const Header = () => {
                   </button>
                 </div>
               ) : null}
-
-              {/* Search Icon */}
-              <div className="relative group" ref={searchRef}>
-                {showSearch ? (
-                  <div className="flex items-center w-full border-b border-gray-400">
-                    <input
-                      type="text"
-                      className="w-full text-sm border-none focus:ring-0 outline-none placeholder-gray-400"
-                      placeholder="Search..."
-                      value={searchValue}
-                      onChange={(e) => setSearchValue(e.target.value)}
-                    />
-                    <button
-                      className="ml-2 text-gray-500 hover:text-black transition-colors"
-                      onClick={handleSearch}
-                    >
-                      <FaArrowRightLong size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="relative h-16 px-4 flex items-center hover:bg-gray-100 transition-colors duration-200">
-                    <FiSearch
-                      size={20}
-                      className="cursor-pointer text-gray-700 hover:text-black transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowSearch(true);
-                      }}
-                    />
-                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
-                  </div>
-                )}
-              </div>
 
               {/* Wishlist Link */}
               <div className="relative group">

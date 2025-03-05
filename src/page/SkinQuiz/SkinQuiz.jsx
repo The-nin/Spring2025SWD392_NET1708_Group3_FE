@@ -119,6 +119,14 @@ function SkinQuiz() {
     }, 300);
   };
 
+  const handleBack = () => {
+    if (currentQuestion > 0) {
+      setAnswers(answers.slice(0, -1)); // Remove last answer
+      setCurrentQuestion(currentQuestion - 1);
+      setSelectedAnswer(null);
+    }
+  };
+
   const calculateResult = (answers) => {
     const totalAnswers = answers.length;
     const typeCounts = answers.reduce((acc, type) => {
@@ -231,6 +239,16 @@ function SkinQuiz() {
                 </motion.button>
               ))}
             </div>
+
+            {/* Back Button */}
+            {currentQuestion > 0 && (
+              <button
+                onClick={handleBack}
+                className="mt-4 w-full bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition"
+              >
+                Back
+              </button>
+            )}
           </motion.div>
         )}
       </div>

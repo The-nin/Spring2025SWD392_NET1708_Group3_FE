@@ -3,6 +3,10 @@ import axios from "axios";
 export const instance = axios.create({
   baseURL: "http://localhost:8080/api/v1/swd392-skincare-products-sales-system",
   withCredentials: true,
+  timeout: 5000,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 instance.interceptors.response.use(function (response) {
