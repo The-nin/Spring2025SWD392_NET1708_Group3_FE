@@ -42,8 +42,6 @@ const AddNewBatch = () => {
         manufactureDate: values.manufactureDate.format("YYYY-MM-DD"),
         expirationDate: values.expirationDate.format("YYYY-MM-DD"),
         quantity: parseInt(values.quantity),
-        productName: products.find((product) => product.id === values.productId)
-          ?.name,
       };
 
       await addNewBatch(formattedData);
