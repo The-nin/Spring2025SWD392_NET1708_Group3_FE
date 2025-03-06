@@ -104,16 +104,15 @@ const ProductDetail = () => {
 
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            <span className="text-gray-600 font-medium">Vendor:</span>
-            <span className="text-gray-800">Skin White</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-gray-600 font-medium">SKU:</span>
-            <span className="text-gray-800">8964002548705</span>
-          </div>
-          <div className="flex items-center space-x-2">
             <span className="text-gray-600 font-medium">Availability:</span>
-            <span className="text-green-600 font-medium">In Stock</span>
+            {product.stock > 0 ? (
+              <div className="flex items-center space-x-2">
+                <span className="text-green-600 font-medium">In Stock</span>
+                <span className="text-gray-600">({product.stock} items)</span>
+              </div>
+            ) : (
+              <span className="text-red-600 font-medium">Out of Stock</span>
+            )}
           </div>
         </div>
 
@@ -130,7 +129,9 @@ const ProductDetail = () => {
                 </button>
                 <span className="px-6 font-medium">{quantity}</span>
                 <button
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() =>
+                    setQuantity(Math.min(product.stock, quantity + 1))
+                  }
                   className="hover:text-red-500 transition-colors"
                 >
                   <Plus size={18} />

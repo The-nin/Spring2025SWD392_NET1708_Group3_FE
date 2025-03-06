@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState } from "react";
-import { register } from "../../service/register/index"; // Import API đăng ký
+import { register, verifyOTP } from "../../service/register/index"; // Import API đăng ký
 import NotificationModal from "../../components/Notification/NotificationModal";
 import OTPModal from "./OTPmodal";
 
@@ -24,6 +24,7 @@ const RegisterForm = ({ onBackToLogin }) => {
     type: "success",
   });
   const [showOTPModal, setShowOTPModal] = useState(false);
+  const [userId, setUserId] = useState(null);
 
   const isFormValid =
     registerData.username &&
@@ -55,6 +56,7 @@ const RegisterForm = ({ onBackToLogin }) => {
       const response = await register(requestData);
 
       if (response?.code === 201) {
+        setUserId(response.result.id);
         setShowOTPModal(true);
       } else {
         setModalInfo({
@@ -76,23 +78,34 @@ const RegisterForm = ({ onBackToLogin }) => {
 
   const handleVerifyOTP = async (otp) => {
     try {
-      setShowOTPModal(false);
-      setModalInfo({
-        isOpen: true,
-        message: "Tạo tài khoản thành công! Vui lòng đăng nhập.",
-        type: "success",
-      });
-      setRegisterData({
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        dateOfBirth: "",
-        gender: "",
-      });
-      setTimeout(() => {
-        onBackToLogin();
-      }, 2000);
+      const response = await verifyOTP(userId, otp);
+
+      if (response?.code === 200) {
+        setShowOTPModal(false);
+        setModalInfo({
+          isOpen: true,
+          message: "Tạo tài khoản thành công! Vui lòng đăng nhập.",
+          type: "success",
+        });
+        setRegisterData({
+          username: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          dateOfBirth: "",
+          gender: "",
+        });
+        setTimeout(() => {
+          onBackToLogin();
+        }, 2000);
+      } else {
+        setModalInfo({
+          isOpen: true,
+          message:
+            response.message || "Mã OTP không chính xác. Vui lòng thử lại!",
+          type: "error",
+        });
+      }
     } catch (error) {
       setModalInfo({
         isOpen: true,

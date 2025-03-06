@@ -1,6 +1,11 @@
 import React from "react";
 
 const ProductCard = ({ tag, name, description, size, price, thumbnail }) => {
+  // Thêm hàm format số
+  const formatPrice = (price) => {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
   return (
     <div className="group cursor-pointer relative flex flex-col items-center text-center bg-white p-4 hover:shadow-xl transition duration-300 rounded-lg h-[500px] w-[300px]">
       {/* Tag */}
@@ -40,7 +45,7 @@ const ProductCard = ({ tag, name, description, size, price, thumbnail }) => {
 
         {/* Price */}
         <div className="h-[40px] w-full flex items-center justify-center">
-          <p className="font-semibold text-black">${price}</p>
+          <p className="font-semibold text-black">${formatPrice(price)}</p>
         </div>
       </div>
 

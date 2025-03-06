@@ -29,20 +29,14 @@ const BatchManagement = () => {
       sorter: true,
     },
     {
-      title: "Mã sản phẩm",
-      dataIndex: "productId",
-      key: "productId",
+      title: "Tên sản phẩm",
+      dataIndex: "productName",
+      key: "productName",
     },
     {
       title: "Số lượng",
       dataIndex: "quantity",
       key: "quantity",
-    },
-    {
-      title: "Giá nhập",
-      dataIndex: "importPrice",
-      key: "importPrice",
-      render: (price) => `${price.toLocaleString()} VNĐ`,
     },
     {
       title: "Ngày sản xuất",

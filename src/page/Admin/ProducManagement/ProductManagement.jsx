@@ -370,6 +370,10 @@ const ProductManagement = () => {
               <p>{selectedProduct.price?.toLocaleString("vi-VN")}đ</p>
             </div>
             <div>
+              <h3 className="font-bold">Stock</h3>
+              <p>{selectedProduct.stock || 0}</p>
+            </div>
+            <div>
               <h3 className="font-bold">Status</h3>
               <p>{selectedProduct.status}</p>
             </div>

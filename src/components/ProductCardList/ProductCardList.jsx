@@ -80,7 +80,9 @@ function ProductCardList({
 
           {/* Price */}
           <div className="h-10 flex items-center justify-center">
-            <p className="font-semibold text-black">${price}</p>
+            <p className="font-semibold text-black">
+              ${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+            </p>
           </div>
         </div>
       </div>

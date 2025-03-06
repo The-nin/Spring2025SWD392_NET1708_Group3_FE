@@ -41,8 +41,9 @@ const AddNewBatch = () => {
         ...values,
         manufactureDate: values.manufactureDate.format("YYYY-MM-DD"),
         expirationDate: values.expirationDate.format("YYYY-MM-DD"),
-        importPrice: parseFloat(values.importPrice),
         quantity: parseInt(values.quantity),
+        productName: products.find((product) => product.id === values.productId)
+          ?.name,
       };
 
       await addNewBatch(formattedData);
@@ -76,14 +77,6 @@ const AddNewBatch = () => {
           rules={[{ required: true, message: "Vui lòng nhập số lượng" }]}
         >
           <Input type="number" />
-        </Form.Item>
-
-        <Form.Item
-          name="importPrice"
-          label="Giá nhập"
-          rules={[{ required: true, message: "Vui lòng nhập giá nhập" }]}
-        >
-          <Input type="number" step="0.1" />
         </Form.Item>
 
         <Form.Item
