@@ -29,7 +29,10 @@ const Total = ({ buttonText, onNext }) => {
           <p>Thành Tiền</p>
           <p>
             {cartData
-              ? `${cartData.totalPrice.toLocaleString("vi-VN")}đ`
+              ? `${cartData.totalPrice.toLocaleString("vi-VN", {
+                  maximumFractionDigits: 0,
+                  minimumFractionDigits: 0,
+                })}đ`
               : "Đang tải..."}
           </p>
         </div>
@@ -51,7 +54,10 @@ const Total = ({ buttonText, onNext }) => {
         <p>Tổng Tiền</p>
         <p>
           {cartData
-            ? `${cartData.totalPrice.toLocaleString("vi-VN")}đ`
+            ? `${cartData.totalPrice.toLocaleString("vi-VN", {
+                maximumFractionDigits: 0,
+                minimumFractionDigits: 0,
+              })}đ`
             : "Đang tải..."}
         </p>
       </div>

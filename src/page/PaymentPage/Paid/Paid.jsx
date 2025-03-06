@@ -29,10 +29,10 @@ const Paid = ({ selectedAddressId, cartId }) => {
       if (!response.error) {
         console.log(selectedPaymentMethod);
         if (selectedPaymentMethod === "VNPAY" && response.result.redirectUrl) {
-          // window.location.href = response.result.redirectUrl;
+          window.location.href = response.result.redirectUrl;
           console.log(response.result.redirectUrl);
         } else {
-          navigate("/my", {
+          navigate("/", {
             state: {
               orderId: response.result.orderId,
             },

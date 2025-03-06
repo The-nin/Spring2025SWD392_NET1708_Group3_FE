@@ -133,7 +133,11 @@ function Cart() {
                       </div>
                     </td>
                     <td className="text-sm font-medium text-gray-700">
-                      ${product.price}
+                      $
+                      {product.price.toLocaleString("vi-VN", {
+                        maximumFractionDigits: 0,
+                        minimumFractionDigits: 0,
+                      })}
                     </td>
                     <td>
                       <div className="flex items-center space-x-2">
@@ -167,7 +171,11 @@ function Cart() {
                       </div>
                     </td>
                     <td className="text-sm font-medium text-gray-700">
-                      ${product.totalItemPrice}
+                      $
+                      {product.totalItemPrice.toLocaleString("vi-VN", {
+                        maximumFractionDigits: 0,
+                        minimumFractionDigits: 0,
+                      })}
                     </td>
                     <td>
                       <button
@@ -187,7 +195,13 @@ function Cart() {
             <div className="mt-8 border-t pt-6">
               <div className="flex justify-end items-center space-x-8">
                 <div className="text-lg font-semibold text-gray-700">Total</div>
-                <div className="text-2xl font-bold">${cart.totalPrice}</div>
+                <div className="text-2xl font-bold">
+                  $
+                  {cart.totalPrice.toLocaleString("vi-VN", {
+                    maximumFractionDigits: 0,
+                    minimumFractionDigits: 0,
+                  })}
+                </div>
               </div>
               <p className="text-right text-sm text-gray-500 mt-2">
                 Shipping Fee will be calculated at the time of purchase
