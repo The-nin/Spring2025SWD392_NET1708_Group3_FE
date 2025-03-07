@@ -208,7 +208,7 @@ export const updateProductStatus = async (productId, status) => {
 };
 
 // Add this function after getAllProducts
-const uploadToCloudinary = async (file) => {
+export const uploadToCloudinary = async (file) => {
   try {
     const CLOUDINARY_UPLOAD_PRESET = "phuocnt-cloudinary";
     const CLOUDINARY_CLOUD_NAME = "dl5dphe0f";
