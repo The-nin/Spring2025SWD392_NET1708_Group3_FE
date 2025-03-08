@@ -41,8 +41,9 @@ import OrderDetail from "../page/Admin/OrderManagement/OrderDetail";
 import UserManagement from "../page/Admin/UserManagement/UserManagement";
 import ServiceManagement from "../page/ServiceManagement/ServiceManagement";
 import AddNewService from "../page/ServiceManagement/AddNewService";
-import BatchManagement from "../page/Admin/BatchManagement/BatchManagement";
-import AddNewBatch from "../page/Admin/BatchManagement/AddNewBatch";
+import CategoryDetail from "../page/Admin/CategoryManagement/CategoryDetail";
+import BrandDetail from "../page/Admin/Brand/BrandDetail";
+import ProductDetailAdmin from "../page/Admin/ProducManagement/ProductDetail";
 
 export const router = createBrowserRouter([
   {
@@ -173,6 +174,10 @@ export const router = createBrowserRouter([
                 path: "edit/:id",
                 element: <EditCategory />,
               },
+              {
+                path: "detail/:id",
+                element: <CategoryDetail />,
+              },
             ],
           },
           {
@@ -198,6 +203,10 @@ export const router = createBrowserRouter([
                 path: "edit/:id",
                 element: <EditProduct />,
               },
+              {
+                path: "detail/:id",
+                element: <ProductDetailAdmin />,
+              },
             ],
           },
           {
@@ -213,6 +222,10 @@ export const router = createBrowserRouter([
             element: <EditBrand />,
           },
           {
+            path: "brand/detail/:id",
+            element: <BrandDetail />,
+          },
+          {
             path: "blog",
             element: <BlogManagement />,
           },
@@ -223,14 +236,6 @@ export const router = createBrowserRouter([
           {
             path: "blog/edit/:id",
             element: <EditBlog />,
-          },
-          {
-            path: "batch",
-            element: <BatchManagement />,
-          },
-          {
-            path: "batch/add",
-            element: <AddNewBatch />,
           },
           {
             path: "quiz",

@@ -102,7 +102,7 @@ const MyOrderedDetail = ({ order, onBack }) => {
               >
                 <div className="flex items-center gap-4">
                   <img
-                    src={item.productImage || "placeholder-image-url"}
+                    src={item.thumbnailProduct || "placeholder-image-url"}
                     alt={item.productName}
                     className="w-16 h-16 object-cover rounded-lg"
                   />

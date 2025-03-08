@@ -63,11 +63,6 @@ const Sidebar = ({ collapsed }) => {
       label: "Voucher Management",
     },
     {
-      key: "/admin/batch",
-      icon: <OrderedListOutlined />,
-      label: "Batch Management",
-    },
-    {
       key: "/admin/service",
       icon: <CustomerServiceOutlined />,
       label: "Service Management",

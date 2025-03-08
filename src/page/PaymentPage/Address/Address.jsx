@@ -18,6 +18,11 @@ const Address = ({ onNext }) => {
         const response = await getAddresses();
         if (!response.error) {
           setAddresses(response.result);
+          // Tự động chọn địa chỉ mặc định
+          const defaultAddress = response.result.find((addr) => addr.isDefault);
+          if (defaultAddress) {
+            setSelectedAddressId(defaultAddress.id);
+          }
         }
       } catch (error) {
         console.error("Error fetching addresses:", error);

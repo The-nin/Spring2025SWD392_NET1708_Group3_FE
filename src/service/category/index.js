@@ -93,18 +93,22 @@ export const uploadToCloudinary = async (file) => {
 export const addCategory = async (formData) => {
   try {
     const token = localStorage.getItem("token");
-
-    // Get the file and form data
     const requestData = JSON.parse(formData.get("request"));
     const file = formData.get("thumbnail");
 
     // Upload to Cloudinary first
     const imageUrl = await uploadToCloudinary(file);
 
-    // Create the final request data
+    // Clean description content
+    const cleanDescription = requestData.description
+      .replace(/<p><br><\/p>/g, "")
+      .trim();
+
     const categoryData = {
-      ...requestData,
+      name: requestData.name.trim(),
+      description: cleanDescription,
       thumbnail: imageUrl,
+      status: 1,
     };
 
     const response = await instance.post("admin/categories", categoryData, {
@@ -122,8 +126,7 @@ export const addCategory = async (formData) => {
   } catch (error) {
     console.error("Add category error:", {
       message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
+      response: error.response,
     });
     return {
       error: true,
@@ -139,7 +142,9 @@ export const updateCategory = async (id, categoryData) => {
       `admin/categories/${id}`,
       {
         name: categoryData.name,
-        description: categoryData.description,
+        description: categoryData.description
+          .trim()
+          .replace(/[\u200B-\u200D\uFEFF]/g, ""),
         status: categoryData.status,
         thumbnail: categoryData.thumbnail,
       },
@@ -185,28 +190,28 @@ export const deleteCategory = async (id) => {
   }
 };
 
-export const updateCategoryStatus = async (categoryId, status) => {
-  try {
-    const token = localStorage.getItem("token");
-    const response = await instance.patch(
-      `admin/categories/change-status/${categoryId}?status=${status}`,
-      { status },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    return {
-      error: false,
-      result: response.result,
-      message: response.message,
-    };
-  } catch (error) {
-    console.error("Update category status error:", error);
-    return {
-      error: true,
-      message: error.response?.message || "Failed to update category status",
-    };
-  }
-};
+// export const updateCategoryStatus = async (categoryId, status) => {
+//   try {
+//     const token = localStorage.getItem("token");
+//     const response = await instance.patch(
+//       `admin/categories/change-status/${categoryId}?status=${status}`,
+//       { status },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       }
+//     );
+//     return {
+//       error: false,
+//       result: response.result,
+//       message: response.message,
+//     };
+//   } catch (error) {
+//     console.error("Update category status error:", error);
+//     return {
+//       error: true,
+//       message: error.response?.message || "Failed to update category status",
+//     };
+//   }
+// };

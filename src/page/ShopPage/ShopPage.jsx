@@ -117,7 +117,7 @@ const ShopPage = () => {
           <div className="container mx-auto">
             <div className="flex flex-wrap items-center justify-between gap-4">
               {/* Categories Navigation */}
-              <div className="flex flex-wrap items-center gap-6">
+              <div className="flex flex-wrap items-center gap-6 cursor-pointer">
                 <a
                   className={`text-gray-700 hover:text-gray-600 transition-colors duration-200 ${
                     !slug ? "font-bold text-gray-600" : ""

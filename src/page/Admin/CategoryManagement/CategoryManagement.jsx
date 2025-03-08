@@ -10,7 +10,6 @@ import {
 import {
   getAllCategories,
   deleteCategory,
-  updateCategoryStatus,
 } from "../../../service/category/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -26,7 +25,6 @@ const CategoryManagement = () => {
   });
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [filters, setFilters] = useState({
     keyword: "",
     sortBy: "",
@@ -83,27 +81,6 @@ const CategoryManagement = () => {
     fetchCategories(params);
   };
 
-  const toggleCategoryStatus = async (category) => {
-    try {
-      setLoading(true);
-      const newStatus = category.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-      const response = await updateCategoryStatus(category.id, newStatus);
-      if (!response.error) {
-        toast.success("Category status updated successfully!");
-        fetchCategories({
-          page: pagination.current,
-          pageSize: pagination.pageSize,
-        });
-      } else {
-        toast.error(response.message);
-      }
-    } catch (error) {
-      toast.error("Failed to update category status");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const showDeleteConfirm = (category) => {
     setSelectedCategory(category);
     setDeleteModalVisible(true);
@@ -152,25 +129,6 @@ const CategoryManagement = () => {
       sorter: true,
     },
     {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-      ellipsis: true,
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status, record) => (
-        <Switch
-          checked={status === "ACTIVE"}
-          onChange={() => toggleCategoryStatus(record)}
-          checkedChildren="Active"
-          unCheckedChildren="Inactive"
-        />
-      ),
-    },
-    {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
@@ -179,10 +137,7 @@ const CategoryManagement = () => {
             <Button
               type="default"
               icon={<InfoCircleOutlined />}
-              onClick={() => {
-                setSelectedCategory(record);
-                setDetailModalVisible(true);
-              }}
+              onClick={() => navigate(`/admin/category/detail/${record.id}`)}
             />
           </Tooltip>
           <Tooltip title="Edit">
@@ -261,39 +216,6 @@ const CategoryManagement = () => {
           Are you sure you want to delete category "{selectedCategory?.name}"?
         </p>
         <p>This action cannot be undone.</p>
-      </Modal>
-      <Modal
-        title="Category Details"
-        open={detailModalVisible}
-        onCancel={() => {
-          setDetailModalVisible(false);
-          setSelectedCategory(null);
-        }}
-        footer={null}
-      >
-        {selectedCategory && (
-          <div className="space-y-4">
-            <div className="flex justify-center">
-              <img
-                src={selectedCategory.thumbnail}
-                alt={selectedCategory.name}
-                className="w-32 h-32 object-cover rounded"
-              />
-            </div>
-            <div>
-              <h3 className="font-bold">Category Name</h3>
-              <p>{selectedCategory.name}</p>
-            </div>
-            <div>
-              <h3 className="font-bold">Description</h3>
-              <p>{selectedCategory.description}</p>
-            </div>
-            <div>
-              <h3 className="font-bold">Status</h3>
-              <p>{selectedCategory.status}</p>
-            </div>
-          </div>
-        )}
       </Modal>
       <ToastContainer />
     </div>

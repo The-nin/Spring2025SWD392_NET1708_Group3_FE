@@ -7,11 +7,7 @@ import {
   DeleteOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
-import {
-  getAllBrands,
-  deleteBrand,
-  updateBrandStatus,
-} from "../../../service/brand/index";
+import { getAllBrands, deleteBrand } from "../../../service/brand/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -149,27 +145,6 @@ const BrandManagement = () => {
     }
   };
 
-  const toggleBrandStatus = async (brand) => {
-    try {
-      setLoading(true);
-      const newStatus = brand.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-      const response = await updateBrandStatus(brand.id, newStatus);
-      if (!response.error) {
-        toast.success("Brand status updated successfully!");
-        fetchBrands({
-          page: pagination.current,
-          pageSize: pagination.pageSize,
-        });
-      } else {
-        toast.error(response.message);
-      }
-    } catch (error) {
-      toast.error("Failed to update brand status");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const columns = [
     {
       title: "Image",
@@ -190,19 +165,6 @@ const BrandManagement = () => {
       sorter: true,
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status, record) => (
-        <Switch
-          checked={status === "ACTIVE"}
-          onChange={() => toggleBrandStatus(record)}
-          checkedChildren="Active"
-          unCheckedChildren="Inactive"
-        />
-      ),
-    },
-    {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
@@ -211,10 +173,7 @@ const BrandManagement = () => {
             <Button
               type="default"
               icon={<InfoCircleOutlined />}
-              onClick={() => {
-                setSelectedBrand(record);
-                setDetailModalVisible(true);
-              }}
+              onClick={() => navigate(`/admin/brand/detail/${record.id}`)}
             />
           </Tooltip>
           <Tooltip title="Edit">
@@ -291,39 +250,6 @@ const BrandManagement = () => {
       >
         <p>Are you sure you want to delete brand "{selectedBrand?.name}"?</p>
         <p>This action cannot be undone.</p>
-      </Modal>
-      <Modal
-        title="Brand Details"
-        open={detailModalVisible}
-        onCancel={() => {
-          setDetailModalVisible(false);
-          setSelectedBrand(null);
-        }}
-        footer={null}
-      >
-        {selectedBrand && (
-          <div className="space-y-4">
-            <div className="flex justify-center">
-              <img
-                src={selectedBrand.thumbnail}
-                alt={selectedBrand.name}
-                className="w-32 h-32 object-cover rounded"
-              />
-            </div>
-            <div>
-              <h3 className="font-bold">Brand Name</h3>
-              <p>{selectedBrand.name}</p>
-            </div>
-            <div>
-              <h3 className="font-bold">Description</h3>
-              <p>{selectedBrand.description}</p>
-            </div>
-            <div>
-              <h3 className="font-bold">Status</h3>
-              <p>{selectedBrand.status}</p>
-            </div>
-          </div>
-        )}
       </Modal>
       <ToastContainer />
     </div>

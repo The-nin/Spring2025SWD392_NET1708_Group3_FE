@@ -61,18 +61,22 @@ export const getBrandById = async (id) => {
 export const addBrand = async (formData) => {
   try {
     const token = localStorage.getItem("token");
-
-    // Get the file and form data
     const requestData = JSON.parse(formData.get("request"));
     const file = formData.get("thumbnail");
 
     // Upload to Cloudinary first
     const imageUrl = await uploadToCloudinary(file);
 
-    // Create the final request data
+    // Clean description content
+    const cleanDescription = requestData.description
+      .replace(/<p><br><\/p>/g, "")
+      .trim();
+
     const brandData = {
-      ...requestData,
+      name: requestData.name.trim(),
+      description: cleanDescription,
       thumbnail: imageUrl,
+      status: 1,
     };
 
     const response = await instance.post("admin/brands", brandData, {
@@ -95,51 +99,39 @@ export const addBrand = async (formData) => {
     });
     return {
       error: true,
-      message: error.response?.message || "Failed to add brand",
+      message: error.response?.data?.message || "Failed to add brand",
     };
   }
 };
 
-export const updateBrand = async (id, formData) => {
+export const updateBrand = async (id, updateData) => {
   try {
     const token = localStorage.getItem("token");
 
-    // Nếu formData là FormData (có file mới)
-    if (formData instanceof FormData) {
-      const requestData = JSON.parse(formData.get("request"));
-      const file = formData.get("thumbnail");
-
-      // Nếu có file mới, upload lên Cloudinary
-      let brandData = { ...requestData };
-      if (file) {
-        const imageUrl = await uploadToCloudinary(file);
-        brandData.thumbnail = imageUrl;
-      }
-
-      const response = await instance.put(`admin/brands/${id}`, brandData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      return {
-        error: false,
-        result: response.result,
-        message: response.message,
-      };
-    } else {
-      // Xử lý trường hợp không có file mới
-      const response = await instance.put(`admin/brands/${id}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return {
-        error: false,
-        result: response.result,
-        message: response.message,
-      };
+    // Clean description content if it exists
+    if (updateData.description) {
+      updateData.description = updateData.description
+        .replace(/<p><br><\/p>/g, "")
+        .trim();
     }
+
+    // Clean name if it exists
+    if (updateData.name) {
+      updateData.name = updateData.name.trim();
+    }
+
+    const response = await instance.put(`admin/brands/${id}`, updateData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
   } catch (error) {
     console.error("Update brand error:", error);
     return {

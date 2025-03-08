@@ -52,9 +52,15 @@ export const addProduct = async (formData) => {
     // Upload to Cloudinary first
     const imageUrl = await uploadToCloudinary(file);
 
+    // Clean description content
+    const cleanDescription = requestData.description
+      .replace(/<p><br><\/p>/g, "")
+      .trim();
+
     // Create the final request data
     const productData = {
       ...requestData,
+      description: cleanDescription,
       thumbnail: imageUrl,
     };
 
@@ -82,12 +88,24 @@ export const addProduct = async (formData) => {
 export const updateProduct = async (id, formData) => {
   try {
     const token = localStorage.getItem("token");
-    
+
     // Nếu formData là FormData (có file mới)
     if (formData instanceof FormData) {
       const requestData = JSON.parse(formData.get("request"));
       const file = formData.get("thumbnail");
-      
+
+      // Clean description content if it exists
+      if (requestData.description) {
+        requestData.description = requestData.description
+          .replace(/<p><br><\/p>/g, "")
+          .trim();
+      }
+
+      // Clean name if it exists
+      if (requestData.name) {
+        requestData.name = requestData.name.trim();
+      }
+
       // Nếu có file mới, upload lên Cloudinary
       let productData = { ...requestData };
       if (file) {
@@ -95,32 +113,37 @@ export const updateProduct = async (id, formData) => {
         productData.thumbnail = imageUrl;
       }
 
-      const response = await instance.put(
-        `admin/products/${id}`,
-        productData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await instance.put(`admin/products/${id}`, productData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       return {
         error: false,
         result: response.result,
         message: response.message,
       };
     } else {
-      // Xử lý trường hợp không có file mới (giữ nguyên code cũ)
-      const response = await instance.put(
-        `admin/products/${id}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // If formData is a regular object (no new file)
+      // Clean description content if it exists
+      if (formData.description) {
+        formData.description = formData.description
+          .replace(/<p><br><\/p>/g, "")
+          .trim();
+      }
+
+      // Clean name if it exists
+      if (formData.name) {
+        formData.name = formData.name.trim();
+      }
+
+      const response = await instance.put(`admin/products/${id}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       return {
         error: false,
         result: response.result,
@@ -229,5 +252,53 @@ export const uploadToCloudinary = async (file) => {
   } catch (error) {
     console.error("Cloudinary upload error:", error);
     throw new Error("Failed to upload image to Cloudinary");
+  }
+};
+
+export const addNewBatch = async (productId, batchData) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await instance.post(
+      `admin/products/import-batch/${productId}`,
+      batchData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
+  } catch (error) {
+    console.error("Add batch error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "Failed to add batch",
+    };
+  }
+};
+
+export const getBatches = async (productId) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await instance.get(`admin/products/${productId}/batches`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
+  } catch (error) {
+    console.error("Get batches error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "Failed to fetch batches",
+    };
   }
 };

@@ -23,3 +23,28 @@ export const checkout = async (checkoutData) => {
     };
   }
 };
+
+export const verifyVNPayPayment = async (queryString) => {
+  try {
+    // Chuyển đổi query string thành object params
+    const queryParams = new URLSearchParams(queryString);
+    const params = Object.fromEntries(queryParams.entries());
+
+    // Tạo URL với params
+    const queryParameters = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      queryParameters.append(key, value);
+    });
+
+    const response = await instance.get(
+      `/orders/payment-callback?${queryParameters}`
+    );
+    return response.data;
+  } catch (error) {
+    return {
+      error: true,
+      message:
+        error.response?.message || "Có lỗi xảy ra khi xác thực thanh toán",
+    };
+  }
+};
