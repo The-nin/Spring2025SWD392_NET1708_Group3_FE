@@ -44,7 +44,6 @@ import AddNewService from "../page/ServiceManagement/AddNewService";
 import BatchManagement from "../page/Admin/BatchManagement/BatchManagement";
 import AddNewBatch from "../page/Admin/BatchManagement/AddNewBatch";
 
-
 export const router = createBrowserRouter([
   {
     path: "*",
@@ -253,7 +252,8 @@ export const router = createBrowserRouter([
             path: "voucher/edit/:id",
             element: <EditVoucher />,
           },
-          path: "service",
+          {
+            path: "service",
             children: [
               {
                 path: "",
@@ -264,6 +264,7 @@ export const router = createBrowserRouter([
                 element: <AddNewService />,
               },
             ],
+          },
         ],
       },
     ],

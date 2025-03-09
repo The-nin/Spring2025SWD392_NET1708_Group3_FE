@@ -125,7 +125,7 @@ export const updateVoucher = async (id, voucherData) => {
     };
   } catch (error) {
     console.error(
-      "❌ Update voucher error:",
+      "Update voucher error:",
       error.response?.data || error.message
     );
 

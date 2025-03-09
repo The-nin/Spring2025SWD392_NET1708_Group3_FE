@@ -41,10 +41,10 @@ const Blog1 = () => {
       <div className="mb-8">
         <p className="text-lg text-gray-700">
           Starting a skincare routine can feel overwhelming, especially with all
-          the options out there. But don`&apos;`t worry – it`&apos;`s simpler
-          than you think! Whether you`&apos;`re new to skincare or looking to
-          refine your routine, we’ve got you covered with a basic step-by-step
-          guide to building a skincare routine that works for you.
+          the options out there. But don't worry – it't is simpler than you
+          think! Whether you're new to skincare or looking to refine your
+          routine, we’ve got you covered with a basic step-by-step guide to
+          building a skincare routine that works for you.
         </p>
       </div>
 

@@ -27,7 +27,7 @@ export const getAllQuizs = async () => {
 export const getQuizById = async (quizId) => {
   const token = localStorage.getItem("token");
   try {
-    const response = await instance.get(`/quizs/${quizId}`, {
+    const response = await instance.get(`/admin/quizs/${quizId}`, {
       headers: {
         authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -44,13 +44,13 @@ export const getQuizById = async (quizId) => {
 };
 
 // ✅ Submit a quiz (Admin Access Required)
-export const submitQuiz = async (quizId, quizData) => {
+export const addQuiz = async (quizId, quizData) => {
   const token = localStorage.getItem("token");
 
   try {
     console.log("📤 Submitting Quiz:", JSON.stringify(quizData, null, 2)); // ✅ Logs the request body
 
-    const response = await instance.post(`/quizs/submit/${quizId}`, quizData, {
+    const response = await instance.post(`/admin/quizs/${quizId}`, quizData, {
       headers: {
         authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -74,7 +74,7 @@ export const submitQuiz = async (quizId, quizData) => {
 export const updateQuiz = async (quizId, quizData) => {
   const token = localStorage.getItem("token");
   try {
-    const response = await instance.put(`/quizs/${quizId}`, quizData, {
+    const response = await instance.put(`/admin/quizs/${quizId}`, quizData, {
       headers: {
         authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -95,7 +95,7 @@ export const updateQuiz = async (quizId, quizData) => {
 export const deleteQuiz = async (quizId) => {
   const token = localStorage.getItem("token");
   try {
-    const response = await instance.delete(`/quizs/${quizId}`, {
+    const response = await instance.delete(`/admin/quizs/${quizId}`, {
       headers: {
         authorization: `Bearer ${token}`,
       },
