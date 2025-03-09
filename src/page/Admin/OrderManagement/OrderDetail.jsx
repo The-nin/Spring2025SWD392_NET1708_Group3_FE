@@ -151,6 +151,23 @@ const OrderDetail = () => {
 
   const columns = [
     {
+      title: "Product Image",
+      dataIndex: "thumbnailProduct",
+      key: "thumbnailProduct",
+      render: (thumbnailProduct) =>
+        thumbnailProduct ? (
+          <img
+            src={thumbnailProduct}
+            alt="Product thumbnail"
+            className="w-16 h-16 object-cover rounded"
+          />
+        ) : (
+          <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
+            No image
+          </div>
+        ),
+    },
+    {
       title: "Product Name",
       dataIndex: "productName",
       key: "productName",
