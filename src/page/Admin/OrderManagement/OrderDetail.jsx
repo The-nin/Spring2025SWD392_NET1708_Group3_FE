@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Card, Descriptions, Table, Tag, Spin, Button, Select } from "antd";
-import { getOrderDetail, updateOrderStatus } from "../../../service/order"; // Assuming this is your API service
+import {
+  getOrderDetail,
+  updateOrderStatus,
+  changeToDelivery,
+  updateDeliveryStatus,
+  uploadToCloudinary,
+} from "../../../service/order"; // Assuming this is your API service
 import { useParams, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -11,6 +17,8 @@ const OrderDetail = () => {
   const [orderDetail, setOrderDetail] = useState(null);
   const { id } = useParams(); // Get order ID from URL params
   const navigate = useNavigate();
+  const [deliveryImage, setDeliveryImage] = useState(null);
+  const userRole = localStorage.getItem("admin");
 
   useEffect(() => {
     fetchOrderDetail();
@@ -35,37 +43,63 @@ const OrderDetail = () => {
   const handleStatusChange = async (newStatus) => {
     try {
       setLoading(true);
-      const response = await updateOrderStatus(id, newStatus);
+      let response;
+
+      if (
+        (userRole === "DELIVERY_STAFF" || userRole === "ADMIN") &&
+        (newStatus === "DONE" || newStatus === "DELIVERY_FAIL")
+      ) {
+        if (!deliveryImage) {
+          toast.error("Please upload delivery image");
+          return;
+        }
+
+        // Upload image to Cloudinary first
+        const image = await uploadToCloudinary(deliveryImage);
+
+        // Send the image URL to BE instead of file
+        response = await updateDeliveryStatus(id, newStatus, image);
+      } else if (newStatus === "DELIVERING") {
+        response = await changeToDelivery(id, newStatus);
+      } else {
+        response = await updateOrderStatus(id, newStatus);
+      }
+
       if (response && response.code === 200) {
         toast.success("Order status updated successfully!");
+        setDeliveryImage(null);
         fetchOrderDetail();
       } else {
         toast.error("Failed to update order status");
       }
     } catch (error) {
       toast.error("Error updating order status");
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
   const getAvailableStatuses = (currentStatus) => {
+    // Chỉ DELIVERY STAFF mới có thể chuyển sang DONE hoặc DELIVERY_FAIL
+    if (currentStatus === "DELIVERING") {
+      if (userRole === "DELIVERY_STAFF" || userRole === "ADMIN") {
+        return [
+          { value: "DONE", label: "Done" },
+          { value: "DELIVERY_FAIL", label: "Delivery Fail" },
+        ];
+      }
+      return []; // Admin không thể thay đổi trạng thái khi đang delivering
+    }
+
     switch (currentStatus) {
       case "PENDING":
         return [
           { value: "PROCESSING", label: "Processing" },
-          { value: "CANCELED", label: "Cancelled" },
+          { value: "CANCELLED", label: "Cancelled" },
         ];
       case "PROCESSING":
-        return [
-          { value: "DELIVERING", label: "Delivering" },
-          { value: "CANCELED", label: "Cancelled" },
-        ];
-      case "DELIVERING":
-        return [
-          { value: "DONE", label: "Done" },
-          { value: "CANCELED", label: "Cancelled" },
-        ];
+        return [{ value: "DELIVERING", label: "Delivering" }];
       default:
         return [];
     }
@@ -88,13 +122,28 @@ const OrderDetail = () => {
         <span className={statusColors[currentStatus]}>{currentStatus}</span>
         {availableStatuses.length > 0 &&
           currentStatus !== "DONE" &&
-          currentStatus !== "CANCELED" && (
-            <Select
-              placeholder="Change status"
-              style={{ width: 150 }}
-              onChange={handleStatusChange}
-              options={availableStatuses}
-            />
+          currentStatus !== "CANCELLED" && (
+            <>
+              <Select
+                placeholder="Change status"
+                style={{ width: 150 }}
+                onChange={handleStatusChange}
+                options={availableStatuses}
+              />
+              {(currentStatus === "DELIVERING" ||
+                availableStatuses.some(
+                  (status) =>
+                    status.value === "DONE" || status.value === "DELIVERY_FAIL"
+                )) &&
+                (userRole === "DELIVERY_STAFF" || userRole === "ADMIN") && (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setDeliveryImage(e.target.files[0])}
+                    className="ml-4"
+                  />
+                )}
+            </>
           )}
       </div>
     );
@@ -206,6 +255,16 @@ const OrderDetail = () => {
           pagination={false}
         />
       </Card>
+
+      {orderDetail.status === "DONE" && orderDetail.imageOrderSuccess && (
+        <Card title="Delivery Confirmation Image" className="mt-6">
+          <img
+            src={orderDetail.imageOrderSuccess}
+            alt="Delivery confirmation"
+            className="max-w-6xl mx-auto h-96"
+          />
+        </Card>
+      )}
 
       <ToastContainer />
     </div>

@@ -26,23 +26,22 @@ export const checkout = async (checkoutData) => {
 
 export const verifyVNPayPayment = async (queryString) => {
   try {
-    // Chuyển đổi query string thành object params
-    const queryParams = new URLSearchParams(queryString);
-    const params = Object.fromEntries(queryParams.entries());
-
-    // Tạo URL với params
-    const queryParameters = new URLSearchParams();
-    Object.entries(params).forEach(([key, value]) => {
-      queryParameters.append(key, value);
-    });
-
     const response = await instance.get(
-      `/orders/payment-callback?${queryParameters}`
+      `/orders/payment-callback${queryString}`
     );
-    return response.data;
-  } catch (error) {
+
     return {
-      error: true,
+      code: response.code,
+      message: response.message,
+      result: {
+        orderId: response.result?.orderId,
+        orderInfo: response.result?.orderInfo,
+      },
+    };
+  } catch (error) {
+    console.error("Payment verification error:", error);
+    return {
+      code: error.response?.code || 500,
       message:
         error.response?.message || "Có lỗi xảy ra khi xác thực thanh toán",
     };

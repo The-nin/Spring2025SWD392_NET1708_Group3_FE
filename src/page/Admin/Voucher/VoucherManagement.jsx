@@ -31,21 +31,18 @@ const VoucherManagement = () => {
   const [viewModalVisible, setViewModalVisible] = useState(false); // 👁️ View Details Modal State
 
   // Fetch vouchers from API
-  const fetchVouchers = async () => {
+  const fetchVouchers = async (page = 0, pageSize = 10) => {
     try {
       setLoading(true);
-      const response = await getAllVouchers();
+      const response = await getAllVouchers(page, pageSize);
 
       if (!response.error) {
-        const sortedVouchers = [...response.result].sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt) // ✅ Sort by newest first
-        );
-
-        setVouchers(sortedVouchers);
-        setPagination((prev) => ({
-          ...prev,
-          total: sortedVouchers.length,
-        }));
+        setVouchers(response.result);
+        setPagination({
+          current: response.pagination.pageNumber + 1, // Convert from 0-based to 1-based
+          pageSize: response.pagination.pageSize,
+          total: response.pagination.totalElements,
+        });
       } else {
         toast.error(response.message);
       }
@@ -61,10 +58,8 @@ const VoucherManagement = () => {
   }, []);
 
   const handleTableChange = (newPagination) => {
-    fetchVouchers({
-      page: newPagination.current,
-      pageSize: newPagination.pageSize,
-    });
+    // Convert from 1-based to 0-based page number for API
+    fetchVouchers(newPagination.current - 1, newPagination.pageSize);
   };
 
   const showDeleteConfirm = (voucher) => {

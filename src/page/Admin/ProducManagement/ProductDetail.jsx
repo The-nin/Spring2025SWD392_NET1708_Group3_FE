@@ -10,6 +10,7 @@ import {
   InputNumber,
   DatePicker,
   Table,
+  Space,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -137,234 +138,239 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
+    <div className="flex flex-col items-center min-h-screen bg-gray-50 p-6">
+      <div className="w-full max-w-6xl">
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate("/admin/product")}
+          className="mb-4 hover:bg-gray-100"
         >
           Back to Products
         </Button>
 
-        <div className="space-x-4">
-          <Button
-            type="primary"
-            icon={<InboxOutlined />}
-            onClick={handleViewBatches}
-          >
-            View Batches
-          </Button>
-          <Button
-            type="primary"
-            icon={<PlusCircleOutlined />}
-            onClick={() => setAddBatchModalVisible(true)}
-          >
-            Add New Batch
-          </Button>
+        <div className="flex justify-end mb-4">
+          <Space>
+            <Button
+              type="primary"
+              icon={<InboxOutlined />}
+              onClick={handleViewBatches}
+            >
+              View Batches
+            </Button>
+            <Button
+              type="primary"
+              icon={<PlusCircleOutlined />}
+              onClick={() => setAddBatchModalVisible(true)}
+            >
+              Add New Batch
+            </Button>
+          </Space>
         </div>
-      </div>
 
-      <Card title="Product Details" className="max-w-4xl mx-auto">
-        {product && (
-          <div className="space-y-8">
-            {/* Product Image */}
-            <div className="flex justify-center">
-              <img
-                src={product.thumbnail}
-                alt={product.name}
-                className="w-64 h-64 object-cover rounded-lg shadow-md"
-              />
-            </div>
-
-            {/* Basic Information */}
-            <div className="border-b pb-4">
-              <Descriptions
-                title="Basic Information"
-                column={2}
-                className="bg-white p-4 rounded-lg"
-              >
-                <Descriptions.Item label="Product Name" span={2}>
-                  {product.name}
-                </Descriptions.Item>
-                <Descriptions.Item label="Price">
-                  {product.price?.toLocaleString("vi-VN")}đ
-                </Descriptions.Item>
-                <Descriptions.Item label="Stock">
-                  {product.stock || 0}
-                </Descriptions.Item>
-                <Descriptions.Item label="Category">
-                  {product.category?.name}
-                </Descriptions.Item>
-                <Descriptions.Item label="Brand">
-                  {product.brand?.name}
-                </Descriptions.Item>
-              </Descriptions>
-            </div>
-
-            {/* Description */}
-            {product.description && (
-              <div className="border-b pb-4">
-                <h3 className="font-bold text-lg mb-4 text-gray-800">
-                  Description
-                </h3>
-                <div
-                  dangerouslySetInnerHTML={{ __html: product.description }}
-                  className="prose prose-sm md:prose-base lg:prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-800 prose-p:text-gray-700 prose-ul:list-disc prose-ol:list-decimal prose-a:text-blue-600 prose-img:rounded-lg"
+        <Card title="Product Details" className="w-full shadow-md">
+          {product && (
+            <div className="space-y-8">
+              {/* Product Image */}
+              <div className="flex justify-center">
+                <img
+                  src={product.thumbnail}
+                  alt={product.name}
+                  className="w-64 h-64 object-cover rounded-lg shadow-md"
                 />
               </div>
-            )}
 
-            {/* Ingredient */}
-            {product.ingredient && (
+              {/* Basic Information */}
               <div className="border-b pb-4">
-                <h3 className="font-bold text-lg mb-4 text-gray-800">
-                  Ingredient
-                </h3>
-                <div
-                  dangerouslySetInnerHTML={{ __html: product.ingredient }}
-                  className="prose prose-sm md:prose-base lg:prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-800 prose-p:text-gray-700 prose-ul:list-disc prose-ol:list-decimal prose-a:text-blue-600 prose-img:rounded-lg"
-                />
-              </div>
-            )}
-
-            {/* Usage Instruction */}
-            {product.usageInstruction && (
-              <div className="border-b pb-4">
-                <h3 className="font-bold text-lg mb-4 text-gray-800">
-                  Usage Instruction
-                </h3>
-                <div
-                  dangerouslySetInnerHTML={{ __html: product.usageInstruction }}
-                  className="prose prose-sm md:prose-base lg:prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-800 prose-p:text-gray-700 prose-ul:list-disc prose-ol:list-decimal prose-a:text-blue-600 prose-img:rounded-lg"
-                />
-              </div>
-            )}
-
-            {/* Specification */}
-            {product.specification && (
-              <div>
-                <h3 className="font-bold text-lg mb-4 text-gray-800">
-                  Specification Details
-                </h3>
                 <Descriptions
+                  title="Basic Information"
                   column={2}
-                  bordered
-                  className="bg-white rounded-lg"
+                  className="bg-white p-4 rounded-lg"
                 >
-                  <Descriptions.Item label="Origin">
-                    {product.specification.origin}
+                  <Descriptions.Item label="Product Name" span={2}>
+                    {product.name}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Brand Origin">
-                    {product.specification.brandOrigin}
+                  <Descriptions.Item label="Price">
+                    {product.price?.toLocaleString("vi-VN")}đ
                   </Descriptions.Item>
-                  <Descriptions.Item label="Manufacturing Location">
-                    {product.specification.manufacturingLocation}
+                  <Descriptions.Item label="Stock">
+                    {product.stock || 0}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Skin Type">
-                    {product.specification.skinType}
+                  <Descriptions.Item label="Category">
+                    {product.category?.name}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Brand">
+                    {product.brand?.name}
                   </Descriptions.Item>
                 </Descriptions>
               </div>
-            )}
-          </div>
-        )}
-      </Card>
 
-      {/* Add Batch Modal */}
-      <Modal
-        title="Add New Batch"
-        open={addBatchModalVisible}
-        onCancel={() => {
-          setAddBatchModalVisible(false);
-          form.resetFields();
-        }}
-        footer={null}
-      >
-        <Form form={form} layout="vertical" onFinish={handleAddBatch}>
-          <Form.Item
-            name="quantity"
-            label="Quantity"
-            rules={[
-              { required: true, message: "Please input quantity" },
-              {
-                type: "number",
-                min: 1,
-                message: "Quantity must be greater than 0",
-              },
-            ]}
-          >
-            <InputNumber className="w-full" placeholder="Enter quantity" />
-          </Form.Item>
+              {/* Description */}
+              {product.description && (
+                <div className="border-b pb-4">
+                  <h3 className="font-bold text-lg mb-4 text-gray-800">
+                    Description
+                  </h3>
+                  <div
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                    className="prose prose-sm md:prose-base lg:prose-lg max-w-none [&>*]:text-center [&_p]:text-center [&_div]:text-center [&_h1]:text-center [&_h2]:text-center [&_h3]:text-center"
+                  />
+                </div>
+              )}
 
-          <Form.Item
-            name="manufactureDate"
-            label="Manufacture Date"
-            rules={[
-              { required: true, message: "Please select manufacture date" },
-            ]}
-          >
-            <DatePicker className="w-full" />
-          </Form.Item>
+              {/* Ingredient */}
+              {product.ingredient && (
+                <div className="border-b pb-4">
+                  <h3 className="font-bold text-lg mb-4 text-gray-800">
+                    Ingredient
+                  </h3>
+                  <div
+                    dangerouslySetInnerHTML={{ __html: product.ingredient }}
+                    className="prose prose-sm md:prose-base lg:prose-lg max-w-none [&>*]:text-center [&_p]:text-center [&_div]:text-center [&_h1]:text-center [&_h2]:text-center [&_h3]:text-center"
+                  />
+                </div>
+              )}
 
-          <Form.Item
-            name="expirationDate"
-            label="Expiration Date"
-            rules={[
-              { required: true, message: "Please select expiration date" },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || !getFieldValue("manufactureDate")) {
-                    return Promise.resolve();
-                  }
-                  if (value.isBefore(getFieldValue("manufactureDate"))) {
-                    return Promise.reject(
-                      "Expiration date must be after manufacture date"
-                    );
-                  }
-                  return Promise.resolve();
-                },
-              }),
-            ]}
-          >
-            <DatePicker className="w-full" />
-          </Form.Item>
+              {/* Usage Instruction */}
+              {product.usageInstruction && (
+                <div className="border-b pb-4">
+                  <h3 className="font-bold text-lg mb-4 text-gray-800">
+                    Usage Instruction
+                  </h3>
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: product.usageInstruction,
+                    }}
+                    className="prose prose-sm md:prose-base lg:prose-lg max-w-none [&>*]:text-center [&_p]:text-center [&_div]:text-center [&_h1]:text-center [&_h2]:text-center [&_h3]:text-center"
+                  />
+                </div>
+              )}
 
-          <div className="flex justify-end space-x-4">
-            <Button
-              onClick={() => {
-                setAddBatchModalVisible(false);
-                form.resetFields();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button type="primary" htmlType="submit">
-              Add Batch
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+              {/* Specification */}
+              {product.specification && (
+                <div>
+                  <h3 className="font-bold text-lg mb-4 text-gray-800">
+                    Specification Details
+                  </h3>
+                  <Descriptions
+                    column={2}
+                    bordered
+                    className="bg-white rounded-lg"
+                  >
+                    <Descriptions.Item label="Origin">
+                      {product.specification.origin}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Brand Origin">
+                      {product.specification.brandOrigin}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Manufacturing Location">
+                      {product.specification.manufacturingLocation}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Skin Type">
+                      {product.specification.skinType}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
 
-      {/* View Batches Modal */}
-      <Modal
-        title="Batch List"
-        open={viewBatchesModalVisible}
-        onCancel={() => setViewBatchesModalVisible(false)}
-        footer={null}
-        width={800}
-      >
-        <Table
-          columns={batchColumns}
-          dataSource={batches}
-          rowKey="id"
-          loading={batchesLoading}
-          pagination={{
-            total: batches.length,
-            pageSize: 10,
-            showSizeChanger: false,
+        {/* Add Batch Modal */}
+        <Modal
+          title="Add New Batch"
+          open={addBatchModalVisible}
+          onCancel={() => {
+            setAddBatchModalVisible(false);
+            form.resetFields();
           }}
-        />
-      </Modal>
+          footer={null}
+        >
+          <Form form={form} layout="vertical" onFinish={handleAddBatch}>
+            <Form.Item
+              name="quantity"
+              label="Quantity"
+              rules={[
+                { required: true, message: "Please input quantity" },
+                {
+                  type: "number",
+                  min: 1,
+                  message: "Quantity must be greater than 0",
+                },
+              ]}
+            >
+              <InputNumber className="w-full" placeholder="Enter quantity" />
+            </Form.Item>
+
+            <Form.Item
+              name="manufactureDate"
+              label="Manufacture Date"
+              rules={[
+                { required: true, message: "Please select manufacture date" },
+              ]}
+            >
+              <DatePicker className="w-full" />
+            </Form.Item>
+
+            <Form.Item
+              name="expirationDate"
+              label="Expiration Date"
+              rules={[
+                { required: true, message: "Please select expiration date" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || !getFieldValue("manufactureDate")) {
+                      return Promise.resolve();
+                    }
+                    if (value.isBefore(getFieldValue("manufactureDate"))) {
+                      return Promise.reject(
+                        "Expiration date must be after manufacture date"
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                }),
+              ]}
+            >
+              <DatePicker className="w-full" />
+            </Form.Item>
+
+            <div className="flex justify-end space-x-4">
+              <Button
+                onClick={() => {
+                  setAddBatchModalVisible(false);
+                  form.resetFields();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="primary" htmlType="submit">
+                Add Batch
+              </Button>
+            </div>
+          </Form>
+        </Modal>
+
+        {/* View Batches Modal */}
+        <Modal
+          title="Batch List"
+          open={viewBatchesModalVisible}
+          onCancel={() => setViewBatchesModalVisible(false)}
+          footer={null}
+          width={800}
+        >
+          <Table
+            columns={batchColumns}
+            dataSource={batches}
+            rowKey="id"
+            loading={batchesLoading}
+            pagination={{
+              total: batches.length,
+              pageSize: 10,
+              showSizeChanger: false,
+            }}
+          />
+        </Modal>
+      </div>
     </div>
   );
 };

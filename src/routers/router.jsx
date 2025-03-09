@@ -27,7 +27,7 @@ import BlogManagement from "../page/Admin/Blog/BlogManagement";
 import AddNewBlog from "../page/Admin/Blog/AddNewBlog";
 import EditBlog from "../page/Admin/Blog/EditBlog";
 import QuizManagement from "../page/Admin/Quiz/QuizManagement";
-import AddNewVoucher from "../page/Admin/Voucher/AddNewvoucher";
+import AddNewVoucher from "../page/Admin/Voucher/AddNewVoucher";
 import VoucherManagement from "../page/Admin/Voucher/VoucherManagement";
 import EditVoucher from "../page/Admin/Voucher/EditVoucher";
 import AddNewQuiz from "../page/Admin/Quiz/AddNewquiz";
@@ -44,6 +44,9 @@ import AddNewService from "../page/ServiceManagement/AddNewService";
 import CategoryDetail from "../page/Admin/CategoryManagement/CategoryDetail";
 import BrandDetail from "../page/Admin/Brand/BrandDetail";
 import ProductDetailAdmin from "../page/Admin/ProducManagement/ProductDetail";
+import VNPayReturn from "../page/PaymentPage/Paid/VNPayReturn";
+import OrderFailed from "../components/Order/OrderFailed";
+import OrderSuccess from "../components/Order/OrderSuccess";
 
 export const router = createBrowserRouter([
   {
@@ -117,6 +120,18 @@ export const router = createBrowserRouter([
       {
         path: "/helps",
         element: <HelpPage />,
+      },
+      {
+        path: "/payment/vnpay-return",
+        element: <VNPayReturn />,
+      },
+      {
+        path: "/order-success",
+        element: <OrderSuccess />,
+      },
+      {
+        path: "/order-failed",
+        element: <OrderFailed />,
       },
       {
         path: "/cart",

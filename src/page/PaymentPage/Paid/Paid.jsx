@@ -5,6 +5,7 @@ import Total from "../Total";
 import { useState } from "react";
 import { checkout } from "../../../service/checkout";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 const Paid = ({ selectedAddressId, cartId }) => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("VNPAY");
@@ -22,6 +23,7 @@ const Paid = ({ selectedAddressId, cartId }) => {
         addressId: parseInt(selectedAddressId),
         cartId: parseInt(cartId),
         paymentMethod: selectedPaymentMethod,
+        returnUrl: `${window.location.origin}/payment/vnpay-return`,
       };
 
       const response = await checkout(checkoutData);
@@ -32,17 +34,17 @@ const Paid = ({ selectedAddressId, cartId }) => {
           window.location.href = response.result.redirectUrl;
           console.log(response.result.redirectUrl);
         } else {
-          navigate("/", {
+          navigate("/order-success", {
             state: {
               orderId: response.result.orderId,
             },
           });
         }
       } else {
-        alert(response.message);
+        toast.error(response.message);
       }
     } catch (error) {
-      alert("Có lỗi xảy ra khi đặt hàng");
+      toast.error("Có lỗi xảy ra khi đặt hàng");
     } finally {
       setIsLoading(false);
     }

@@ -41,7 +41,7 @@ const BrandDetail = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-6xl mx-auto">
       <Button
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate("/admin/brand")}
@@ -50,7 +50,7 @@ const BrandDetail = () => {
         Back to Brands
       </Button>
 
-      <Card title="Brand Details" className="max-w-3xl mx-auto">
+      <Card title="Brand Details">
         {brand && (
           <div className="space-y-8">
             <div className="flex justify-center">
@@ -74,7 +74,7 @@ const BrandDetail = () => {
               </h3>
               <div
                 dangerouslySetInnerHTML={{ __html: brand.description }}
-                className="prose prose-sm md:prose-base lg:prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-800 prose-p:text-gray-700 prose-ul:list-disc prose-ol:list-decimal prose-a:text-blue-600 prose-img:rounded-lg"
+                className="prose prose-sm md:prose-base lg:prose-lg max-w-none [&>*]:text-center [&_p]:text-center [&_div]:text-center [&_h1]:text-center [&_h2]:text-center [&_h3]:text-center"
               />
             </div>
           </div>

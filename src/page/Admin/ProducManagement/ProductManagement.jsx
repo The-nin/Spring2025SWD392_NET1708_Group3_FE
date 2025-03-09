@@ -20,6 +20,7 @@ import {
 import {
   getAllProducts,
   deleteProduct,
+  updateProductStatus,
 } from "../../../service/productManagement";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -164,6 +165,33 @@ const ProductManagement = () => {
     });
   };
 
+  const handleStatusChange = async (checked, record) => {
+    try {
+      setLoading(true);
+      const newStatus = checked ? "ACTIVE" : "INACTIVE";
+      const response = await updateProductStatus(record.id, newStatus);
+
+      if (!response.error) {
+        toast.success("Product status updated successfully!");
+        // Refresh the current page
+        fetchProducts({
+          page: pagination.current,
+          pageSize: pagination.pageSize,
+        });
+      } else {
+        toast.error(response.message);
+        // Revert the switch if there's an error
+        record.status = !checked ? "ACTIVE" : "INACTIVE";
+      }
+    } catch (error) {
+      toast.error("Failed to update product status");
+      // Revert the switch if there's an error
+      record.status = !checked ? "ACTIVE" : "INACTIVE";
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const columns = [
     {
       title: "Thumbnail",
@@ -207,6 +235,19 @@ const ProductManagement = () => {
       dataIndex: "stock",
       key: "stock",
       render: (stock) => stock || 0,
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status, record) => (
+        <Switch
+          checked={status === "ACTIVE"}
+          onChange={(checked) => handleStatusChange(checked, record)}
+          checkedChildren="Active"
+          unCheckedChildren="Inactive"
+        />
+      ),
     },
     {
       title: "Actions",

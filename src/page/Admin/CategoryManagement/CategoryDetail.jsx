@@ -41,7 +41,7 @@ const CategoryDetail = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-6xl mx-auto">
       <Button
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate("/admin/category")}
@@ -49,8 +49,7 @@ const CategoryDetail = () => {
       >
         Back to Categories
       </Button>
-
-      <Card title="Category Details" className="max-w-3xl mx-auto">
+      <Card title="Category Details">
         {category && (
           <div className="space-y-8">
             <div className="flex justify-center">
@@ -74,7 +73,7 @@ const CategoryDetail = () => {
               </h3>
               <div
                 dangerouslySetInnerHTML={{ __html: category.description }}
-                className="prose prose-sm md:prose-base lg:prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-800 prose-p:text-gray-700 prose-ul:list-disc prose-ol:list-decimal prose-a:text-blue-600 prose-img:rounded-lg"
+                className="prose prose-sm md:prose-base lg:prose-lg max-w-none [&>*]:text-center [&_p]:text-center [&_div]:text-center [&_h1]:text-center [&_h2]:text-center [&_h3]:text-center"
               />
             </div>
           </div>

@@ -3,7 +3,13 @@ import { instance } from "../instance";
 // Public function - no token needed
 export const getAllProducts = async (params) => {
   try {
-    const response = await instance.get("admin/products", { params });
+    const token = localStorage.getItem("token");
+    const response = await instance.get("admin/products", {
+      params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return {
       error: false,
       result: response.result,
@@ -41,30 +47,20 @@ export const getProductById = async (id) => {
   }
 };
 
-export const addProduct = async (formData) => {
+export const addProduct = async (productData, file) => {
   try {
     const token = localStorage.getItem("token");
 
-    // Get the file and form data
-    const requestData = JSON.parse(formData.get("request"));
-    const file = formData.get("thumbnail");
-
-    // Upload to Cloudinary first
+    // Upload image first
     const imageUrl = await uploadToCloudinary(file);
 
-    // Clean description content
-    const cleanDescription = requestData.description
-      .replace(/<p><br><\/p>/g, "")
-      .trim();
-
-    // Create the final request data
-    const productData = {
-      ...requestData,
-      description: cleanDescription,
+    // Add image URL to product data
+    const finalProductData = {
+      ...productData,
       thumbnail: imageUrl,
     };
 
-    const response = await instance.post("admin/products", productData, {
+    const response = await instance.post("admin/products", finalProductData, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -77,10 +73,10 @@ export const addProduct = async (formData) => {
       message: response.message,
     };
   } catch (error) {
-    console.error("Add product error:", error);
+    console.error("Add product error:", error.response?.data || error);
     return {
       error: true,
-      message: error.response?.message || "Failed to add product",
+      message: error.response?.data?.message || "Failed to add product",
     };
   }
 };
@@ -88,68 +84,42 @@ export const addProduct = async (formData) => {
 export const updateProduct = async (id, formData) => {
   try {
     const token = localStorage.getItem("token");
+    const requestData = JSON.parse(formData.get("request"));
+    const file = formData.get("thumbnail");
 
-    // Nếu formData là FormData (có file mới)
-    if (formData instanceof FormData) {
-      const requestData = JSON.parse(formData.get("request"));
-      const file = formData.get("thumbnail");
+    // Chuẩn bị dữ liệu theo đúng format yêu cầu
+    let productData = {
+      name: requestData.name.trim(),
+      price: requestData.price,
+      description: requestData.description.replace(/<p><br><\/p>/g, "").trim(),
+      ingredient: requestData.ingredient.replace(/<p><br><\/p>/g, "").trim(),
+      usageInstruction: requestData.usageInstruction
+        .replace(/<p><br><\/p>/g, "")
+        .trim(),
+      specification: requestData.specification,
+      brand_id: requestData.brand_id,
+      category_id: requestData.category_id,
+      status: requestData.status,
+    };
 
-      // Clean description content if it exists
-      if (requestData.description) {
-        requestData.description = requestData.description
-          .replace(/<p><br><\/p>/g, "")
-          .trim();
-      }
-
-      // Clean name if it exists
-      if (requestData.name) {
-        requestData.name = requestData.name.trim();
-      }
-
-      // Nếu có file mới, upload lên Cloudinary
-      let productData = { ...requestData };
-      if (file) {
-        const imageUrl = await uploadToCloudinary(file);
-        productData.thumbnail = imageUrl;
-      }
-
-      const response = await instance.put(`admin/products/${id}`, productData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      return {
-        error: false,
-        result: response.result,
-        message: response.message,
-      };
-    } else {
-      // If formData is a regular object (no new file)
-      // Clean description content if it exists
-      if (formData.description) {
-        formData.description = formData.description
-          .replace(/<p><br><\/p>/g, "")
-          .trim();
-      }
-
-      // Clean name if it exists
-      if (formData.name) {
-        formData.name = formData.name.trim();
-      }
-
-      const response = await instance.put(`admin/products/${id}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      return {
-        error: false,
-        result: response.result,
-        message: response.message,
-      };
+    // Nếu có file mới, upload lên Cloudinary
+    if (file) {
+      const imageUrl = await uploadToCloudinary(file);
+      productData.thumbnail = imageUrl;
     }
+
+    const response = await instance.put(`admin/products/${id}`, productData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
   } catch (error) {
     console.error("Update product error:", error);
     return {

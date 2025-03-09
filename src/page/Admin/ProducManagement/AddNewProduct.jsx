@@ -96,7 +96,6 @@ const AddNewProduct = () => {
     ) {
       try {
         setLoading(true);
-        const formData = new FormData();
         const file = values.thumbnail[0].originFileObj;
 
         if (!file) {
@@ -104,27 +103,28 @@ const AddNewProduct = () => {
           return;
         }
 
-        formData.append(
-          "request",
-          JSON.stringify({
-            name: values.name,
-            price: values.price,
-            description: editorContent,
-            ingredient: ingredientContent,
-            usageInstruction: usageInstructionContent,
-            specification: {
-              origin: values.origin,
-              brandOrigin: values.brandOrigin,
-              manufacturingLocation: values.manufacturingLocation,
-              skinType: values.skinType,
-            },
-            category_id: values.categoryId,
-            brand_id: values.brandId,
-          })
-        );
-        formData.append("thumbnail", file);
+        // Upload image first
+        const formData = new FormData();
+        formData.append("file", file);
 
-        const response = await addProduct(formData);
+        // Create product data
+        const productData = {
+          name: values.name,
+          price: values.price,
+          description: editorContent,
+          ingredient: ingredientContent,
+          usageInstruction: usageInstructionContent,
+          specification: {
+            origin: values.origin,
+            brandOrigin: values.brandOrigin,
+            manufacturingLocation: values.manufacturingLocation,
+            skinType: values.skinType,
+          },
+          category_id: values.categoryId,
+          brand_id: values.brandId,
+        };
+
+        const response = await addProduct(productData, file);
         if (!response.error) {
           navigate("/admin/product", {
             state: { message: response.message, type: "success" },

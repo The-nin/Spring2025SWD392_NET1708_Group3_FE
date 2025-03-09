@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { verifyVNPayPayment } from "../../../service/checkout/index";
+import { verifyVNPayPayment } from "../../../service/checkout";
+import { toast } from "react-toastify";
 
 const VNPayReturn = () => {
   const [loading, setLoading] = useState(true);
@@ -23,7 +24,8 @@ const VNPayReturn = () => {
 
         if (response.code === 200 && responseCode === "00") {
           // Thanh toán thành công
-          navigate("/", {
+          toast.success("Thanh toán thành công!");
+          navigate("/order-success", {
             state: {
               orderId: orderId,
               message: "Thanh toán thành công!",
@@ -32,7 +34,8 @@ const VNPayReturn = () => {
           });
         } else {
           // Thanh toán thất bại
-          navigate("/", {
+          toast.error(response.message || "Thanh toán thất bại!");
+          navigate("/order-failed", {
             state: {
               message: response.message || "Thanh toán thất bại!",
               orderId: orderId,
@@ -41,7 +44,8 @@ const VNPayReturn = () => {
         }
       } catch (error) {
         console.error("Payment verification error:", error);
-        navigate("/", {
+        toast.error("Có lỗi xảy ra trong quá trình xác thực thanh toán");
+        navigate("/order-failed", {
           state: {
             message: "Có lỗi xảy ra trong quá trình xác thực thanh toán",
           },
