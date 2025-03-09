@@ -1,13 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Card, DatePicker } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import {
+  Form,
+  Input,
+  Button,
+  Card,
+  Select,
+  Spin,
+  Upload,
+  DatePicker,
+} from "antd";
+import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
-import { getBlogById, updateBlog } from "../../../service/blog/index";
+import dayjs from "dayjs";
+import {
+  getBlogById,
+  updateBlog,
+  uploadToCloudinary,
+} from "../../../service/blog/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
-import dayjs from "dayjs";
 
 const modules = {
   toolbar: [
@@ -34,76 +47,72 @@ const formats = [
   "image",
 ];
 
-const disabledDate = (current) =>
-  current && current.isBefore(dayjs().startOf("day"));
-
 const EditBlog = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [content, setContent] = useState(""); // ✅ State for ReactQuill
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [currentThumbnail, setCurrentThumbnail] = useState("");
+  const [content, setContent] = useState(""); // ✅ Content state for ReactQuill
 
   useEffect(() => {
-    const fetchBlog = async () => {
-      try {
-        setLoading(true);
-        const response = await getBlogById(id);
+    fetchBlogDetails();
+  }, [id]);
 
-        if (response && response.result) {
-          const blog = response.result;
-
-          // ✅ Set form fields
-          form.setFieldsValue({
-            blogTitle: blog.blogName || "",
-            blogIntroduction: blog.description || "",
-            imageUrl: blog.image || "",
-            publishDate: blog.date ? dayjs(blog.date) : null,
-          });
-
-          // ✅ Set Quill content correctly
-          setContent(blog.content || "");
-        } else {
-          toast.error("Failed to fetch blog details");
-        }
-      } catch (error) {
-        toast.error("Error loading blog details");
-      } finally {
-        setLoading(false);
+  const fetchBlogDetails = async () => {
+    try {
+      const response = await getBlogById(id);
+      if (!response.error) {
+        form.setFieldsValue({
+          blogName: response.result.blogName,
+          description: response.result.description,
+          createdBy: response.result.createdBy,
+          status: response.result.status,
+          date: dayjs(response.result.date),
+        });
+        setCurrentThumbnail(response.result.image);
+        setContent(response.result.content); // ✅ Set ReactQuill content
+      } else {
+        toast.error(response.message);
+        navigate("/admin/blog");
       }
-    };
+    } catch (error) {
+      toast.error("Failed to fetch blog details");
+      navigate("/admin/blog");
+    } finally {
+      setInitialLoading(false);
+    }
+  };
 
-    fetchBlog();
-  }, [id]); // ✅ No need to include `form`, it will update automatically
+  const normFile = (e) => (Array.isArray(e) ? e : e?.fileList);
 
   const onFinish = async (values) => {
-    if (
-      !values.blogTitle ||
-      !values.blogIntroduction ||
-      !values.imageUrl?.trim() ||
-      !content.trim()
-    ) {
-      toast.error("Please fill all required fields");
-      return;
-    }
-
     try {
       setLoading(true);
-      const blogData = {
-        blogName: values.blogTitle,
-        image: values.imageUrl,
-        description: values.blogIntroduction,
-        status: "INACTIVE",
-        date: values.publishDate.toISOString(),
+      let imageUrl = currentThumbnail;
+
+      if (values.image?.length > 0) {
+        const file = values.image[0].originFileObj;
+        imageUrl = await uploadToCloudinary(file);
+      }
+
+      const updateData = {
+        ...values,
+        image: imageUrl,
+        date: values.date.format("YYYY-MM-DD"),
         content: content, // ✅ Ensure content is included
       };
 
-      const response = await updateBlog(id, blogData);
-      if (response && response.result) {
+      console.log("Sending update data:", updateData, updateData.image); // Debugging
+
+      const response = await updateBlog(id, updateData, updateData.image);
+
+      if (!response.error) {
+        navigate("/admin/blog");
         toast.success("Blog updated successfully!");
-        setTimeout(() => navigate("/admin/blog"), 2000);
       } else {
-        toast.error(response?.message || "Error updating blog");
+        toast.error(response.message);
       }
     } catch (error) {
       toast.error("Failed to update blog");
@@ -113,87 +122,100 @@ const EditBlog = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-64px)] bg-gray-50">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-      />
+    <>
+      <ToastContainer />
       <div className="p-6">
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate("/admin/blog")}
-          className="mb-4 hover:bg-gray-100"
+          className="mb-4"
         >
-          Back to Blogs
+          Back to Blog
         </Button>
 
-        <Card title="Edit Blog" className="max-w-6xl mx-auto shadow-md">
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            autoComplete="off"
-          >
+        <Card title="Edit Blog" className="max-w-3xl">
+          <Form form={form} layout="vertical" onFinish={onFinish}>
             <Form.Item
-              name="blogTitle"
-              label="Blog Title"
-              rules={[
-                { required: true, message: "Please enter blog title" },
-                { min: 3, message: "Title must be at least 3 characters" },
-              ]}
+              name="blogName"
+              label="Blog Name"
+              rules={[{ required: true, message: "Please enter blog name" }]}
             >
-              <Input placeholder="Enter blog title" />
+              <Input placeholder="Enter blog name" />
             </Form.Item>
 
             <Form.Item
-              name="blogIntroduction"
-              label="Blog Introduction"
-              rules={[
-                { required: true, message: "Please enter blog introduction" },
-                {
-                  min: 50,
-                  message: "Introduction must be at least 50 characters",
-                },
-              ]}
+              name="description"
+              label="Description"
+              rules={[{ required: true, message: "Please enter description" }]}
             >
-              <Input.TextArea rows={3} placeholder="Enter blog introduction" />
+              <Input.TextArea rows={4} placeholder="Enter blog description" />
             </Form.Item>
 
+            {/* ✅ ReactQuill for Blog Content */}
             <Form.Item
-              name="imageUrl"
-              label="Thumbnail Image URL"
-              rules={[
-                { required: true, message: "Please enter an image URL" },
-                { type: "url", message: "Please enter a valid URL" },
-              ]}
+              label="Content"
+              rules={[{ required: true, message: "Please enter content" }]}
             >
-              <Input placeholder="Enter image URL (e.g., https://example.com/image.jpg)" />
-            </Form.Item>
-
-            {/* ✅ ReactQuill - Fixed */}
-            <Form.Item label="Blog Content">
               <ReactQuill
                 theme="snow"
-                value={content} // ✅ Controlled component
-                onChange={(value) => setContent(value)} // ✅ Update state on change
+                value={content}
+                onChange={setContent}
                 modules={modules}
                 formats={formats}
               />
             </Form.Item>
 
             <Form.Item
-              name="publishDate"
-              label="Publish Date"
-              rules={[
-                { required: true, message: "Please select a publish date" },
-              ]}
+              name="createdBy"
+              label="Author"
+              rules={[{ required: true, message: "Please enter author name" }]}
             >
-              <DatePicker
-                disabledDate={disabledDate}
-                format="YYYY-MM-DD"
-                className="w-full"
-              />
+              <Input placeholder="Enter author name" />
+            </Form.Item>
+
+            <Form.Item
+              name="date"
+              label="Date"
+              rules={[{ required: true, message: "Please select date" }]}
+            >
+              <DatePicker className="w-full" format="YYYY-MM-DD" />
+            </Form.Item>
+
+            <Form.Item label="Current Thumbnail">
+              {currentThumbnail && (
+                <img
+                  src={currentThumbnail}
+                  alt="Current thumbnail"
+                  className="max-w-xs mb-4"
+                  style={{ maxHeight: "200px" }}
+                />
+              )}
+            </Form.Item>
+
+            <Form.Item
+              name="image"
+              label="New Thumbnail"
+              valuePropName="fileList"
+              getValueFromEvent={normFile}
+            >
+              <Upload
+                beforeUpload={() => false}
+                maxCount={1}
+                listType="picture"
+              >
+                <Button icon={<UploadOutlined />}>Upload New Image</Button>
+              </Upload>
+            </Form.Item>
+
+            <Form.Item
+              name="status"
+              label="Status"
+              rules={[{ required: true, message: "Please select status" }]}
+            >
+              <Select>
+                <Select.Option value="ACTIVE">Active</Select.Option>
+                <Select.Option value="INACTIVE">Inactive</Select.Option>
+              </Select>
             </Form.Item>
 
             <Form.Item>
@@ -204,7 +226,7 @@ const EditBlog = () => {
           </Form>
         </Card>
       </div>
-    </div>
+    </>
   );
 };
 
