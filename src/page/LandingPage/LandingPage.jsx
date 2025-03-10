@@ -106,13 +106,21 @@ const LandingPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {latestProducts.map((product, index) => (
             <motion.div
-              key={product.id || index}
+              key={product._id || index}
               variants={fadeIn}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
             >
-              <ProductCard {...product} />
+              <ProductCard
+                id={product._id}
+                name={product.name}
+                description={product.description}
+                price={product.price}
+                thumbnail={product.thumbnail}
+                tag={product.tag}
+                size={product.size}
+              />
             </motion.div>
           ))}
         </div>

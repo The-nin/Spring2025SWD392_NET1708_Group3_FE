@@ -1,20 +1,44 @@
 import React, { useState } from "react";
 import LoginModal from "../LoginPage/LoginPage";
+import { addItemToCart } from "../../service/cart/cart";
+import { toast } from "react-toastify";
 
-const ProductCard = ({ tag, name, description, size, price, thumbnail }) => {
+const ProductCard = ({
+  id,
+  tag,
+  name,
+  description,
+  size,
+  price,
+  thumbnail,
+}) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Thêm hàm format số
   const formatPrice = (price) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       setShowLoginModal(true);
-    } else {
-      toast.success("Added to cart!");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await addItemToCart(id, 1);
+      if (response.error) {
+        toast.error(response.message);
+      } else {
+        toast.success("Added to cart successfully!");
+      }
+    } catch (error) {
+      toast.error("Failed to add item to cart");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -44,14 +68,6 @@ const ProductCard = ({ tag, name, description, size, price, thumbnail }) => {
             <h3 className="font-semibold text-lg line-clamp-1 px-2">{name}</h3>
           </div>
 
-          {/* Description */}
-          <div className="h-[48px] w-full flex items-center justify-center">
-            <p className="text-sm text-gray-500 line-clamp-2 px-2">
-              {description}
-            </p>
-          </div>
-
-          {/* Size */}
           <div className="h-[32px] w-full flex items-center justify-center">
             <p className="text-sm text-gray-700">{size}</p>
           </div>
@@ -65,10 +81,11 @@ const ProductCard = ({ tag, name, description, size, price, thumbnail }) => {
         {/* Button Section */}
         <div className="w-full mt-2">
           <button
-            className="w-full bg-black text-white py-2 px-6 rounded-md text-sm opacity-0 group-hover:opacity-100 transition duration-300"
+            className="w-full bg-black text-white py-2 px-6 rounded-md text-sm opacity-0 group-hover:opacity-100 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddToCart}
+            disabled={isLoading}
           >
-            Add to your Cart
+            {isLoading ? "Adding..." : "Add to your Cart"}
           </button>
         </div>
       </div>

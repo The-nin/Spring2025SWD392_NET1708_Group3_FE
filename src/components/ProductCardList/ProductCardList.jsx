@@ -70,13 +70,6 @@ function ProductCardList({
               <h3 className="font-semibold text-lg line-clamp-1">{name}</h3>
             </div>
 
-            {/* Description */}
-            <div className="h-12 flex items-center justify-center">
-              <p className="text-sm text-gray-500 line-clamp-2">
-                {description}
-              </p>
-            </div>
-
             {/* Size */}
             <div className="h-8 flex items-center justify-center">
               <p className="text-sm text-gray-700">{size}</p>
