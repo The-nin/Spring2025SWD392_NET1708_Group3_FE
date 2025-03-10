@@ -73,7 +73,7 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
         <div className="grid grid-cols-4 gap-8">
           {/* Category Column */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-4">Category</h3>
+            <h3 className="font-medium text-gray-900 mb-4">Danh mục</h3>
             <ul className="space-y-3">
               {/* Shop All là mục tĩnh */}
               <li>
@@ -82,7 +82,7 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
                   onClick={handleLinkClick}
                   className="text-gray-600 hover:text-black"
                 >
-                  Shop All
+                  Tất cả
                 </Link>
               </li>
               {/* Các categories từ API */}
@@ -102,7 +102,7 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
 
           {/* Brand Column */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-4">Brand</h3>
+            <h3 className="font-medium text-gray-900 mb-4">Thương hiệu</h3>
             <ul className="space-y-3">
               <li>
                 <Link
@@ -110,7 +110,7 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
                   onClick={handleLinkClick}
                   className="text-gray-600 hover:text-black"
                 >
-                  Shop All
+                  Tất cả
                 </Link>
               </li>
               {brands.map((brand) => (

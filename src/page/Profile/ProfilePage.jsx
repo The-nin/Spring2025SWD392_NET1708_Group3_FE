@@ -19,7 +19,7 @@ const EditModal = React.memo(
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-md">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold">Edit information</h3>
+            <h3 className="text-xl font-semibold">Chỉnh sửa thông tin</h3>
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700"
@@ -55,12 +55,12 @@ const EditModal = React.memo(
                 />
               </div>
               <p className="text-sm text-gray-500">
-                Click on the image to upload new photo
+                Nhấp vào ảnh để tải lên ảnh mới
               </p>
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-1">First Name</label>
+              <label className="block text-gray-700 mb-1">Họ</label>
               <input
                 type="text"
                 name="firstName"
@@ -71,7 +71,7 @@ const EditModal = React.memo(
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-1">Last Name</label>
+              <label className="block text-gray-700 mb-1">Tên</label>
               <input
                 type="text"
                 name="lastName"
@@ -82,7 +82,7 @@ const EditModal = React.memo(
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-1">Birthday</label>
+              <label className="block text-gray-700 mb-1">Ngày sinh</label>
               <input
                 type="date"
                 name="birthday"
@@ -93,16 +93,16 @@ const EditModal = React.memo(
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-1">Gender</label>
+              <label className="block text-gray-700 mb-1">Giới tính</label>
               <select
                 name="gender"
                 value={editFormData.gender}
                 onChange={onInputChange}
                 className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-gray-900"
               >
-                <option value="MALE">Male</option>
-                <option value="FEMALE">Female</option>
-                <option value="OTHER">Other</option>
+                <option value="MALE">Nam</option>
+                <option value="FEMALE">Nữ</option>
+                <option value="OTHER">Khác</option>
               </select>
             </div>
 
@@ -112,13 +112,13 @@ const EditModal = React.memo(
                 onClick={onClose}
                 className="flex-1 px-4 py-2 border border-gray-900 text-gray-900 rounded-lg hover:bg-gray-100"
               >
-                Cancel
+                Hủy
               </button>
               <button
                 type="submit"
                 className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-700"
               >
-                Save changes
+                Lưu thay đổi
               </button>
             </div>
           </form>
@@ -261,7 +261,7 @@ const ProfilePage = () => {
                       : "hover:bg-gray-100"
                   }`}
                 >
-                  Personal information
+                  Thông tin cá nhân
                 </button>
                 <button
                   onClick={() => setActiveTab("orders")}
@@ -271,7 +271,7 @@ const ProfilePage = () => {
                       : "hover:bg-gray-100"
                   }`}
                 >
-                  My orders
+                  Đơn hàng của tôi
                 </button>
                 <button
                   onClick={() => setActiveTab("consultant")}
@@ -281,7 +281,7 @@ const ProfilePage = () => {
                       : "hover:bg-gray-100"
                   }`}
                 >
-                  Consultant history
+                  Lịch sử tư vấn
                 </button>
                 <button
                   onClick={() => setActiveTab("addresses")}
@@ -291,17 +291,7 @@ const ProfilePage = () => {
                       : "hover:bg-gray-100"
                   }`}
                 >
-                  Address book
-                </button>
-                <button
-                  onClick={() => setActiveTab("wishlist")}
-                  className={`w-full text-left px-4 py-2 rounded-lg ${
-                    activeTab === "wishlist"
-                      ? "bg-gray-900 text-white"
-                      : "hover:bg-gray-100"
-                  }`}
-                >
-                  Favorite products
+                  Sổ địa chỉ
                 </button>
               </div>
             </div>
@@ -313,22 +303,20 @@ const ProfilePage = () => {
               {activeTab === "profile" && (
                 <div>
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-semibold">
-                      Personal information
-                    </h3>
+                    <h3 className="text-xl font-semibold">Thông tin cá nhân</h3>
                     <button
                       onClick={() => setIsEditing(true)}
                       className="flex items-center text-gray-900 hover:text-gray-700"
                     >
                       <FiEdit2 className="mr-2" />
-                      Edit
+                      Chỉnh sửa
                     </button>
                   </div>
 
                   {!isLoading && (
                     <div className="grid grid-cols-2 gap-6">
                       <div>
-                        <p className="text-gray-500 mb-1">Full name</p>
+                        <p className="text-gray-500 mb-1">Họ và tên</p>
                         <p className="font-medium">
                           {`${formData.firstName || ""} ${
                             formData.lastName || ""
@@ -340,11 +328,11 @@ const ProfilePage = () => {
                         <p className="font-medium">{formData.email}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500 mb-1">Username</p>
+                        <p className="text-gray-500 mb-1">Tên đăng nhập</p>
                         <p className="font-medium">{formData.username}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500 mb-1">Gender</p>
+                        <p className="text-gray-500 mb-1">Giới tính</p>
                         <p className="font-medium">{formData.gender}</p>
                       </div>
                     </div>
@@ -354,34 +342,24 @@ const ProfilePage = () => {
 
               {activeTab === "orders" && (
                 <div>
-                  <h3 className="text-xl font-semibold mb-6">My orders</h3>
+                  <h3 className="text-xl font-semibold mb-6">
+                    Đơn hàng của tôi
+                  </h3>
                   <Orders />
-                  {/* Order history content */}
                 </div>
               )}
 
               {activeTab === "consultant" && (
                 <div>
-                  <h3 className="text-xl font-semibold mb-6">
-                    Consultant history
-                  </h3>
+                  <h3 className="text-xl font-semibold mb-6">Lịch sử tư vấn</h3>
                   <ConsultantHistory />
                 </div>
               )}
 
               {activeTab === "addresses" && (
                 <div>
-                  <h3 className="text-xl font-semibold mb-6">Address book</h3>
+                  <h3 className="text-xl font-semibold mb-6">Sổ địa chỉ</h3>
                   <AddressBook />
-                </div>
-              )}
-
-              {activeTab === "wishlist" && (
-                <div>
-                  <h3 className="text-xl font-semibold mb-6">
-                    Favorite products
-                  </h3>
-                  {/* Wishlist content */}
                 </div>
               )}
             </div>

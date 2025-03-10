@@ -19,7 +19,7 @@ const Orders = () => {
         setOrders(response.result.orderResponseList);
         setTotalPages(response.result.totalPages);
       } catch (err) {
-        setError("Failed to fetch orders");
+        setError("Không thể tải đơn hàng");
         console.error(err);
       } finally {
         setLoading(false);
@@ -29,7 +29,7 @@ const Orders = () => {
     fetchOrders();
   }, [currentPage]);
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6">Đang tải...</div>;
   if (error) return <div className="p-6 text-red-500">{error}</div>;
 
   return (
@@ -49,7 +49,7 @@ const Orders = () => {
             >
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-gray-800">
-                  #{order.orderId}
+                  Đơn hàng #{order.orderId}
                 </span>
                 <span
                   className={`px-2 py-1 text-white rounded ${
@@ -58,7 +58,7 @@ const Orders = () => {
                       : "bg-yellow-500"
                   }`}
                 >
-                  {order.status}
+                  {order.status === "COMPLETED" ? "Hoàn thành" : "Đang xử lý"}
                 </span>
               </div>
               <p className="text-gray-600">
@@ -66,14 +66,14 @@ const Orders = () => {
               </p>
               <div className="mt-2">
                 <p className="text-gray-700">
-                  Payment Method: {order.paymentMethod}
+                  Phương thức thanh toán: {order.paymentMethod}
                 </p>
                 <p className="text-gray-700">
-                  Shipping Address: {order.address.addressLine}
+                  Địa chỉ giao hàng: {order.address.addressLine}
                 </p>
               </div>
               <p className="text-right font-semibold text-lg">
-                Total: {order.totalAmount.toLocaleString()} đ
+                Tổng tiền: {order.totalAmount.toLocaleString()} đ
               </p>
             </div>
           ))}
@@ -83,10 +83,10 @@ const Orders = () => {
               disabled={currentPage === 1}
               className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
             >
-              ← Previous
+              ← Trước
             </button>
             <span>
-              Page {currentPage} / {totalPages}
+              Trang {currentPage} / {totalPages}
             </span>
             <button
               onClick={() =>
@@ -95,7 +95,7 @@ const Orders = () => {
               disabled={currentPage === totalPages}
               className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
             >
-              Next →
+              Tiếp →
             </button>
           </div>
         </div>

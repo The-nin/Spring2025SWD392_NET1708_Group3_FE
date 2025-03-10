@@ -169,9 +169,9 @@ const Header = () => {
                 <button
                   ref={shopButtonRef}
                   onClick={handleShopClick}
-                  className="relative px-6 py-5 h-16 hover:text-black hover:bg-gray-100 transition-colors duration-200 text-gray-700 group"
+                  className="relative px-4 py-5 h-16 hover:text-black hover:bg-gray-100 transition-colors duration-200 text-gray-700 group whitespace-nowrap"
                 >
-                  Shop
+                  Cửa hàng
                   <span className="absolute bottom-0 left-0 w-full h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
                 </button>
                 <ShopDropdown
@@ -184,9 +184,9 @@ const Header = () => {
               <div className="relative group">
                 <Link
                   to="/about-us"
-                  className="relative px-6 py-5 hover:text-black h-16 hover:bg-gray-100 transition-colors duration-200 block"
+                  className="relative px-4 py-5 hover:text-black h-16 hover:bg-gray-100 transition-colors duration-200 block whitespace-nowrap"
                 >
-                  About Us
+                  Về chúng tôi
                   <span className="absolute bottom-0 left-0 w-full h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
                 </Link>
               </div>
@@ -194,9 +194,9 @@ const Header = () => {
               <div className="relative group">
                 <Link
                   to="/blog"
-                  className="relative px-6 py-5 hover:text-black h-16 hover:bg-gray-100 transition-colors duration-200 block"
+                  className="relative px-4 py-5 hover:text-black h-16 hover:bg-gray-100 transition-colors duration-200 block whitespace-nowrap"
                 >
-                  Blogs
+                  Bảng tin
                   <span className="absolute bottom-0 left-0 w-full h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
                 </Link>
               </div>
@@ -204,18 +204,19 @@ const Header = () => {
               <div className="relative group">
                 <Link
                   to="/helps"
-                  className="relative px-6 py-5 hover:text-black h-16 hover:bg-gray-100 transition-colors duration-200 block"
+                  className="relative px-4 py-5 hover:text-black h-16 hover:bg-gray-100 transition-colors duration-200 block whitespace-nowrap"
                 >
-                  Helps
+                  Hỗ trợ
                   <span className="absolute bottom-0 left-0 w-full h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
                 </Link>
               </div>
+
               <div className="relative group">
                 <Link
                   to="/skinquiz"
-                  className="relative px-6 py-5 hover:text-black h-16 hover:bg-gray-100 transition-colors duration-200 block"
+                  className="relative px-4 py-5 hover:text-black h-16 hover:bg-gray-100 transition-colors duration-200 block whitespace-nowrap"
                 >
-                  Skin&apos;s Quiz
+                  Xác định loại da
                   <span className="absolute bottom-0 left-0 w-full h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200" />
                 </Link>
               </div>
@@ -235,7 +236,7 @@ const Header = () => {
               {user ? (
                 <div className="mr-6">
                   <button className="border border-black rounded-md border-radius px-4 py-3 text-black font-medium hover:bg-zinc-200 hover:text-gray-800 transition duration-300 ease-in-out shadow-lg hover:shadow-xl">
-                    <Link to="/skin-consultation">Consultation</Link>
+                    <Link to="/skin-consultation">Tư vấn</Link>
                   </button>
                 </div>
               ) : null}
@@ -275,13 +276,13 @@ const Header = () => {
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                           onClick={handleProfileClick}
                         >
-                          Profile
+                          Thông tin cá nhân
                         </Link>
                         <button
                           onClick={handleLogout}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
-                          Logout
+                          Đăng xuất
                         </button>
                       </div>
                     )}
@@ -291,7 +292,7 @@ const Header = () => {
                     onClick={() => setShowLoginModal(true)}
                     className="relative h-16 px-4 flex items-center hover:bg-gray-100 transition-colors duration-200 text-sm font-medium text-gray-700 hover:text-black"
                   >
-                    Login
+                    Đăng nhập
                   </button>
                 )}
               </div>
@@ -325,7 +326,7 @@ const Header = () => {
               Menu
             </button>
             <Link to="/shop" className="text-sm font-medium hover:text-black">
-              Shop
+              Cửa hàng
             </Link>
           </div>
         </div>
