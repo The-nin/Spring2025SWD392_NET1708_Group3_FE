@@ -1,12 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Address from "./Address/Address";
 import Shipping from "./Shipping/Shipping";
 import Paid from "./Paid/Paid";
+import { getCart } from "../../service/cart/cart";
 
 const Payment = () => {
   const [step, setStep] = useState(1);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [cartId, setCartId] = useState(null);
+  const [cartData, setCartData] = useState(null);
+
+  useEffect(() => {
+    const fetchCartData = async () => {
+      const response = await getCart();
+      if (!response.error) {
+        setCartData(response.result);
+      }
+    };
+    fetchCartData();
+  }, []);
 
   const handleAddressNext = (cartId, addressId) => {
     console.log("Payment received - cartId:", cartId, "addressId:", addressId);
@@ -33,12 +45,13 @@ const Payment = () => {
   const renderStepContent = () => {
     switch (step) {
       case 1:
-        return <Address onNext={handleAddressNext} />;
+        return <Address onNext={handleAddressNext} cartData={cartData} />;
       case 2:
         return (
           <Shipping
             onNext={handleShippingNext}
             selectedAddressId={selectedAddressId}
+            cartData={cartData}
           />
         );
       case 3:
@@ -47,6 +60,7 @@ const Payment = () => {
             onNext={handlePaidNext}
             selectedAddressId={selectedAddressId}
             cartId={cartId}
+            cartData={cartData}
           />
         );
       default:
@@ -64,7 +78,7 @@ const Payment = () => {
           }`}
           onClick={() => step >= 1 && setStep(1)}
         >
-          Address
+          Địa chỉ
         </span>
         <span className="text-gray-500">&gt;</span>
         <span
@@ -73,7 +87,7 @@ const Payment = () => {
           }`}
           onClick={() => step >= 2 && setStep(2)}
         >
-          Shipping
+          Vận chuyển
         </span>
         <span className="text-gray-500">&gt;</span>
         <span
@@ -82,7 +96,7 @@ const Payment = () => {
           }`}
           onClick={() => step === 3 && setStep(3)}
         >
-          Payment
+          Thanh toán
         </span>
       </div>
 

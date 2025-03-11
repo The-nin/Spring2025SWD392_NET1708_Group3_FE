@@ -1,20 +1,6 @@
 import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
-import { getCart } from "../../service/cart/cart";
 
-const Total = ({ buttonText, onNext }) => {
-  const [cartData, setCartData] = useState(null);
-
-  useEffect(() => {
-    const fetchCartData = async () => {
-      const response = await getCart();
-      if (!response.error) {
-        setCartData(response.result);
-      }
-    };
-    fetchCartData();
-  }, []);
-
+const Total = ({ buttonText, onNext, cartData }) => {
   const handleNext = () => {
     if (cartData) {
       onNext(cartData.cartId);
@@ -61,10 +47,10 @@ const Total = ({ buttonText, onNext }) => {
             : "Đang tải..."}
         </p>
       </div>
-      <p className="text-sm text-gray-500 mt-2 flex justify-between">
+      {/* <p className="text-sm text-gray-500 mt-2 flex justify-between">
         Dự kiến giao hàng vào ngày{" "}
         <span className="font-semibold">01 tháng 02 năm 2025</span>
-      </p>
+      </p> */}
       <div className="mt-4">
         <button
           className="w-full font-semibold bg-gray-900 text-white py-2 rounded-lg hover:bg-gray-500"
@@ -80,6 +66,7 @@ const Total = ({ buttonText, onNext }) => {
 Total.propTypes = {
   buttonText: PropTypes.string.isRequired,
   onNext: PropTypes.func.isRequired,
+  cartData: PropTypes.object,
 };
 
 export default Total;

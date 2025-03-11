@@ -7,7 +7,7 @@ import { checkout } from "../../../service/checkout";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
-const Paid = ({ selectedAddressId, cartId }) => {
+const Paid = ({ selectedAddressId, cartId, cartData }) => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("VNPAY");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -103,6 +103,7 @@ const Paid = ({ selectedAddressId, cartId }) => {
         buttonText={isLoading ? "Đang xử lý..." : "Đặt hàng"}
         onNext={handleOrder}
         disabled={isLoading}
+        cartData={cartData}
       />
     </div>
   );
@@ -112,6 +113,7 @@ Paid.propTypes = {
   selectedAddressId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     .isRequired,
   cartId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  cartData: PropTypes.object,
 };
 
 export default Paid;
