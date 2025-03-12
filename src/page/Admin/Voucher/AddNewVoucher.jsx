@@ -11,54 +11,41 @@ function AddNewVoucher({ fetchVouchers }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [successMessage, setSuccessMessage] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
 
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
-      setSuccessMessage(null);
-      setErrorMessage(null);
-
-      console.log("📤 Submitted Voucher Data:", values);
 
       const formattedValues = {
-        voucherName: values.voucherName.trim(),
-        voucherCode: values.voucherCode.trim(),
-        point: Number(values.point),
-        startDate: dayjs(values.startDate).format("YYYY-MM-DD"),
-        endDate: dayjs(values.endDate).format("YYYY-MM-DD"),
+        code: values.voucherCode.trim(),
+        discount: parseFloat(values.discountAmount),
+        discountType: values.discountType,
+        minOrderValue: parseFloat(values.minOrderValue),
         description: values.description.trim(),
-        discountAmount: Number(values.discountAmount),
-        status: values.status,
+        point: parseInt(values.point),
       };
 
       const response = await createVoucher(formattedValues);
 
+      if (response.message) {
+        toast.success(response.message);
+      }
+
       if (!response.error) {
-        toast.success("Voucher added successfully!");
-        setSuccessMessage("Voucher added successfully!");
         form.resetFields();
         if (fetchVouchers) {
-          fetchVouchers();
+          await fetchVouchers();
         }
-        setTimeout(() => {
-          navigate("/admin/voucher");
-        }, 2000);
-      } else {
-        handleError(response.message || "Failed to add voucher");
+        navigate("/admin/voucher");
       }
     } catch (error) {
-      handleError("Failed to save the voucher. Please check the details.");
+      console.error("Error:", error);
+      if (error.message) {
+        toast.error(error.message);
+      }
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleError = (message) => {
-    console.error("Error:", message);
-    toast.error(message);
-    setErrorMessage(message);
   };
 
   return (
@@ -79,101 +66,28 @@ function AddNewVoucher({ fetchVouchers }) {
         onFinish={handleSubmit}
         autoComplete="off"
       >
-        {/* Voucher Name */}
-        <Form.Item
-          name="voucherName"
-          label="Voucher Name"
-          rules={[
-            { required: true, message: "Please enter a voucher name" },
-            {
-              min: 5,
-              message: "Voucher name must be at least 5 characters long",
-            }, // ✅ Minimum 5 characters
-          ]}
-        >
-          <Input placeholder="Enter voucher name" />
-        </Form.Item>
-
         {/* Voucher Code */}
         <Form.Item
           name="voucherCode"
           label="Voucher Code"
-          rules={[
-            { required: true, message: "Please enter a voucher code" },
-            {
-              min: 5,
-              message: "Voucher name must be at least 5 characters long",
-            }, // ✅ Minimum 5 characters
-          ]}
+          rules={[{ required: true, message: "Please enter a voucher code" }]}
         >
           <Input placeholder="Enter voucher code" />
         </Form.Item>
 
-        {/* Points */}
+        {/* Discount Type */}
         <Form.Item
-          name="point"
-          label="Points"
-          rules={[
-            { required: true, message: "Please enter points" },
-            {
-              type: "number",
-              min: 1,
-              transform: (value) => Number(value),
-              message: "Points must be greater than 0",
-            },
-          ]}
+          name="discountType"
+          label="Discount Type"
+          initialValue="FIXED_AMOUNT"
+          rules={[{ required: true, message: "Please select discount type" }]}
         >
-          <Input type="number" placeholder="Enter points" />
-        </Form.Item>
-
-        {/* Start Date */}
-        <Form.Item
-          name="startDate"
-          label="Start Date"
-          rules={[{ required: true, message: "Please select a start date" }]}
-        >
-          <DatePicker style={{ width: "100%" }} />
-        </Form.Item>
-
-        {/* End Date */}
-        <Form.Item
-          name="endDate"
-          label="End Date"
-          dependencies={["startDate"]}
-          rules={[
-            { required: true, message: "Please select an end date" },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                const startDate = getFieldValue("startDate");
-                if (!value || !startDate) {
-                  return Promise.resolve();
-                }
-                if (dayjs(value).isAfter(dayjs(startDate))) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(
-                  new Error("End date must be after the start date!")
-                );
-              },
-            }),
-          ]}
-        >
-          <DatePicker style={{ width: "100%" }} />
-        </Form.Item>
-
-        {/* Description */}
-        <Form.Item
-          name="description"
-          label="Description"
-          rules={[
-            { required: true, message: "Please enter a description" },
-            {
-              min: 5,
-              message: "Voucher name must be at least 5 characters long",
-            }, // ✅ Minimum 5 characters
-          ]}
-        >
-          <Input.TextArea rows={3} placeholder="Enter description" />
+          <Select>
+            <Select.Option value="FIXED_AMOUNT">
+              Fixed Amount (VND)
+            </Select.Option>
+            <Select.Option value="PERCENTAGE">Percentage (%)</Select.Option>
+          </Select>
         </Form.Item>
 
         {/* Discount Amount */}
@@ -184,30 +98,77 @@ function AddNewVoucher({ fetchVouchers }) {
             { required: true, message: "Please enter a discount amount" },
             {
               type: "number",
-              min: 0.01,
               transform: (value) => Number(value),
-              message: "Discount must be greater than 0",
+              message: "Please enter a valid number",
+            },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                const discountType = getFieldValue("discountType");
+                if (discountType === "PERCENTAGE" && value > 100) {
+                  return Promise.reject(
+                    "Percentage cannot be greater than 100%"
+                  );
+                }
+                if (value <= 0) {
+                  return Promise.reject("Amount must be greater than 0");
+                }
+                return Promise.resolve();
+              },
+            }),
+          ]}
+        >
+          <Input
+            type="number"
+            placeholder={`Enter discount ${
+              form.getFieldValue("discountType") === "PERCENTAGE"
+                ? "(0-100)"
+                : "amount"
+            }`}
+          />
+        </Form.Item>
+
+        {/* Minimum Order Value */}
+        <Form.Item
+          name="minOrderValue"
+          label="Minimum Order Value"
+          rules={[
+            { required: true, message: "Please enter minimum order value" },
+            {
+              type: "number",
+              min: 0.1,
+              transform: (value) => Number(value),
             },
           ]}
         >
           <Input
             type="number"
-            step="0.01"
-            placeholder="Enter discount amount"
+            step="0.1"
+            placeholder="Enter minimum order value"
           />
         </Form.Item>
 
-        {/* Voucher Status */}
+        {/* Points */}
         <Form.Item
-          name="status"
-          label="Status"
-          initialValue="INACTIVE"
-          rules={[{ required: true, message: "Please select a status" }]}
+          name="point"
+          label="Points"
+          rules={[
+            { required: true, message: "Please enter points" },
+            {
+              type: "number",
+              transform: (value) => Number(value),
+            },
+          ]}
         >
-          <Select>
-            <Select.Option value="ACTIVE">Active</Select.Option>
-            <Select.Option value="INACTIVE">Inactive</Select.Option>
-          </Select>
+          <Input type="number" placeholder="Enter points" />
+        </Form.Item>
+
+        {/* Description */}
+        <Form.Item
+          name="description"
+          label="Description"
+          rules={[{ required: true, message: "Please enter a description" }]}
+        >
+          <Input.TextArea rows={3} placeholder="Enter description" />
         </Form.Item>
 
         {/* Submit Button */}

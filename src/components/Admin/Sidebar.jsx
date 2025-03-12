@@ -13,7 +13,6 @@ import {
   ReadOutlined, // 📖 New icon for Blog Management
   QuestionCircleOutlined, // ❓ New icon for Quiz Management
   GiftOutlined, // 🎁 Icon for Vouchers
-
 } from "@ant-design/icons";
 
 const { Sider } = Layout;
@@ -32,6 +31,11 @@ const Sidebar = ({ collapsed }) => {
       key: "/admin/product",
       icon: <ShoppingOutlined />,
       label: "Product Management",
+    },
+    {
+      key: "/admin/order",
+      icon: <AppstoreOutlined />,
+      label: "Order Management",
     },
     {
       key: "/admin/category",
@@ -57,11 +61,6 @@ const Sidebar = ({ collapsed }) => {
       key: "/admin/voucher",
       icon: <GiftOutlined />, // 🎁 Voucher icon
       label: "Voucher Management",
-    },
-    {
-      key: "/admin/batch",
-      icon: <OrderedListOutlined />,
-      label: "Batch Management",
     },
     {
       key: "/admin/service",

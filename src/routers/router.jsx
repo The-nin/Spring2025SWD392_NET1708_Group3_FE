@@ -27,7 +27,7 @@ import BlogManagement from "../page/Admin/Blog/BlogManagement";
 import AddNewBlog from "../page/Admin/Blog/AddNewBlog";
 import EditBlog from "../page/Admin/Blog/EditBlog";
 import QuizManagement from "../page/Admin/Quiz/QuizManagement";
-import AddNewVoucher from "../page/Admin/Voucher/AddNewvoucher";
+import AddNewVoucher from "../page/Admin/Voucher/AddNewVoucher";
 import VoucherManagement from "../page/Admin/Voucher/VoucherManagement";
 import EditVoucher from "../page/Admin/Voucher/EditVoucher";
 import AddNewQuiz from "../page/Admin/Quiz/AddNewquiz";
@@ -41,8 +41,12 @@ import OrderDetail from "../page/Admin/OrderManagement/OrderDetail";
 import UserManagement from "../page/Admin/UserManagement/UserManagement";
 import ServiceManagement from "../page/ServiceManagement/ServiceManagement";
 import AddNewService from "../page/ServiceManagement/AddNewService";
-import BatchManagement from "../page/Admin/BatchManagement/BatchManagement";
-import AddNewBatch from "../page/Admin/BatchManagement/AddNewBatch";
+import CategoryDetail from "../page/Admin/CategoryManagement/CategoryDetail";
+import BrandDetail from "../page/Admin/Brand/BrandDetail";
+import ProductDetailAdmin from "../page/Admin/ProducManagement/ProductDetail";
+import VNPayReturn from "../page/PaymentPage/Paid/VNPayReturn";
+import OrderFailed from "../components/Order/OrderFailed";
+import OrderSuccess from "../components/Order/OrderSuccess";
 
 export const router = createBrowserRouter([
   {
@@ -118,6 +122,18 @@ export const router = createBrowserRouter([
         element: <HelpPage />,
       },
       {
+        path: "/payment/vnpay-return",
+        element: <VNPayReturn />,
+      },
+      {
+        path: "/order-success",
+        element: <OrderSuccess />,
+      },
+      {
+        path: "/order-failed",
+        element: <OrderFailed />,
+      },
+      {
         path: "/cart",
         element: (
           <ProtectedUserRoute>
@@ -173,6 +189,10 @@ export const router = createBrowserRouter([
                 path: "edit/:id",
                 element: <EditCategory />,
               },
+              {
+                path: "detail/:id",
+                element: <CategoryDetail />,
+              },
             ],
           },
           {
@@ -198,6 +218,10 @@ export const router = createBrowserRouter([
                 path: "edit/:id",
                 element: <EditProduct />,
               },
+              {
+                path: "detail/:id",
+                element: <ProductDetailAdmin />,
+              },
             ],
           },
           {
@@ -213,6 +237,10 @@ export const router = createBrowserRouter([
             element: <EditBrand />,
           },
           {
+            path: "brand/detail/:id",
+            element: <BrandDetail />,
+          },
+          {
             path: "blog",
             element: <BlogManagement />,
           },
@@ -223,14 +251,6 @@ export const router = createBrowserRouter([
           {
             path: "blog/edit/:id",
             element: <EditBlog />,
-          },
-          {
-            path: "batch",
-            element: <BatchManagement />,
-          },
-          {
-            path: "batch/add",
-            element: <AddNewBatch />,
           },
           {
             path: "quiz",

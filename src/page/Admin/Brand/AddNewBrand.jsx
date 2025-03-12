@@ -1,22 +1,48 @@
 import React, { useState } from "react";
-import { Form, Input, Button, Card, message, Upload } from "antd";
+import { Form, Input, Button, Card, Upload } from "antd";
 import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { addBrand } from "../../../service/brand/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const AddNewBrand = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [editorContent, setEditorContent] = useState("");
+
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ align: [] }],
+      ["link", "image"],
+      ["clean"],
+    ],
+  };
+
+  const formats = [
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "list",
+    "bullet",
+    "align",
+    "link",
+    "image",
+  ];
 
   const onFinish = async (values) => {
-    if (values.name && values.description && values.thumbnail?.length > 0) {
+    if (values.name && editorContent && values.thumbnail?.length > 0) {
       try {
         setLoading(true);
         const formData = new FormData();
-
         const file = values.thumbnail[0].originFileObj;
 
         if (!file) {
@@ -24,10 +50,12 @@ const AddNewBrand = () => {
           return;
         }
 
-        formData.append(
-          "request",
-          JSON.stringify({ name: values.name, description: values.description })
-        );
+        const requestData = {
+          name: values.name,
+          description: editorContent,
+        };
+
+        formData.append("request", JSON.stringify(requestData));
         formData.append("thumbnail", file);
 
         const response = await addBrand(formData);
@@ -55,7 +83,7 @@ const AddNewBrand = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-64px)] bg-gray-50">
+    <div className="flex flex-col items-center min-h-screen bg-gray-50 p-6">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -68,7 +96,7 @@ const AddNewBrand = () => {
         pauseOnHover
         theme="light"
       />
-      <div className="p-6">
+      <div className="w-full max-w-6xl">
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate("/admin/brand")}
@@ -79,7 +107,7 @@ const AddNewBrand = () => {
 
         <Card
           title="Add New Brand"
-          className="max-w-6xl mx-auto shadow-md"
+          className="w-full shadow-md"
           headStyle={{
             fontSize: "1.5rem",
             fontWeight: "bold",
@@ -113,17 +141,27 @@ const AddNewBrand = () => {
               rules={[
                 { required: true, message: "Please enter description" },
                 {
-                  min: 10,
-                  message: "Description must be at least 10 characters",
+                  validator: (_, value) => {
+                    if (!editorContent || editorContent.trim().length < 10) {
+                      return Promise.reject(
+                        "Description must be at least 10 characters"
+                      );
+                    }
+                    return Promise.resolve();
+                  },
                 },
               ]}
             >
-              <Input.TextArea
-                rows={6}
-                placeholder="Enter brand description"
-                maxLength={500}
-                showCount
-                className="text-base"
+              <ReactQuill
+                theme="snow"
+                value={editorContent}
+                onChange={(content) => {
+                  setEditorContent(content);
+                  form.setFieldsValue({ description: content });
+                }}
+                modules={modules}
+                formats={formats}
+                style={{ height: "300px", marginBottom: "50px" }}
               />
             </Form.Item>
 

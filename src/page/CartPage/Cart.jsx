@@ -77,29 +77,29 @@ function Cart() {
     <>
       {/* Cart Header */}
       <div className="flex justify-center items-center flex-col mt-10 mb-8 relative">
-        <h1 className="text-3xl font-bold mb-3">Shopping Cart</h1>
+        <h1 className="text-3xl font-bold mb-3">Giỏ Hàng</h1>
         <h5 className="text-gray-600 text-center">
-          Purchase one more item of the sale products and receive <br />
-          free shipping!{" "}
+          Mua thêm một sản phẩm khuyến mãi và nhận <br />
+          miễn phí vận chuyển!{" "}
           <span className="text-sm italic">
-            *Automatically applied on the next page
+            *Tự động áp dụng ở trang tiếp theo
           </span>
         </h5>
         {/* Nút quay lại ở góc trên bên trái */}
         <button
           onClick={handleGoBack}
           className="absolute top-0 left-24 bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-black transition-colors rounded-md px-4 py-2 flex items-center space-x-2 shadow-sm"
-          title="Back to Shop"
+          title="Quay lại cửa hàng"
         >
           <FaArrowLeft size={16} />
-          <span>Back to Shop</span>
+          <span>Quay lại cửa hàng</span>
         </button>
       </div>
 
       {!cart?.items || cart.items.length === 0 ? (
         <div className="flex justify-center items-center flex-col mt-20">
           <p className="text-xl text-gray-500">
-            You don't have any items in your cart
+            Bạn chưa có sản phẩm nào trong giỏ hàng
           </p>
         </div>
       ) : (
@@ -108,10 +108,10 @@ function Cart() {
             <table className="w-full border-collapse">
               <thead className="border-b-2">
                 <tr>
-                  <th className="text-left text-lg pb-4">PRODUCT</th>
-                  <th className="text-left text-lg pb-4">PRICE</th>
-                  <th className="text-left text-lg pb-4 w-[10rem]">QUANTITY</th>
-                  <th className="text-left text-lg pb-4">SUB-TOTAL</th>
+                  <th className="text-left text-lg pb-4">SẢN PHẨM</th>
+                  <th className="text-left text-lg pb-4">GIÁ</th>
+                  <th className="text-left text-lg pb-4 w-[10rem]">SỐ LƯỢNG</th>
+                  <th className="text-left text-lg pb-4">TỔNG TIỀN</th>
                   <th className="text-left text-lg pb-4"></th>
                 </tr>
               </thead>
@@ -133,7 +133,11 @@ function Cart() {
                       </div>
                     </td>
                     <td className="text-sm font-medium text-gray-700">
-                      ${product.price}
+                      $
+                      {product.price.toLocaleString("vi-VN", {
+                        maximumFractionDigits: 0,
+                        minimumFractionDigits: 0,
+                      })}
                     </td>
                     <td>
                       <div className="flex items-center space-x-2">
@@ -167,7 +171,11 @@ function Cart() {
                       </div>
                     </td>
                     <td className="text-sm font-medium text-gray-700">
-                      ${product.totalItemPrice}
+                      $
+                      {product.totalItemPrice.toLocaleString("vi-VN", {
+                        maximumFractionDigits: 0,
+                        minimumFractionDigits: 0,
+                      })}
                     </td>
                     <td>
                       <button
@@ -186,18 +194,26 @@ function Cart() {
             {/* Total Section */}
             <div className="mt-8 border-t pt-6">
               <div className="flex justify-end items-center space-x-8">
-                <div className="text-lg font-semibold text-gray-700">Total</div>
-                <div className="text-2xl font-bold">${cart.totalPrice}</div>
+                <div className="text-lg font-semibold text-gray-700">
+                  Tổng cộng
+                </div>
+                <div className="text-2xl font-bold">
+                  $
+                  {cart.totalPrice.toLocaleString("vi-VN", {
+                    maximumFractionDigits: 0,
+                    minimumFractionDigits: 0,
+                  })}
+                </div>
               </div>
               <p className="text-right text-sm text-gray-500 mt-2">
-                Shipping Fee will be calculated at the time of purchase
+                Phí vận chuyển sẽ được tính khi thanh toán
               </p>
 
               {/* Checkout Button */}
               <div className="flex justify-end mt-6">
                 <Link to="/payment">
                   <button className="bg-black text-white py-3 px-8 rounded-md hover:bg-gray-800 transition-colors w-full md:w-[21rem]">
-                    Proceed to Checkout
+                    Tiến hành thanh toán
                   </button>
                 </Link>
               </div>

@@ -105,7 +105,7 @@ const LoginModal = ({ isOpen, onClose }) => {
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-semibold text-gray-900">
-          Log in to your account
+          Đăng nhập vào tài khoản của bạn
         </h2>
         {errors.general && (
           <p className="text-red-500 text-sm">{errors.general}</p>
@@ -114,7 +114,7 @@ const LoginModal = ({ isOpen, onClose }) => {
           <div>
             <input
               type="text"
-              placeholder="Enter Username"
+              placeholder="Nhập tên đăng nhập"
               className={`w-full p-3 border-b ${
                 errors.username ? "border-red-500" : "border-gray-300"
               } bg-transparent focus:outline-none`}
@@ -130,7 +130,7 @@ const LoginModal = ({ isOpen, onClose }) => {
           <div>
             <input
               type="password"
-              placeholder="Enter Password"
+              placeholder="Nhập mật khẩu"
               className={`w-full p-3 border-b ${
                 errors.password ? "border-red-500" : "border-gray-300"
               } bg-transparent focus:outline-none`}
@@ -149,23 +149,25 @@ const LoginModal = ({ isOpen, onClose }) => {
               onClick={() => handleFormChange("forgotPassword")}
               className="text-sm text-gray-600 hover:text-gray-900"
             >
-              Forgotten password?
+              Quên mật khẩu?
             </button>
           </div>
           <button
             type="submit"
             className="w-full px-4 py-3 bg-black text-white text-sm font-semibold rounded-md hover:bg-gray-800 transition"
           >
-            Login
+            Đăng nhập
           </button>
         </form>
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600 mb-4">New to SKYN?</p>
+          <p className="text-sm text-gray-600 mb-4">
+            Bạn chưa có tài khoản SKYN?
+          </p>
           <button
             onClick={() => handleFormChange("register")}
             className="w-full px-4 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition"
           >
-            Create account →
+            Tạo tài khoản →
           </button>
         </div>
       </div>
