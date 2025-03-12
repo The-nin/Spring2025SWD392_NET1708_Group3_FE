@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState } from "react";
-import { register } from "../../service/register/index"; // Import API đăng ký
+import { register, verifyOTP } from "../../service/register/index"; // Import API đăng ký
 import NotificationModal from "../../components/Notification/NotificationModal";
 import OTPModal from "./OTPmodal";
 
@@ -24,6 +24,7 @@ const RegisterForm = ({ onBackToLogin }) => {
     type: "success",
   });
   const [showOTPModal, setShowOTPModal] = useState(false);
+  const [userId, setUserId] = useState(null);
 
   const isFormValid =
     registerData.username &&
@@ -55,6 +56,7 @@ const RegisterForm = ({ onBackToLogin }) => {
       const response = await register(requestData);
 
       if (response?.code === 201) {
+        setUserId(response.result.id);
         setShowOTPModal(true);
       } else {
         setModalInfo({
@@ -76,23 +78,34 @@ const RegisterForm = ({ onBackToLogin }) => {
 
   const handleVerifyOTP = async (otp) => {
     try {
-      setShowOTPModal(false);
-      setModalInfo({
-        isOpen: true,
-        message: "Tạo tài khoản thành công! Vui lòng đăng nhập.",
-        type: "success",
-      });
-      setRegisterData({
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        dateOfBirth: "",
-        gender: "",
-      });
-      setTimeout(() => {
-        onBackToLogin();
-      }, 2000);
+      const response = await verifyOTP(userId, otp);
+
+      if (response?.code === 200) {
+        setShowOTPModal(false);
+        setModalInfo({
+          isOpen: true,
+          message: "Tạo tài khoản thành công! Vui lòng đăng nhập.",
+          type: "success",
+        });
+        setRegisterData({
+          username: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          dateOfBirth: "",
+          gender: "",
+        });
+        setTimeout(() => {
+          onBackToLogin();
+        }, 2000);
+      } else {
+        setModalInfo({
+          isOpen: true,
+          message:
+            response.message || "Mã OTP không chính xác. Vui lòng thử lại!",
+          type: "error",
+        });
+      }
     } catch (error) {
       setModalInfo({
         isOpen: true,
@@ -121,7 +134,7 @@ const RegisterForm = ({ onBackToLogin }) => {
         onVerify={handleVerifyOTP}
       />
       <h2 className="text-2xl font-semibold text-gray-900">
-        Create your account
+        Tạo tài khoản mới
       </h2>
       {error && <p className="text-red-500 text-sm">{error}</p>}
       {success && <p className="text-green-500 text-sm">{success}</p>}
@@ -130,7 +143,7 @@ const RegisterForm = ({ onBackToLogin }) => {
         <div>
           <input
             type="text"
-            placeholder="Username"
+            placeholder="Tên đăng nhập"
             className="w-full p-3 border-b border-gray-300 bg-transparent text-gray-800 focus:outline-none focus:border-gray-900 placeholder-gray-500"
             required
             value={registerData.username}
@@ -143,7 +156,7 @@ const RegisterForm = ({ onBackToLogin }) => {
         <div>
           <input
             type="email"
-            placeholder="Email Address"
+            placeholder="Địa chỉ email"
             className="w-full p-3 border-b border-gray-300 bg-transparent text-gray-800 focus:outline-none focus:border-gray-900 placeholder-gray-500"
             required
             value={registerData.email}
@@ -156,7 +169,7 @@ const RegisterForm = ({ onBackToLogin }) => {
         <div className="flex gap-4">
           <div className="flex-1">
             <label className="block text-sm text-gray-600 mb-2">
-              Date of Birth
+              Ngày sinh
             </label>
             <input
               type="date"
@@ -172,7 +185,9 @@ const RegisterForm = ({ onBackToLogin }) => {
             />
           </div>
           <div className="flex-1">
-            <label className="block text-sm text-gray-600 mb-2">Gender</label>
+            <label className="block text-sm text-gray-600 mb-2">
+              Giới tính
+            </label>
             <select
               className="w-full p-3 border-b border-gray-300 bg-transparent text-gray-800 focus:outline-none focus:border-gray-900"
               required
@@ -181,17 +196,17 @@ const RegisterForm = ({ onBackToLogin }) => {
                 setRegisterData({ ...registerData, gender: e.target.value })
               }
             >
-              <option value="">Select Gender</option>
-              <option value="MALE">Male</option>
-              <option value="FEMALE">Female</option>
-              <option value="OTHER">Other</option>
+              <option value="">Chọn giới tính</option>
+              <option value="MALE">Nam</option>
+              <option value="FEMALE">Nữ</option>
+              <option value="OTHER">Khác</option>
             </select>
           </div>
         </div>
         <div>
           <input
             type="password"
-            placeholder="Password"
+            placeholder="Mật khẩu"
             className="w-full p-3 border-b border-gray-300 bg-transparent text-gray-800 focus:outline-none focus:border-gray-900 placeholder-gray-500"
             required
             value={registerData.password}
@@ -203,7 +218,7 @@ const RegisterForm = ({ onBackToLogin }) => {
         <div>
           <input
             type="password"
-            placeholder="Confirm Password"
+            placeholder="Xác nhận mật khẩu"
             className="w-full p-3 border-b border-gray-300 bg-transparent text-gray-800 focus:outline-none focus:border-gray-900 placeholder-gray-500"
             required
             value={registerData.confirmPassword}
@@ -215,7 +230,7 @@ const RegisterForm = ({ onBackToLogin }) => {
               });
 
               if (value !== registerData.password) {
-                setPasswordError("Passwords do not match!");
+                setPasswordError("Mật khẩu không khớp!");
               } else {
                 setPasswordError("");
               }
@@ -235,17 +250,17 @@ const RegisterForm = ({ onBackToLogin }) => {
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
           }`}
         >
-          {loading ? "Registering..." : "Create Account"}
+          {loading ? "Đang đăng ký..." : "Tạo tài khoản"}
         </button>
       </form>
 
       <div className="mt-6 text-center">
-        <p className="text-sm text-gray-600 mb-4">Already have an account?</p>
+        <p className="text-sm text-gray-600 mb-4">Đã có tài khoản?</p>
         <button
           onClick={onBackToLogin}
           className="w-full flex items-center justify-center px-4 py-3 text-sm font-semibold border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition"
         >
-          Back to login
+          Quay lại đăng nhập
           <span className="ml-2">→</span>
         </button>
       </div>

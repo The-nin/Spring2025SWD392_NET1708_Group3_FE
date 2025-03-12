@@ -112,9 +112,9 @@ const AddressBook = () => {
         <>
           <div className="border rounded-md p-4 bg-gray-50">
             {loading ? (
-              <div className="text-center py-4">Loading addresses...</div>
+              <div className="text-center py-4">Đang tải địa chỉ...</div>
             ) : addresses.length === 0 ? (
-              <div className="text-center py-4">No addresses found</div>
+              <div className="text-center py-4">Không tìm thấy địa chỉ nào</div>
             ) : (
               addresses.map((addr) => (
                 <div
@@ -127,7 +127,7 @@ const AddressBook = () => {
                       {addr.isDefault && (
                         <span className="text-sky-900 font-medium">
                           {" "}
-                          - Default address
+                          - Địa chỉ mặc định
                         </span>
                       )}
                     </p>
@@ -142,14 +142,14 @@ const AddressBook = () => {
                         className="text-sky-600 font-medium hover:underline"
                         onClick={() => handleSetDefault(addr.id)}
                       >
-                        Set as Default
+                        Đặt làm mặc định
                       </button>
                     )}
                     <button
                       className="text-neutral-600 font-medium hover:underline"
                       onClick={() => handleEdit(addr)}
                     >
-                      Edit
+                      Sửa
                     </button>
                     {addresses.length > 1 && (
                       <button
@@ -165,16 +165,15 @@ const AddressBook = () => {
             )}
           </div>
 
-          {/* Add new address button */}
           <div className="mt-6 px-0 flex items-center justify-end w-full">
             <p className="text-gray-700 px-2">
-              Do you want to ship to a different address?
+              Bạn muốn giao hàng đến địa chỉ khác?
             </p>
             <button
               onClick={() => setShowForm(true)}
               className="px-4 py-2 bg-neutral-600 text-white font-semibold rounded-md hover:bg-neutral-900"
             >
-              Add new address
+              Thêm địa chỉ mới
             </button>
           </div>
         </>

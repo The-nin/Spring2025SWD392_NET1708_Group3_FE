@@ -1,238 +1,221 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Table, Button, Space, Tooltip, Modal, Switch } from "antd";
-import { useNavigate } from "react-router-dom";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import {
-  getAllQuizs,
-  deleteQuiz,
-  updateQuizStatus,
-} from "../../../service/quiz/index";
+import React, { useEffect, useState } from "react";
+import { Form, Input, Button, Card, Select } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import { useNavigate, useParams } from "react-router-dom";
+import { getQuizById, updateQuiz } from "../../../service/quiz/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const QuizManagement = () => {
+const { Option } = Select;
+const skinTypes = ["SENSITIVE_SKIN", "OILY_SKIN", "DRY_SKIN", "NORMAL_SKIN"];
+
+const EditQuiz = () => {
   const navigate = useNavigate();
-  const tokenRef = useRef(localStorage.getItem("token")); // 🔹 Store token in useRef to avoid redundant calls
-
+  const { id } = useParams();
+  const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [quizs, setQuizs] = useState(null); // 🔹 Use null to differentiate between "loading" and "empty list"
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 0,
-  });
-  const [selectedQuiz, setSelectedQuiz] = useState(null);
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
-  // 🔹 Fetch quizzes
-  const fetchQuizs = async () => {
-    if (quizs) return; // Avoid unnecessary API calls if data is already present
-
-    try {
-      setLoading(true);
-      const response = await getAllQuizs();
-
-      if (!response.error) {
-        setQuizs(response.result || []);
-        setPagination((prev) => ({
-          ...prev,
-          total: response.total || prev.total, // Ensure total count updates
-        }));
-      } else {
-        toast.error(response.message || "Failed to fetch quizzes");
-      }
-    } catch (error) {
-      console.error("Fetch Quiz Error:", error);
-      toast.error("Failed to fetch quizzes");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 🔹 Initial fetch on mount
   useEffect(() => {
-    fetchQuizs();
-  }, []);
-
-  // 🔹 Handle pagination changes
-  const handleTableChange = (newPagination) => {
-    setPagination(newPagination);
-    fetchQuizs();
-  };
-
-  // 🔹 Show delete confirmation modal
-  const showDeleteConfirm = (quiz) => {
-    setSelectedQuiz(quiz);
-    setDeleteModalVisible(true);
-  };
-
-  // 🔹 Handle delete quiz
-  const handleDeleteConfirm = async () => {
-    if (!selectedQuiz || !tokenRef.current) return;
-
-    try {
-      setLoading(true);
-      const response = await deleteQuiz(selectedQuiz.id, tokenRef.current);
-
-      if (!response.error) {
-        toast.success("Quiz deleted successfully!");
-        setQuizs((prev) => prev.filter((q) => q.id !== selectedQuiz.id)); // Remove deleted quiz
-      } else {
-        toast.error(response.message || "Failed to delete quiz");
+    const fetchQuiz = async () => {
+      try {
+        const response = await getQuizById(id);
+        if (response && response.result) {
+          form.setFieldsValue(response.result);
+        } else {
+          toast.error("Failed to fetch quiz data");
+        }
+      } catch (error) {
+        console.error("Error fetching quiz:", error);
+        toast.error("Error fetching quiz");
       }
-    } catch (error) {
-      console.error("Delete Quiz Error:", error);
-      toast.error("Failed to delete quiz");
-    } finally {
-      setLoading(false);
-      setDeleteModalVisible(false);
-      setSelectedQuiz(null);
-    }
-  };
+    };
+    fetchQuiz();
+  }, [id, form]);
 
-  // 🔹 Toggle quiz status
-  const toggleQuizStatus = async (quiz) => {
-    if (!tokenRef.current) {
-      toast.error("Authentication failed. Please log in again.");
+  const onFinish = async (values) => {
+    if (!values.title || !values.description || !values.questions) {
+      toast.error("Please fill all required fields");
       return;
     }
 
     try {
       setLoading(true);
-      const newStatus = quiz.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-      const response = await updateQuizStatus(
-        quiz.id,
-        newStatus,
-        tokenRef.current
-      );
+      const quizData = {
+        id,
+        title: values.title,
+        description: values.description,
+        questions: values.questions.map((q) => ({
+          title: q.title,
+          answers: q.answers.map((a) => ({
+            answerText: a.answerText,
+            skinType: a.skinType,
+          })),
+        })),
+      };
 
-      if (!response.error) {
-        toast.success("Quiz status updated successfully!");
-        setQuizs((prev) =>
-          prev.map((q) => (q.id === quiz.id ? { ...q, status: newStatus } : q))
-        );
+      const response = await updateQuiz(quizData);
+
+      if (response && response.result) {
+        toast.success("Quiz updated successfully!");
+        setTimeout(() => navigate("/admin/quiz"), 2000);
       } else {
-        toast.error(response.message || "Failed to update quiz status");
+        toast.error(response?.message || "Error updating quiz");
       }
     } catch (error) {
-      console.error("Update Quiz Status Error:", error);
-      toast.error("Failed to update quiz status");
+      console.error("Error:", error);
+      toast.error("Failed to update quiz");
     } finally {
       setLoading(false);
     }
   };
 
-  const columns = [
-    {
-      title: "Title",
-      dataIndex: "title",
-      key: "title",
-    },
-    {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-    },
-    {
-      title: "Questions",
-      dataIndex: "questions",
-      key: "questions",
-      render: (questions) => (
-        <ul>
-          {questions.map((q) => (
-            <li key={q.questionId}>
-              <strong>{q.title}</strong>
-              <ul>
-                {q.answers.map((ans) => (
-                  <li key={ans.answerId}>
-                    {ans.answerText} ({ans.skinType})
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </ul>
-      ),
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status, record) => (
-        <Switch
-          checked={status === "ACTIVE"}
-          onChange={() => toggleQuizStatus(record)}
-          checkedChildren="Active"
-          unCheckedChildren="Inactive"
-        />
-      ),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Tooltip title="Edit">
-            <Button
-              type="primary"
-              icon={<EditOutlined />}
-              onClick={() => navigate(`/admin/quiz/edit/${record.id}`)}
-            />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => showDeleteConfirm(record)}
-            />
-          </Tooltip>
-        </Space>
-      ),
-    },
-  ];
-
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Quiz Management</h2>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => navigate("/admin/quiz/add")}
-        >
-          Add New Quiz
-        </Button>
-      </div>
-      <Table
-        columns={columns}
-        dataSource={
-          quizs ? quizs.map((q, index) => ({ ...q, key: q.id || index })) : []
-        }
-        pagination={pagination}
-        loading={loading}
-        onChange={handleTableChange}
+    <div className="h-[calc(100vh-64px)] bg-gray-50">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
       />
-      <Modal
-        title="Confirm Delete"
-        open={deleteModalVisible}
-        onOk={handleDeleteConfirm}
-        onCancel={() => {
-          setDeleteModalVisible(false);
-          setSelectedQuiz(null);
-        }}
-        okText="Delete"
-        cancelText="Cancel"
-        okButtonProps={{ danger: true }}
-      >
-        <p>
-          Are you sure you want to delete quiz{" "}
-          <strong>{selectedQuiz?.title}</strong>?
-        </p>
-        <p>This action cannot be undone.</p>
-      </Modal>
-      <ToastContainer />
+      <div className="p-6">
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate("/admin/quiz")}
+          className="mb-4 hover:bg-gray-100"
+        >
+          Back to Quizzes
+        </Button>
+
+        <Card title="Edit Quiz" className="max-w-6xl mx-auto shadow-md">
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={onFinish}
+            autoComplete="off"
+          >
+            <Form.Item
+              name="title"
+              label="Quiz Title"
+              rules={[{ required: true, message: "Please enter quiz title" }]}
+            >
+              <Input placeholder="Enter quiz title" />
+            </Form.Item>
+
+            <Form.Item
+              name="description"
+              label="Quiz Description"
+              rules={[
+                { required: true, message: "Please enter quiz description" },
+              ]}
+            >
+              <Input.TextArea rows={3} placeholder="Enter quiz description" />
+            </Form.Item>
+
+            <Form.List name="questions">
+              {(fields, { add, remove }) => (
+                <div>
+                  {fields.map(({ key, name, ...restField }) => (
+                    <Card
+                      key={key}
+                      className="mb-4"
+                      title={`Question ${key + 1}`}
+                    >
+                      <Form.Item
+                        {...restField}
+                        name={[name, "title"]}
+                        label="Question Title"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please enter question title",
+                          },
+                        ]}
+                      >
+                        <Input placeholder="Enter question title" />
+                      </Form.Item>
+
+                      <Form.List name={[name, "answers"]}>
+                        {(
+                          answerFields,
+                          { add: addAnswer, remove: removeAnswer }
+                        ) => (
+                          <div>
+                            {answerFields.map(
+                              ({
+                                key: answerKey,
+                                name: answerName,
+                                ...answerRestField
+                              }) => (
+                                <div key={answerKey} className="flex gap-2">
+                                  <Form.Item
+                                    {...answerRestField}
+                                    name={[answerName, "answerText"]}
+                                    label="Answer Text"
+                                    rules={[
+                                      {
+                                        required: true,
+                                        message: "Please enter answer text",
+                                      },
+                                    ]}
+                                  >
+                                    <Input placeholder="Enter answer text" />
+                                  </Form.Item>
+                                  <Form.Item
+                                    {...answerRestField}
+                                    name={[answerName, "skinType"]}
+                                    label="Skin Type"
+                                    rules={[
+                                      {
+                                        required: true,
+                                        message: "Please select skin type",
+                                      },
+                                    ]}
+                                  >
+                                    <Select placeholder="Select skin type">
+                                      {skinTypes.map((type) => (
+                                        <Option key={type} value={type}>
+                                          {type}
+                                        </Option>
+                                      ))}
+                                    </Select>
+                                  </Form.Item>
+                                  <Button
+                                    type="dashed"
+                                    onClick={() => removeAnswer(answerName)}
+                                  >
+                                    Remove Answer
+                                  </Button>
+                                </div>
+                              )
+                            )}
+                            <Button type="dashed" onClick={() => addAnswer()}>
+                              Add Answer
+                            </Button>
+                          </div>
+                        )}
+                      </Form.List>
+
+                      <Button type="dashed" onClick={() => remove(name)}>
+                        Remove Question
+                      </Button>
+                    </Card>
+                  ))}
+                  <Button type="dashed" onClick={() => add()}>
+                    Add Question
+                  </Button>
+                </div>
+              )}
+            </Form.List>
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit" loading={loading}>
+                Update Quiz
+              </Button>
+            </Form.Item>
+          </Form>
+        </Card>
+      </div>
     </div>
   );
 };
 
-export default QuizManagement;
+export default EditQuiz;

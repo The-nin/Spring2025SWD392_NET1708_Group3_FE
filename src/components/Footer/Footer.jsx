@@ -5,7 +5,7 @@ const Footer = () => {
         {/* Logo and Social Links */}
         <div className="col-span-2 md:col-span-1">
           <h2 className="text-xl font-bold">SKYN.</h2>
-          <p className="mt-4">FOLLOW US</p>
+          <p className="mt-4">THEO DÕI CHÚNG TÔI</p>
           <div className="flex space-x-4 mt-2">
             <a href="#" className="text-white hover:text-gray-400">
               <i className="fab fa-twitter"></i>
@@ -21,21 +21,21 @@ const Footer = () => {
 
         {/* Products */}
         <div>
-          <h3 className="font-semibold mb-2">Products</h3>
+          <h3 className="font-semibold mb-2">Sản Phẩm</h3>
           <ul>
             <li>
               <a href="#" className="hover:underline">
-                Inner Care
+                Chăm Sóc Từ Trong Ra Ngoài
               </a>
             </li>
             <li>
               <a href="#" className="hover:underline">
-                Skin Care
+                Chăm Sóc Da
               </a>
             </li>
             <li>
               <a href="#" className="hover:underline">
-                Scalp Care
+                Chăm Sóc Da Đầu
               </a>
             </li>
           </ul>
@@ -43,21 +43,21 @@ const Footer = () => {
 
         {/* Guides */}
         <div>
-          <h3 className="font-semibold mb-2">Guides</h3>
+          <h3 className="font-semibold mb-2">Hướng Dẫn</h3>
           <ul>
             <li>
               <a href="#" className="hover:underline">
-                News
+                Tin Tức
               </a>
             </li>
             <li>
               <a href="#" className="hover:underline">
-                Vision
+                Tầm Nhìn
               </a>
             </li>
             <li>
               <a href="#" className="hover:underline">
-                Q&A
+                Hỏi Đáp
               </a>
             </li>
           </ul>
@@ -65,21 +65,21 @@ const Footer = () => {
 
         {/* Services */}
         <div>
-          <h3 className="font-semibold mb-2">Service</h3>
+          <h3 className="font-semibold mb-2">Dịch Vụ</h3>
           <ul>
             <li>
               <a href="#" className="hover:underline">
-                About Concierge
+                Về Dịch Vụ Chăm Sóc
               </a>
             </li>
             <li>
               <a href="#" className="hover:underline">
-                Online Consultation
+                Tư Vấn Trực Tuyến
               </a>
             </li>
             <li>
               <a href="#" className="hover:underline">
-                Market
+                Cửa Hàng
               </a>
             </li>
           </ul>
@@ -87,11 +87,11 @@ const Footer = () => {
 
         {/* Contact */}
         <div>
-          <h3 className="font-semibold mb-2">Contact</h3>
+          <h3 className="font-semibold mb-2">Liên Hệ</h3>
           <ul>
             <li>
               <a href="#" className="hover:underline">
-                Contact Us
+                Liên Hệ Với Chúng Tôi
               </a>
             </li>
           </ul>
@@ -99,22 +99,22 @@ const Footer = () => {
       </div>
 
       <div className="border-t border-gray-700 mt-8 pt-4 text-xs text-center">
-        <p>SKYN. 2019 KINS All rights reserved.</p>
+        <p>SKYN. 2019 KINS - Đã đăng ký bản quyền.</p>
         <div className="flex flex-col md:flex-row justify-center mt-2 space-y-2 md:space-y-0 md:space-x-4">
           <a href="#" className="hover:underline">
-            Company Profile
+            Thông Tin Công Ty
           </a>
           <a href="#" className="hover:underline">
-            Privacy policy
+            Chính Sách Bảo Mật
           </a>
           <a href="#" className="hover:underline">
-            Cancellation policy
+            Chính Sách Hủy Đơn
           </a>
           <a href="#" className="hover:underline">
-            Terms of service
+            Điều Khoản Dịch Vụ
           </a>
           <a href="#" className="hover:underline">
-            Refund/Return Policy
+            Chính Sách Đổi Trả
           </a>
         </div>
       </div>
