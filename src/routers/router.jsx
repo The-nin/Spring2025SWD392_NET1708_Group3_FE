@@ -30,6 +30,7 @@ import QuizManagement from "../page/Admin/Quiz/QuizManagement";
 import AddNewVoucher from "../page/Admin/Voucher/AddNewvoucher";
 import VoucherManagement from "../page/Admin/Voucher/VoucherManagement";
 import EditVoucher from "../page/Admin/Voucher/EditVoucher";
+import EditQuiz from "../page/Admin/Quiz/EditQuiz";
 import AddNewQuiz from "../page/Admin/Quiz/AddNewquiz";
 import Payment from "../page/PaymentPage/Payment";
 import { ProtectedUserRoute } from "./ProtectedUserRoute";
@@ -239,6 +240,10 @@ export const router = createBrowserRouter([
           {
             path: "quiz/add",
             element: <AddNewQuiz />,
+          },
+          {
+            path: "quiz/edit/:id",
+            element: <EditQuiz />,
           },
           {
             path: "voucher",
