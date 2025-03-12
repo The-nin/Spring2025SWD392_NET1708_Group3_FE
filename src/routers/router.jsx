@@ -39,11 +39,12 @@ import Consultant from "../page/ConsultantPage/Consultant";
 import OrderManagement from "../page/Admin/OrderManagement/OrderManagement";
 import OrderDetail from "../page/Admin/OrderManagement/OrderDetail";
 import UserManagement from "../page/Admin/UserManagement/UserManagement";
-import ServiceManagement from "../page/ServiceManagement/ServiceManagement";
-import AddNewService from "../page/ServiceManagement/AddNewService";
+import ServiceManagement from "../page/Admin/ServiceManagement/ServiceManagement";
+import AddNewService from "../page/Admin/ServiceManagement/AddNewService";
 import BatchManagement from "../page/Admin/BatchManagement/BatchManagement";
 import AddNewBatch from "../page/Admin/BatchManagement/AddNewBatch";
-
+import ExpertService from "../page/Admin/ExpertService/ExpertService";
+import PaymentSuccess from "../page/PaymentSuccessPage/PaymentSuccess";
 
 export const router = createBrowserRouter([
   {
@@ -133,6 +134,10 @@ export const router = createBrowserRouter([
             <Consultant />
           </ProtectedUserRoute>
         ),
+      },
+      {
+        path: "payment-success",
+        element: <PaymentSuccess />,
       },
     ],
   },
@@ -253,7 +258,8 @@ export const router = createBrowserRouter([
             path: "voucher/edit/:id",
             element: <EditVoucher />,
           },
-          path: "service",
+          {
+            path: "service",
             children: [
               {
                 path: "",
@@ -264,6 +270,11 @@ export const router = createBrowserRouter([
                 element: <AddNewService />,
               },
             ],
+          },
+          {
+            path: "consultant-booking",
+            element: <ExpertService />,
+          },
         ],
       },
     ],

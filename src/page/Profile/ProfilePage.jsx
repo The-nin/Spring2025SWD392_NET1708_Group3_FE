@@ -281,7 +281,7 @@ const ProfilePage = () => {
                       : "hover:bg-gray-100"
                   }`}
                 >
-                  Consultant history
+                  Lịch sử đặt lịch tư vấn
                 </button>
                 <button
                   onClick={() => setActiveTab("addresses")}
@@ -363,7 +363,7 @@ const ProfilePage = () => {
               {activeTab === "consultant" && (
                 <div>
                   <h3 className="text-xl font-semibold mb-6">
-                    Consultant history
+                    Lịch sử đặt lịch
                   </h3>
                   <ConsultantHistory />
                 </div>

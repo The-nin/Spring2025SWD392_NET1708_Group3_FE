@@ -1,6 +1,6 @@
 import { instance } from "../instance"
 
-//Admin functions
+//Lấy tất cả dành cho role admin (hệ thống)
 const getAllService = async () => {
     const token = localStorage.getItem("token");
     try{
@@ -23,7 +23,8 @@ const getAllService = async () => {
     }
 }
 
-const createNewService = async (values) =>{
+//Tạo mới services
+const createNewService = async (values) => {
 
     const token = localStorage.getItem("token");
 
@@ -43,11 +44,20 @@ const createNewService = async (values) =>{
     }
 }
 
-//Customer functions
+//Lấy tất cả service
 const getServices = async () => {
-    try {
 
-        const response = await instance.get("/skincare-service/alls")
+    const token = localStorage.getItem("token");
+
+    try {
+        const response = await instance.get("/skincare-service/alls",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        )
 
         if(!response.result){
             console.error(response.message)

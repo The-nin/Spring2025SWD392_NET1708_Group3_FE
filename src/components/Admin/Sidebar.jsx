@@ -12,7 +12,8 @@ import {
   CustomerServiceOutlined,
   ReadOutlined, // 📖 New icon for Blog Management
   QuestionCircleOutlined, // ❓ New icon for Quiz Management
-  GiftOutlined, // 🎁 Icon for Vouchers
+  GiftOutlined,
+  SolutionOutlined, // 🎁 Icon for Vouchers
 
 } from "@ant-design/icons";
 
@@ -68,6 +69,11 @@ const Sidebar = ({ collapsed }) => {
       icon: <CustomerServiceOutlined />,
       label: "Service Management",
     },
+    {
+      key: "/admin/consultant-booking",
+      icon: <SolutionOutlined />,
+      label: "Quản lý đặt tư vấn"
+    }
   ];
 
   return (
