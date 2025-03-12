@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Button, Space, Table, Tooltip } from "antd";
 import { toast } from "react-toastify";
-import { getAllService } from "../../service/serviceManagement";
+import { getAllService } from "../../../service/serviceManagement";
 
 function ServiceManagement() {
   const [service, setService] = useState([]);
@@ -16,7 +16,7 @@ function ServiceManagement() {
       const data = await getAllService();
       setService(data);
     } catch (error) {
-      toast.error("Error loading services");
+      toast.error("Lỗi lấy dữ liệu");
       console.error(error);
     } finally {
       setLoading(false);
@@ -34,19 +34,19 @@ function ServiceManagement() {
       key: "id",
     },
     {
-      title: "Name",
+      title: "Tên dịch vụ",
       dataIndex: "serviceName",
       key: "serviceName",
       render: (serviceName) => (serviceName ? serviceName : "N/A"),
     },
     {
-      title: "Price",
+      title: "Giá",
       dataIndex: "price",
       key: "price",
       render: (price) => (price ? `${price.toLocaleString()} đ` : "N/A"),
     },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "description",
       key: "description",
     },
@@ -55,14 +55,14 @@ function ServiceManagement() {
       key: "action",
       render: (_, record) => (
         <Space>
-          <Tooltip title="Edit">
+          <Tooltip title="Chỉnh sửa">
             <Button
               type="primary"
               icon={<EditOutlined />}
               // onClick={() => navigate(`/admin/product/edit/${record.id}`)}
             />
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Xóa">
             <Button
               danger
               icon={<DeleteOutlined />}
@@ -77,13 +77,13 @@ function ServiceManagement() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Service Management</h2>
+        <h2 className="text-2xl font-bold">Quản lý dịch vụ</h2>
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => navigate("/admin/service/add")}
         >
-          Add New Service
+          Tạo mới dịch vụ
         </Button>
       </div>
 

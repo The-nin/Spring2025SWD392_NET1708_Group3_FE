@@ -210,7 +210,7 @@ const Header = () => {
               {user ? (
                 <div className="mr-6">
                   <button className="border border-black rounded-md border-radius px-4 py-3 text-black font-medium hover:bg-zinc-200 hover:text-gray-800 transition duration-300 ease-in-out shadow-lg hover:shadow-xl">
-                    <Link to="/skin-consultation">Tư vấn</Link>
+                    <Link to="/skin-consultation">Tư vấn da</Link>
                   </button>
                 </div>
               ) : null}
