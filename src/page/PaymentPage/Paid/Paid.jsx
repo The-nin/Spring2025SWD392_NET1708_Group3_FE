@@ -7,8 +7,15 @@ import { checkout } from "../../../service/checkout";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
-const Paid = ({ selectedAddressId, cartId, cartData }) => {
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("VNPAY");
+const Paid = ({
+  selectedAddressId,
+  cartId,
+  cartData,
+  onVoucherApply,
+  appliedVoucher,
+  vouchers,
+}) => {
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("COD");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -23,6 +30,7 @@ const Paid = ({ selectedAddressId, cartId, cartData }) => {
         addressId: parseInt(selectedAddressId),
         cartId: parseInt(cartId),
         paymentMethod: selectedPaymentMethod,
+        voucherCode: appliedVoucher?.code,
         returnUrl: `${window.location.origin}/payment/vnpay-return`,
       };
 
@@ -32,7 +40,6 @@ const Paid = ({ selectedAddressId, cartId, cartData }) => {
         console.log(selectedPaymentMethod);
         if (selectedPaymentMethod === "VNPAY" && response.result.redirectUrl) {
           window.location.href = response.result.redirectUrl;
-          console.log(response.result.redirectUrl);
         } else {
           navigate("/order-success", {
             state: {
@@ -104,6 +111,9 @@ const Paid = ({ selectedAddressId, cartId, cartData }) => {
         onNext={handleOrder}
         disabled={isLoading}
         cartData={cartData}
+        onVoucherApply={onVoucherApply}
+        appliedVoucher={appliedVoucher}
+        vouchers={vouchers}
       />
     </div>
   );
@@ -114,6 +124,9 @@ Paid.propTypes = {
     .isRequired,
   cartId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   cartData: PropTypes.object,
+  onVoucherApply: PropTypes.func.isRequired,
+  appliedVoucher: PropTypes.object,
+  vouchers: PropTypes.array,
 };
 
 export default Paid;

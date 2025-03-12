@@ -3,21 +3,39 @@ import Address from "./Address/Address";
 import Shipping from "./Shipping/Shipping";
 import Paid from "./Paid/Paid";
 import { getCart } from "../../service/cart/cart";
+import { getMyVouchers } from "../../service/voucher/index";
 
 const Payment = () => {
   const [step, setStep] = useState(1);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [cartId, setCartId] = useState(null);
   const [cartData, setCartData] = useState(null);
+  const [appliedVoucher, setAppliedVoucher] = useState(null);
+  const [vouchers, setVouchers] = useState(null);
 
   useEffect(() => {
-    const fetchCartData = async () => {
-      const response = await getCart();
-      if (!response.error) {
-        setCartData(response.result);
+    const fetchData = async () => {
+      const [cartResponse, vouchersResponse] = await Promise.all([
+        getCart(),
+        getMyVouchers(),
+      ]);
+
+      console.log("Cart response structure:", cartResponse);
+      console.log("Vouchers response structure:", vouchersResponse);
+
+      if (cartResponse.code === 200) {
+        setCartData(cartResponse.result);
+      }
+
+      if (vouchersResponse.code === 200) {
+        setVouchers(vouchersResponse.result.content);
+        console.log(
+          "Vouchers data to be set:",
+          vouchersResponse.result.content
+        );
       }
     };
-    fetchCartData();
+    fetchData();
   }, []);
 
   const handleAddressNext = (cartId, addressId) => {
@@ -42,16 +60,32 @@ const Payment = () => {
     console.log("Processing payment...");
   };
 
+  const handleVoucherApply = (voucher) => {
+    setAppliedVoucher(voucher);
+  };
+
   const renderStepContent = () => {
+    const commonProps = {
+      cartData,
+      onVoucherApply: handleVoucherApply,
+      appliedVoucher,
+      vouchers,
+    };
+
+    console.log("Props being passed:", {
+      cartData: cartData,
+      vouchers: vouchers,
+    });
+
     switch (step) {
       case 1:
-        return <Address onNext={handleAddressNext} cartData={cartData} />;
+        return <Address onNext={handleAddressNext} {...commonProps} />;
       case 2:
         return (
           <Shipping
             onNext={handleShippingNext}
             selectedAddressId={selectedAddressId}
-            cartData={cartData}
+            {...commonProps}
           />
         );
       case 3:
@@ -60,7 +94,7 @@ const Payment = () => {
             onNext={handlePaidNext}
             selectedAddressId={selectedAddressId}
             cartId={cartId}
-            cartData={cartData}
+            {...commonProps}
           />
         );
       default:

@@ -36,15 +36,15 @@ const VoucherManagement = () => {
       setLoading(true);
       const response = await getAllVouchers(page, pageSize);
 
-      if (!response.error) {
-        setVouchers(response.result);
+      if (response && response.code === 200) {
+        setVouchers(response.result.content);
         setPagination({
-          current: response.pagination.pageNumber + 1, // Convert from 0-based to 1-based
-          pageSize: response.pagination.pageSize,
-          total: response.pagination.totalElements,
+          current: response.result.pageNumber + 1,
+          pageSize: response.result.pageSize,
+          total: response.result.totalElements,
         });
       } else {
-        toast.error(response.message);
+        toast.error(response.message || "Failed to fetch vouchers");
       }
     } catch (error) {
       toast.error("Failed to fetch vouchers");
@@ -91,7 +91,7 @@ const VoucherManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to delete voucher");
+      toast.error(error.message || "Failed to delete voucher");
     } finally {
       setDeletingVoucherId(null);
       setDeleteModalVisible(false);
@@ -131,24 +131,28 @@ const VoucherManagement = () => {
     },
     {
       title: "Voucher Code",
-      dataIndex: "voucherCode",
-      key: "voucherCode",
+      dataIndex: "code",
+      key: "code",
     },
     {
-      title: "Discount Amount",
-      dataIndex: "discountAmount",
-      key: "discountAmount",
-      render: (discount) => `${discount}%`,
+      title: "Discount",
+      dataIndex: "discount",
+      key: "discount",
+      render: (discount, record) =>
+        record.discountType === "PERCENTAGE"
+          ? `${discount}%`
+          : `${discount.toLocaleString()}đ`,
     },
     {
-      title: "Start Date",
-      dataIndex: "startDate",
-      key: "startDate",
+      title: "Minimum Order Value",
+      dataIndex: "minOrderValue",
+      key: "minOrderValue",
+      render: (value) => `${value.toLocaleString()}đ`,
     },
     {
-      title: "Expire Date",
-      dataIndex: "endDate",
-      key: "endDate",
+      title: "Points Required",
+      dataIndex: "point",
+      key: "point",
     },
     {
       title: "Status",
@@ -242,8 +246,7 @@ const VoucherManagement = () => {
         okButtonProps={{ danger: true }}
       >
         <p>
-          Are you sure you want to delete voucher "
-          {selectedVoucher?.voucherCode}"?
+          Are you sure you want to delete voucher "{selectedVoucher?.code}"?
         </p>
         <p>This action cannot be undone.</p>
       </Modal>
@@ -258,24 +261,32 @@ const VoucherManagement = () => {
         {selectedVoucher && (
           <div>
             <p>
-              <strong>Voucher Code:</strong> {selectedVoucher.voucherCode}
+              <strong>Voucher Code:</strong> {selectedVoucher.code}
             </p>
             <p>
-              <strong>Discount Amount:</strong> {selectedVoucher.discountAmount}
-              %
+              <strong>Discount:</strong>{" "}
+              {selectedVoucher.discountType === "PERCENTAGE"
+                ? `${selectedVoucher.discount}%`
+                : `${selectedVoucher.discount.toLocaleString()}đ`}
             </p>
             <p>
-              <strong>Start Date:</strong> {selectedVoucher.startDate}
+              <strong>Discount Type:</strong> {selectedVoucher.discountType}
             </p>
             <p>
-              <strong>End Date:</strong> {selectedVoucher.endDate}
+              <strong>Minimum Order Value:</strong>{" "}
+              {selectedVoucher.minOrderValue.toLocaleString()}đ
             </p>
             <p>
-              <strong>Status:</strong> {selectedVoucher.status}
+              <strong>Points Required:</strong> {selectedVoucher.point}
             </p>
             <p>
               <strong>Description:</strong> {selectedVoucher.description}
             </p>
+            {selectedVoucher.quantity && (
+              <p>
+                <strong>Quantity:</strong> {selectedVoucher.quantity}
+              </p>
+            )}
           </div>
         )}
       </Modal>

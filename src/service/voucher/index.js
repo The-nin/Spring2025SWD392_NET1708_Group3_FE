@@ -21,26 +21,7 @@ export const getAllVouchers = async (page = 0, size = 10) => {
       }
     );
 
-    // Thêm console.log để debug
-    console.log("API Response:", response);
-
-    // Kiểm tra response và code
-    if (response && response.code === 200) {
-      return {
-        error: false,
-        result: response.result.content || [], // Đảm bảo luôn trả về mảng
-        pagination: {
-          totalElements: response.result.totalElements || 0,
-          totalPages: response.result.totalPages || 0,
-          pageNumber: response.result.pageNumber || 0,
-          pageSize: response.result.pageSize || 10,
-        },
-        message: response.message,
-      };
-    }
-
-    // Nếu response không hợp lệ, throw error
-    throw new Error(response?.message || "Invalid response format");
+    return response; // Trả về trực tiếp response vì nó đã có đúng format
   } catch (error) {
     return handleError(error, "Failed to fetch vouchers");
   }
@@ -73,12 +54,21 @@ export const getVoucherById = async (voucherId) => {
 export const createVoucher = async (voucherData) => {
   const token = localStorage.getItem("token");
   try {
+    // Validate discountType
+    if (!["FIXED_AMOUNT", "PERCENTAGE"].includes(voucherData.discountType)) {
+      throw new Error(
+        "Invalid discount type. Must be either FIXED_AMOUNT or PERCENTAGE"
+      );
+    }
+
     const response = await instance.post("admin/vouchers", voucherData, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
+
+    console.log("Request payload:", voucherData); // Debug log
 
     if (response && response.code === 200) {
       return {
@@ -89,6 +79,7 @@ export const createVoucher = async (voucherData) => {
     }
     throw new Error(response?.message || "Invalid response format");
   } catch (error) {
+    console.error("Create voucher error:", error.response?.data); // Debug log
     return handleError(error, "Failed to create voucher");
   }
 };
@@ -168,6 +159,59 @@ export const updateVoucherStatus = async (voucherId, status) => {
   }
 };
 
+export const getMyVouchers = async (page = 0, size = 10) => {
+  try {
+    const response = await instance.get(
+      `/vouchers/my-voucher?page=${page}&size=${size}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response; // Trả về trực tiếp response giống như getCart()
+  } catch (error) {
+    console.error("Cant get vouchers: ", error);
+    return {
+      error: true,
+      message: error.response?.message || "Có lỗi xảy ra khi lấy voucher",
+    };
+  }
+};
+
+// Get available vouchers for exchange
+export const getAvailableVouchers = async (page = 0, size = 10) => {
+  try {
+    const response = await instance.get(`/vouchers?page=${page}&size=${size}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error("Can't get available vouchers: ", error);
+    return {
+      error: true,
+      message:
+        error.response?.message || "Có lỗi xảy ra khi lấy danh sách voucher",
+    };
+  }
+};
+
+// Exchange voucher
+export const exchangeVoucher = async (voucherId) => {
+  const response = await instance.post(
+    `/vouchers/exchange-voucher/${voucherId}`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+  return response;
+};
+
 export default {
   getAllVouchers,
   getVoucherById,
@@ -175,4 +219,7 @@ export default {
   updateVoucher,
   deleteVoucher,
   updateVoucherStatus,
+  getMyVouchers,
+  getAvailableVouchers,
+  exchangeVoucher,
 };

@@ -1,7 +1,14 @@
 import PropTypes from "prop-types";
 import Total from "../Total";
 
-const Shipping = ({ onNext, selectedAddressId, cartData }) => {
+const Shipping = ({
+  onNext,
+  selectedAddressId,
+  cartData,
+  onVoucherApply,
+  appliedVoucher,
+  vouchers,
+}) => {
   const handleContinue = (cartId) => {
     if (!selectedAddressId) {
       alert("Vui lòng chọn địa chỉ giao hàng");
@@ -78,6 +85,9 @@ const Shipping = ({ onNext, selectedAddressId, cartData }) => {
         buttonText="Tiếp tục thanh toán"
         onNext={handleContinue}
         cartData={cartData}
+        onVoucherApply={onVoucherApply}
+        appliedVoucher={appliedVoucher}
+        vouchers={vouchers}
       />
     </div>
   );
@@ -87,6 +97,9 @@ Shipping.propTypes = {
   onNext: PropTypes.func.isRequired,
   selectedAddressId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   cartData: PropTypes.object,
+  onVoucherApply: PropTypes.func.isRequired,
+  appliedVoucher: PropTypes.object,
+  vouchers: PropTypes.array,
 };
 
 export default Shipping;

@@ -2,9 +2,11 @@ import { instance } from "../instance";
 
 export const checkout = async (checkoutData) => {
   try {
-    const { addressId, cartId, paymentMethod } = checkoutData;
+    const { addressId, cartId, paymentMethod, voucherCode } = checkoutData;
     const response = await instance.post(
-      `/orders/checkout?addressId=${addressId}&cartId=${cartId}&paymentMethod=${paymentMethod}`,
+      `/orders/checkout?addressId=${addressId}&cartId=${cartId}&paymentMethod=${paymentMethod}${
+        voucherCode ? `&voucherCode=${voucherCode}` : ""
+      }`,
       {},
       {
         headers: {

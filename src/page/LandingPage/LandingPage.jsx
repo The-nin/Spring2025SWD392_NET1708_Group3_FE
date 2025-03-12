@@ -112,7 +112,7 @@ const LandingPage = () => {
               viewport={{ once: true }}
             >
               <ProductCard
-                id={product._id}
+                id={product.id}
                 name={product.name}
                 description={product.description}
                 price={product.price}

@@ -11,50 +11,41 @@ function AddNewVoucher({ fetchVouchers }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [successMessage, setSuccessMessage] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
 
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
-      setSuccessMessage(null);
-      setErrorMessage(null);
 
       const formattedValues = {
         code: values.voucherCode.trim(),
-        discount: Number(values.discountAmount),
+        discount: parseFloat(values.discountAmount),
         discountType: values.discountType,
-        minOrderValue: Number(values.minOrderValue),
+        minOrderValue: parseFloat(values.minOrderValue),
         description: values.description.trim(),
-        point: Number(values.point),
+        point: parseInt(values.point),
       };
 
       const response = await createVoucher(formattedValues);
 
+      if (response.message) {
+        toast.success(response.message);
+      }
+
       if (!response.error) {
-        toast.success("Voucher added successfully!");
-        setSuccessMessage("Voucher added successfully!");
         form.resetFields();
         if (fetchVouchers) {
-          fetchVouchers();
+          await fetchVouchers();
         }
-        setTimeout(() => {
-          navigate("/admin/voucher");
-        }, 2000);
-      } else {
-        handleError(response.message || "Failed to add voucher");
+        navigate("/admin/voucher");
       }
     } catch (error) {
-      handleError("Failed to save the voucher. Please check the details.");
+      console.error("Error:", error);
+      if (error.message) {
+        toast.error(error.message);
+      }
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleError = (message) => {
-    console.error("Error:", message);
-    toast.error(message);
-    setErrorMessage(message);
   };
 
   return (
@@ -88,12 +79,14 @@ function AddNewVoucher({ fetchVouchers }) {
         <Form.Item
           name="discountType"
           label="Discount Type"
-          initialValue="PERCENTAGE"
+          initialValue="FIXED_AMOUNT"
           rules={[{ required: true, message: "Please select discount type" }]}
         >
           <Select>
-            <Select.Option value="PERCENTAGE">Percentage</Select.Option>
-            <Select.Option value="FIXED">Fixed Amount</Select.Option>
+            <Select.Option value="FIXED_AMOUNT">
+              Fixed Amount (VND)
+            </Select.Option>
+            <Select.Option value="PERCENTAGE">Percentage (%)</Select.Option>
           </Select>
         </Form.Item>
 
@@ -106,10 +99,32 @@ function AddNewVoucher({ fetchVouchers }) {
             {
               type: "number",
               transform: (value) => Number(value),
+              message: "Please enter a valid number",
             },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                const discountType = getFieldValue("discountType");
+                if (discountType === "PERCENTAGE" && value > 100) {
+                  return Promise.reject(
+                    "Percentage cannot be greater than 100%"
+                  );
+                }
+                if (value <= 0) {
+                  return Promise.reject("Amount must be greater than 0");
+                }
+                return Promise.resolve();
+              },
+            }),
           ]}
         >
-          <Input type="number" placeholder="Enter discount amount" />
+          <Input
+            type="number"
+            placeholder={`Enter discount ${
+              form.getFieldValue("discountType") === "PERCENTAGE"
+                ? "(0-100)"
+                : "amount"
+            }`}
+          />
         </Form.Item>
 
         {/* Minimum Order Value */}

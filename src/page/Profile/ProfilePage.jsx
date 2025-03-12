@@ -12,6 +12,7 @@ import {
 } from "../../service/profile";
 import React from "react";
 import ConsultantHistory from "./ConsultantHistory/ConsultantHistory.jsx";
+import MyVoucher from "./MyVoucher/MyVoucher.jsx";
 
 const EditModal = React.memo(
   ({ editFormData, onClose, onSubmit, onInputChange, onAvatarChange }) => {
@@ -139,6 +140,7 @@ const ProfilePage = () => {
     username: "",
     avatar: null,
     birthday: "",
+    point: 0,
   });
   const [formDataUpdate, setFormDataUpdate] = useState({
     firstName: "",
@@ -293,6 +295,16 @@ const ProfilePage = () => {
                 >
                   Sổ địa chỉ
                 </button>
+                <button
+                  onClick={() => setActiveTab("myVoucher")}
+                  className={`w-full text-left px-4 py-2 rounded-lg ${
+                    activeTab === "myVoucher"
+                      ? "bg-gray-900 text-white"
+                      : "hover:bg-gray-100"
+                  }`}
+                >
+                  Voucher của tôi
+                </button>
               </div>
             </div>
           </div>
@@ -360,6 +372,12 @@ const ProfilePage = () => {
                 <div>
                   <h3 className="text-xl font-semibold mb-6">Sổ địa chỉ</h3>
                   <AddressBook />
+                </div>
+              )}
+
+              {activeTab === "myVoucher" && (
+                <div>
+                  <MyVoucher userPoints={formData.point} />
                 </div>
               )}
             </div>
