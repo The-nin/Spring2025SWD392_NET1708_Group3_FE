@@ -5,12 +5,24 @@ import { getAddresses } from "../../../service/address";
 import AddressModal from "./AddressModal";
 import { addNewAddress, updateAddress } from "../../../service/address";
 
-const Address = ({ onNext }) => {
+const Address = ({
+  onNext,
+  cartData,
+  onVoucherApply,
+  appliedVoucher,
+  vouchers,
+}) => {
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
+
+  console.log("Address received props:", {
+    cartData,
+    vouchers,
+    appliedVoucher,
+  });
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -18,6 +30,11 @@ const Address = ({ onNext }) => {
         const response = await getAddresses();
         if (!response.error) {
           setAddresses(response.result);
+          // Tự động chọn địa chỉ mặc định
+          const defaultAddress = response.result.find((addr) => addr.isDefault);
+          if (defaultAddress) {
+            setSelectedAddressId(defaultAddress.id);
+          }
         }
       } catch (error) {
         console.error("Error fetching addresses:", error);
@@ -153,7 +170,14 @@ const Address = ({ onNext }) => {
           </button>
         </div>
 
-        <Total buttonText="Continue to Shipping" onNext={handleContinue} />
+        <Total
+          buttonText="Tiếp tục"
+          onNext={handleContinue}
+          cartData={cartData}
+          onVoucherApply={onVoucherApply}
+          appliedVoucher={appliedVoucher}
+          vouchers={vouchers}
+        />
       </div>
 
       <AddressModal
@@ -172,6 +196,10 @@ const Address = ({ onNext }) => {
 
 Address.propTypes = {
   onNext: PropTypes.func.isRequired,
+  cartData: PropTypes.object,
+  onVoucherApply: PropTypes.func.isRequired,
+  appliedVoucher: PropTypes.object,
+  vouchers: PropTypes.array,
 };
 
 export default Address;

@@ -5,6 +5,11 @@ import {
   DashboardOutlined,
   ShoppingOutlined,
   AppstoreOutlined,
+  UserOutlined,
+  CopyrightOutlined,
+  FileOutlined,
+  OrderedListOutlined,
+  CustomerServiceOutlined,
   ReadOutlined, // 📖 New icon for Blog Management
   QuestionCircleOutlined, // ❓ New icon for Quiz Management
   GiftOutlined, // 🎁 Icon for Vouchers
@@ -26,6 +31,11 @@ const Sidebar = ({ collapsed }) => {
       key: "/admin/product",
       icon: <ShoppingOutlined />,
       label: "Product Management",
+    },
+    {
+      key: "/admin/order",
+      icon: <AppstoreOutlined />,
+      label: "Order Management",
     },
     {
       key: "/admin/category",
@@ -53,9 +63,9 @@ const Sidebar = ({ collapsed }) => {
       label: "Voucher Management",
     },
     {
-      key: "/admin/batch",
-      icon: <OrderedListOutlined />,
-      label: "Batch Management",
+      key: "/admin/service",
+      icon: <CustomerServiceOutlined />,
+      label: "Service Management",
     },
   ];
 

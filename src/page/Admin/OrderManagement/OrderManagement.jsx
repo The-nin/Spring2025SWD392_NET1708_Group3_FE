@@ -22,27 +22,21 @@ const OrderManagement = () => {
     paymentStatus: "",
   });
 
-  const fetchOrders = async (params = {}) => {
+  const fetchOrders = async (
+    page = pagination.current,
+    pageSize = pagination.pageSize
+  ) => {
     try {
       setLoading(true);
-      const queryParams = {
-        page: params.page !== undefined ? params.page - 1 : 0,
-        size: params.pageSize || 10,
-      };
-
-      if (params.keyword) queryParams.keyword = params.keyword;
-      if (params.sortBy) queryParams.sortBy = params.sortBy;
-      if (params.order) queryParams.order = params.order;
-      if (params.status) queryParams.status = params.status;
-      if (params.paymentStatus)
-        queryParams.paymentStatus = params.paymentStatus;
-
-      const response = await getOrderAdmin(queryParams);
+      const response = await getOrderAdmin({
+        page: page - 1, // BE thường expect page bắt đầu từ 0
+        size: pageSize,
+      });
 
       if (response && response.code === 200) {
         setOrders(response.result.orderResponseList);
         setPagination({
-          current: response.result.pageNumber + 1,
+          current: response.result.pageNumber + 1, // BE trả về pageNumber từ 0
           pageSize: response.result.pageSize,
           total: response.result.totalElements,
         });
@@ -50,6 +44,7 @@ const OrderManagement = () => {
         toast.error("Failed to fetch orders");
       }
     } catch (error) {
+      console.error("Error fetching orders:", error);
       toast.error("Error loading orders");
     } finally {
       setLoading(false);
@@ -60,19 +55,173 @@ const OrderManagement = () => {
     fetchOrders();
   }, []);
 
-  const handleTableChange = (newPagination, tableFilters, sorter) => {
-    const params = {
-      ...filters,
-      page: newPagination.current,
-      pageSize: newPagination.pageSize,
-    };
+  const getFilteredData = () => {
+    let filteredData = [...orders];
 
-    if (sorter.field) {
-      params.sortBy = sorter.field;
-      params.order = sorter.order ? sorter.order.replace("end", "") : undefined;
+    // Filter by keyword
+    if (filters.keyword) {
+      const keyword = filters.keyword.toLowerCase();
+      filteredData = filteredData.filter(
+        (order) =>
+          order.orderId.toString().toLowerCase().includes(keyword) ||
+          order.address.name.toLowerCase().includes(keyword) ||
+          order.username.toLowerCase().includes(keyword)
+      );
     }
 
-    fetchOrders(params);
+    // Filter by status
+    if (filters.status) {
+      filteredData = filteredData.filter(
+        (order) => order.status === filters.status
+      );
+    }
+
+    // Filter by payment status
+    if (filters.paymentStatus) {
+      filteredData = filteredData.filter(
+        (order) => order.paymentStatus === filters.paymentStatus
+      );
+    }
+
+    // Sort data
+    if (filters.sortBy && filters.order) {
+      filteredData.sort((a, b) => {
+        let aValue = a[filters.sortBy];
+        let bValue = b[filters.sortBy];
+
+        // Handle nested fields (e.g., address.name)
+        if (filters.sortBy === "customerName") {
+          aValue = a.address.name;
+          bValue = b.address.name;
+        }
+
+        // Handle date comparison
+        if (filters.sortBy === "orderDate") {
+          aValue = new Date(aValue);
+          bValue = new Date(bValue);
+        }
+
+        if (filters.order === "asc") {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
+        }
+      });
+    }
+
+    return filteredData;
+  };
+
+  const handleTableChange = (newPagination, tableFilters, sorter) => {
+    const newFilters = { ...filters };
+
+    // Update sorting
+    if (sorter.field) {
+      newFilters.sortBy = sorter.field;
+      newFilters.order = sorter.order === "ascend" ? "asc" : "desc";
+    } else {
+      newFilters.sortBy = "";
+      newFilters.order = "";
+    }
+
+    setFilters(newFilters);
+    // Gọi API với trang mới
+    fetchOrders(newPagination.current, newPagination.pageSize);
+  };
+
+  // Xử lý search
+  const handleSearch = (value) => {
+    setFilters({
+      ...filters,
+      keyword: value,
+    });
+    setPagination({
+      ...pagination,
+      current: 1,
+    });
+  };
+
+  // Xử lý filter status
+  const handleStatusFilter = (value) => {
+    setFilters({
+      ...filters,
+      status: value,
+    });
+    setPagination({
+      ...pagination,
+      current: 1,
+    });
+  };
+
+  // Xử lý filter payment status
+  const handlePaymentStatusFilter = (value) => {
+    setFilters({
+      ...filters,
+      paymentStatus: value,
+    });
+    setPagination({
+      ...pagination,
+      current: 1,
+    });
+  };
+
+  // Tính toán dữ liệu hiển thị cho trang hiện tại
+  const getCurrentPageData = () => {
+    let filteredData = [...orders];
+
+    // Filter by keyword
+    if (filters.keyword) {
+      const keyword = filters.keyword.toLowerCase();
+      filteredData = filteredData.filter(
+        (order) =>
+          order.orderId.toString().toLowerCase().includes(keyword) ||
+          order.address.name.toLowerCase().includes(keyword) ||
+          order.username.toLowerCase().includes(keyword)
+      );
+    }
+
+    // Filter by status
+    if (filters.status) {
+      filteredData = filteredData.filter(
+        (order) => order.status === filters.status
+      );
+    }
+
+    // Filter by payment status
+    if (filters.paymentStatus) {
+      filteredData = filteredData.filter(
+        (order) => order.paymentStatus === filters.paymentStatus
+      );
+    }
+
+    // Sort data
+    if (filters.sortBy && filters.order) {
+      filteredData.sort((a, b) => {
+        let aValue = a[filters.sortBy];
+        let bValue = b[filters.sortBy];
+
+        if (filters.sortBy === "customerName") {
+          aValue = a.address.name;
+          bValue = b.address.name;
+        }
+
+        if (filters.sortBy === "orderDate") {
+          aValue = new Date(aValue);
+          bValue = new Date(bValue);
+        }
+
+        if (filters.order === "asc") {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
+        }
+      });
+    }
+
+    return {
+      data: filteredData,
+      total: filteredData.length,
+    };
   };
 
   const handleStatusChange = async (orderId, newStatus) => {
@@ -167,6 +316,9 @@ const OrderManagement = () => {
           case "DELIVERING":
             color = "text-purple-500";
             break;
+          case "DELIVERY_FAILED":
+            color = "text-orange-600";
+            break;
           case "CANCELLED":
             color = "text-red-600";
             break;
@@ -185,16 +337,8 @@ const OrderManagement = () => {
       </div>
       <div className="mb-4 flex gap-4">
         <Input.Search
-          placeholder="Search by order ID or customer name"
-          onSearch={(value) => {
-            const params = {
-              ...filters,
-              keyword: value,
-              page: 1,
-            };
-            setFilters(params);
-            fetchOrders(params);
-          }}
+          placeholder="Search by order ID, customer name or username"
+          onSearch={handleSearch}
           style={{ width: 300 }}
           allowClear
         />
@@ -202,46 +346,34 @@ const OrderManagement = () => {
           placeholder="Filter by Status"
           style={{ width: 200 }}
           allowClear
-          onChange={(value) => {
-            const params = {
-              ...filters,
-              status: value,
-              page: 1,
-            };
-            setFilters(params);
-            fetchOrders(params);
-          }}
+          onChange={handleStatusFilter}
+          value={filters.status}
         >
           <Select.Option value="PENDING">Pending</Select.Option>
           <Select.Option value="PROCESSING">Processing</Select.Option>
           <Select.Option value="DONE">Done</Select.Option>
           <Select.Option value="DELIVERING">Delivering</Select.Option>
+          <Select.Option value="DELIVERY_FAILED">Delivery Failed</Select.Option>
           <Select.Option value="CANCELLED">Cancelled</Select.Option>
         </Select>
         <Select
           placeholder="Filter by Payment Status"
           style={{ width: 200 }}
           allowClear
-          onChange={(value) => {
-            const params = {
-              ...filters,
-              paymentStatus: value,
-              page: 1,
-            };
-            setFilters(params);
-            fetchOrders(params);
-          }}
+          onChange={handlePaymentStatusFilter}
+          value={filters.paymentStatus}
         >
           <Select.Option value="PAID">Paid</Select.Option>
-          <Select.Option value="UNPAID">Unpaid</Select.Option>
+          <Select.Option value="NOT_PAID">Not Paid</Select.Option>
         </Select>
       </div>
       <Table
         columns={columns}
-        dataSource={orders}
+        dataSource={getCurrentPageData().data}
         rowKey="orderId"
         pagination={{
           ...pagination,
+          total: getCurrentPageData().total,
           showSizeChanger: true,
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`,

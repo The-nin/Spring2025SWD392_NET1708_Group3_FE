@@ -3,7 +3,13 @@ import { instance } from "../instance";
 // Public function - no token needed
 export const getAllProducts = async (params) => {
   try {
-    const response = await instance.get("admin/products", { params });
+    const token = localStorage.getItem("token");
+    const response = await instance.get("admin/products", {
+      params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return {
       error: false,
       result: response.result,
@@ -41,24 +47,20 @@ export const getProductById = async (id) => {
   }
 };
 
-export const addProduct = async (formData) => {
+export const addProduct = async (productData, file) => {
   try {
     const token = localStorage.getItem("token");
 
-    // Get the file and form data
-    const requestData = JSON.parse(formData.get("request"));
-    const file = formData.get("thumbnail");
-
-    // Upload to Cloudinary first
+    // Upload image first
     const imageUrl = await uploadToCloudinary(file);
 
-    // Create the final request data
-    const productData = {
-      ...requestData,
+    // Add image URL to product data
+    const finalProductData = {
+      ...productData,
       thumbnail: imageUrl,
     };
 
-    const response = await instance.post("admin/products", productData, {
+    const response = await instance.post("admin/products", finalProductData, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -71,10 +73,10 @@ export const addProduct = async (formData) => {
       message: response.message,
     };
   } catch (error) {
-    console.error("Add product error:", error);
+    console.error("Add product error:", error.response?.data || error);
     return {
       error: true,
-      message: error.response?.message || "Failed to add product",
+      message: error.response?.data?.message || "Failed to add product",
     };
   }
 };
@@ -82,51 +84,42 @@ export const addProduct = async (formData) => {
 export const updateProduct = async (id, formData) => {
   try {
     const token = localStorage.getItem("token");
-    
-    // Nếu formData là FormData (có file mới)
-    if (formData instanceof FormData) {
-      const requestData = JSON.parse(formData.get("request"));
-      const file = formData.get("thumbnail");
-      
-      // Nếu có file mới, upload lên Cloudinary
-      let productData = { ...requestData };
-      if (file) {
-        const imageUrl = await uploadToCloudinary(file);
-        productData.thumbnail = imageUrl;
-      }
+    const requestData = JSON.parse(formData.get("request"));
+    const file = formData.get("thumbnail");
 
-      const response = await instance.put(
-        `admin/products/${id}`,
-        productData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      return {
-        error: false,
-        result: response.result,
-        message: response.message,
-      };
-    } else {
-      // Xử lý trường hợp không có file mới (giữ nguyên code cũ)
-      const response = await instance.put(
-        `admin/products/${id}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      return {
-        error: false,
-        result: response.result,
-        message: response.message,
-      };
+    // Chuẩn bị dữ liệu theo đúng format yêu cầu
+    let productData = {
+      name: requestData.name.trim(),
+      price: requestData.price,
+      description: requestData.description.replace(/<p><br><\/p>/g, "").trim(),
+      ingredient: requestData.ingredient.replace(/<p><br><\/p>/g, "").trim(),
+      usageInstruction: requestData.usageInstruction
+        .replace(/<p><br><\/p>/g, "")
+        .trim(),
+      specification: requestData.specification,
+      brand_id: requestData.brand_id,
+      category_id: requestData.category_id,
+      status: requestData.status,
+    };
+
+    // Nếu có file mới, upload lên Cloudinary
+    if (file) {
+      const imageUrl = await uploadToCloudinary(file);
+      productData.thumbnail = imageUrl;
     }
+
+    const response = await instance.put(`admin/products/${id}`, productData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
   } catch (error) {
     console.error("Update product error:", error);
     return {
@@ -208,7 +201,7 @@ export const updateProductStatus = async (productId, status) => {
 };
 
 // Add this function after getAllProducts
-const uploadToCloudinary = async (file) => {
+export const uploadToCloudinary = async (file) => {
   try {
     const CLOUDINARY_UPLOAD_PRESET = "phuocnt-cloudinary";
     const CLOUDINARY_CLOUD_NAME = "dl5dphe0f";
@@ -229,5 +222,53 @@ const uploadToCloudinary = async (file) => {
   } catch (error) {
     console.error("Cloudinary upload error:", error);
     throw new Error("Failed to upload image to Cloudinary");
+  }
+};
+
+export const addNewBatch = async (productId, batchData) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await instance.post(
+      `admin/products/import-batch/${productId}`,
+      batchData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
+  } catch (error) {
+    console.error("Add batch error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "Failed to add batch",
+    };
+  }
+};
+
+export const getBatches = async (productId) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await instance.get(`admin/products/${productId}/batches`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
+  } catch (error) {
+    console.error("Get batches error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "Failed to fetch batches",
+    };
   }
 };

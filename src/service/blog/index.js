@@ -1,5 +1,4 @@
 import { instance } from "../instance";
-
 const handleError = (error, defaultMessage) => {
   console.error(defaultMessage, error);
   return {
@@ -39,22 +38,112 @@ export const getBlogById = async (id) => {
     return handleError(error, "Failed to fetch blogs");
   }
 };
-
-// ✅ Add a new blog (Admin Access Required) - No File Upload
-export const addBlog = async (blogData) => {
-  const token = localStorage.getItem("token");
-
+export const uploadToCloudinary = async (file) => {
   try {
-    console.log("📤 Sending Blog Data:", JSON.stringify(blogData, null, 2)); // ✅ Logs the request body
+    const CLOUDINARY_UPLOAD_PRESET = "phuocnt-cloudinary";
+    const CLOUDINARY_CLOUD_NAME = "dl5dphe0f";
 
-    const response = await instance.post("/admin/blog", blogData, {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+    const data = await response.json();
+    return data.secure_url;
+  } catch (error) {
+    console.error("Cloudinary upload error:", error);
+    throw new Error("Failed to upload image to Cloudinary");
+  }
+};
+
+export const addBlog = async (formData) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    // Ensure formData is a FormData object
+    const requestData =
+      formData instanceof FormData
+        ? JSON.parse(formData.get("request"))
+        : formData;
+
+    const file =
+      formData instanceof FormData ? formData.get("image") : formData.image;
+
+    // Upload image if available
+    let imageUrl = requestData.image;
+    if (file) {
+      imageUrl = await uploadToCloudinary(file);
+    }
+
+    // Final blog data
+    const blogData = {
+      ...requestData,
+      image: imageUrl,
+    };
+
+    const response = await instance.post("admin/blog", blogData, {
       headers: {
-        authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
 
-    console.log("✅ API Response:", response.data); // ✅ Logs the response if successful
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
+  } catch (error) {
+    console.error("Add blog error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "Failed to add blog",
+    };
+  }
+};
+
+export const updateBlog = async (blogId, blogData, imageFile) => {
+  try {
+    const token = localStorage.getItem("token");
+    let imageUrl = blogData.image;
+
+    // Upload new image if provided
+    if (imageFile) {
+      try {
+        imageUrl = await uploadToCloudinary(imageFile);
+      } catch (uploadError) {
+        return handleError(uploadError, "Failed to upload image to Cloudinary");
+      }
+    }
+
+    // Prepare updated blog data
+    const updatedBlogData = {
+      blogName: blogData.blogName,
+      description: blogData.description,
+      content: blogData.content,
+      createdBy: blogData.createdBy,
+      date: blogData.date,
+      image: imageUrl,
+      status: blogData.status || "ACTIVE",
+    };
+
+    // Send the updated blog data to the server
+    const response = await instance.put(
+      `admin/blog/${blogId}`,
+      updatedBlogData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     return {
       error: false,
@@ -62,23 +151,7 @@ export const addBlog = async (blogData) => {
       message: response.data?.message,
     };
   } catch (error) {
-    console.error("❌ Error Response:", error.response?.data || error.message);
-    return handleError(error, "Failed to add blog");
-  }
-};
-export const updateBlog = async (id, blogData = {}) => {
-  const token = localStorage.getItem("token");
-  try {
-    const response = await instance.put(`admin/blog/${id}`, blogData, {
-      headers: {
-        authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    console.log(response);
-    return response;
-  } catch (error) {
-    return handleError(error, "Failed to fetch blogs");
+    return handleError(error, "Failed to update blog");
   }
 };
 

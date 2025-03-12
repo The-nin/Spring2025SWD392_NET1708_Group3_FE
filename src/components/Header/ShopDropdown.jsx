@@ -73,7 +73,7 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
         <div className="grid grid-cols-4 gap-8">
           {/* Category Column */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-4">Category</h3>
+            <h3 className="font-medium text-gray-900 mb-4">Danh mục</h3>
             <ul className="space-y-3">
               {/* Shop All là mục tĩnh */}
               <li>
@@ -82,7 +82,7 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
                   onClick={handleLinkClick}
                   className="text-gray-600 hover:text-black"
                 >
-                  Shop All
+                  Tất cả
                 </Link>
               </li>
               {/* Các categories từ API */}
@@ -102,7 +102,7 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
 
           {/* Brand Column */}
           <div>
-            <h3 className="font-medium text-gray-900 mb-4">Brand</h3>
+            <h3 className="font-medium text-gray-900 mb-4">Thương hiệu</h3>
             <ul className="space-y-3">
               <li>
                 <Link
@@ -110,7 +110,7 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
                   onClick={handleLinkClick}
                   className="text-gray-600 hover:text-black"
                 >
-                  Shop All
+                  Tất cả
                 </Link>
               </li>
               {brands.map((brand) => (
@@ -124,101 +124,6 @@ const ShopDropdown = ({ isOpen, onClose, shopButtonRef }) => {
                   </Link>
                 </li>
               ))}
-            </ul>
-          </div>
-
-          {/* Body Column */}
-          <div>
-            <h3 className="font-medium text-gray-900 mb-4">Body</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  to="/shop/body"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Shop All
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/body-cream"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Body Cream, oils, scrubs
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/shower"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Shower-gel, shampoo, soap
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/balms"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Balms
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/hands-feet"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Hands & Feet
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/sun-protection"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Sun Protection
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Fragrances Column */}
-          <div>
-            <h3 className="font-medium text-gray-900 mb-4">Fragrances</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  to="/shop/fragrances"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Shop All
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/sauna"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Sauna
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shop/essential-oils"
-                  onClick={handleLinkClick}
-                  className="text-gray-600 hover:text-black"
-                >
-                  Essential Oils
-                </Link>
-              </li>
             </ul>
           </div>
         </div>

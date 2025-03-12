@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Card, DatePicker } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Form, Input, Button, Card, DatePicker, Upload } from "antd";
+import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { addBlog } from "../../../service/blog/index";
 import { ToastContainer, toast } from "react-toastify";
@@ -8,32 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import dayjs from "dayjs";
-
-// Quill Editor Config
-const modules = {
-  toolbar: [
-    [{ header: [1, 2, false] }],
-    ["bold", "italic", "underline", "strike"],
-    [{ align: [] }],
-    [{ list: "ordered" }, { list: "bullet" }],
-    [{ indent: "-1" }, { indent: "+1" }],
-    ["link", "image"],
-    ["clean"],
-  ],
-};
-
-const formats = [
-  "header",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "align",
-  "list",
-  "indent",
-  "link",
-  "image",
-];
+import { uploadToCloudinary } from "../../../service/blog/index";
 
 // Disable past dates
 const disabledDate = (current) =>
@@ -55,21 +30,38 @@ const AddNewBlog = () => {
     if (
       !values.blogTitle ||
       !values.blogIntroduction ||
-      !values.imageUrl?.trim() ||
+      !values.author ||
+      !values.imageUrl ||
       !content.trim()
     ) {
       toast.error("Please fill all required fields");
       return;
     }
 
+    // Extract file from the Ant Design Upload component
+    const file = values.imageUrl?.[0]?.originFileObj;
+    if (!file) {
+      toast.error("Please upload a valid image");
+      return;
+    }
+
     try {
       setLoading(true);
+
+      // ✅ Upload image to Cloudinary
+      const imageUrl = await uploadToCloudinary(file);
+      if (!imageUrl) {
+        toast.error("Image upload failed");
+        return;
+      }
+
       const blogData = {
         blogName: values.blogTitle,
-        image: values.imageUrl,
+        image: imageUrl, // ✅ Store URL instead of Base64
         description: values.blogIntroduction,
         status: "INACTIVE",
-        date: values.publishDate.toISOString(), // ✅ ISO Format Fix
+        date: values.publishDate.toISOString(),
+        createdBy: values.author,
         content: content,
       };
 
@@ -78,7 +70,7 @@ const AddNewBlog = () => {
 
       if (response && response.result) {
         toast.success("Blog added successfully!");
-        setTimeout(() => navigate("/admin/blog"), 2000); // ✅ Delayed navigation for better UX
+        setTimeout(() => navigate("/admin/blog"), 2000);
       } else {
         toast.error(response?.message || "Error adding blog");
       }
@@ -90,6 +82,12 @@ const AddNewBlog = () => {
     }
   };
 
+  const normFile = (e) => {
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e?.fileList;
+  };
   return (
     <div className="h-[calc(100vh-64px)] bg-gray-50">
       <ToastContainer
@@ -144,23 +142,35 @@ const AddNewBlog = () => {
             <Form.Item
               name="imageUrl"
               label="Thumbnail Image URL"
-              rules={[
-                { required: true, message: "Please enter an image URL" },
-                { type: "url", message: "Please enter a valid URL" },
-              ]}
+              valuePropName="fileList"
+              getValueFromEvent={normFile}
+              rules={[{ required: true, message: "Please upload an image" }]}
             >
-              <Input placeholder="Enter image URL (e.g., https://example.com/image.jpg)" />
+              <Upload
+                beforeUpload={() => false}
+                maxCount={1}
+                accept="image/*"
+                listType="picture"
+              >
+                <Button icon={<UploadOutlined />}>Select Image</Button>
+              </Upload>
             </Form.Item>
 
             {/* Blog Content */}
-            <Form.Item label="Blog Content" name="content">
-              <ReactQuill
-                theme="snow"
-                value={content}
-                onChange={setContent}
-                modules={modules}
-                formats={formats}
-              />
+            <Form.Item label="Blog Content">
+              <Form.Item
+                name="content"
+                noStyle
+                rules={[
+                  { required: true, message: "Please enter blog content" },
+                ]}
+              >
+                <ReactQuill
+                  theme="snow"
+                  value={content}
+                  onChange={setContent}
+                />
+              </Form.Item>
             </Form.Item>
 
             {/* Publish Date */}
@@ -177,7 +187,16 @@ const AddNewBlog = () => {
                 className="w-full"
               />
             </Form.Item>
-
+            <Form.Item
+              name="author"
+              label="Create By"
+              rules={[
+                { required: true, message: "Please enter athor" },
+                { min: 3, message: "Title must be at least 3 characters" },
+              ]}
+            >
+              <Input placeholder="Enter blog title" />
+            </Form.Item>
             {/* Submit Button */}
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading}>
