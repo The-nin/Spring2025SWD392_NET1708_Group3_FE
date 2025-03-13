@@ -37,7 +37,6 @@ const ProductManagement = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [filters, setFilters] = useState({
     keyword: "",
     categorySlug: "",
@@ -64,7 +63,6 @@ const ProductManagement = () => {
         brandsMap.set(product.brand.slug, {
           name: product.brand.name,
           slug: product.brand.slug,
-          ta,
         });
       }
     });
@@ -127,27 +125,6 @@ const ProductManagement = () => {
     fetchProducts(params);
   };
 
-  const toggleStatus = async (product) => {
-    try {
-      setLoading(true);
-      const newStatus = product.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-      const response = await updateProductStatus(product.id, newStatus);
-      if (!response.error) {
-        fetchProducts({
-          page: pagination.current,
-          pageSize: pagination.pageSize,
-        });
-        toast.success("Product status updated successfully!");
-      } else {
-        toast.error(response.message);
-      }
-    } catch (error) {
-      toast.error("Failed to update status");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const showDeleteConfirm = (product) => {
     setSelectedProduct(product);
     setDeleteModalVisible(true);
@@ -188,6 +165,33 @@ const ProductManagement = () => {
     });
   };
 
+  const handleStatusChange = async (checked, record) => {
+    try {
+      setLoading(true);
+      const newStatus = checked ? "ACTIVE" : "INACTIVE";
+      const response = await updateProductStatus(record.id, newStatus);
+
+      if (!response.error) {
+        toast.success("Product status updated successfully!");
+        // Refresh the current page
+        fetchProducts({
+          page: pagination.current,
+          pageSize: pagination.pageSize,
+        });
+      } else {
+        toast.error(response.message);
+        // Revert the switch if there's an error
+        record.status = !checked ? "ACTIVE" : "INACTIVE";
+      }
+    } catch (error) {
+      toast.error("Failed to update product status");
+      // Revert the switch if there's an error
+      record.status = !checked ? "ACTIVE" : "INACTIVE";
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const columns = [
     {
       title: "Thumbnail",
@@ -206,7 +210,18 @@ const ProductManagement = () => {
       dataIndex: "name",
       key: "name",
       sorter: true,
-      filterable: true,
+    },
+    {
+      title: "Category",
+      dataIndex: ["category", "name"],
+      key: "category",
+      render: (text, record) => record.category?.name || "N/A",
+    },
+    {
+      title: "Brand",
+      dataIndex: ["brand", "name"],
+      key: "brand",
+      render: (text, record) => record.brand?.name || "N/A",
     },
     {
       title: "Price",
@@ -216,15 +231,21 @@ const ProductManagement = () => {
       render: (price) => (price ? `${price.toLocaleString("vi-VN")}đ` : "N/A"),
     },
     {
+      title: "Stock",
+      dataIndex: "stock",
+      key: "stock",
+      render: (stock) => stock || 0,
+    },
+    {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (_, record) => (
+      render: (status, record) => (
         <Switch
-          checked={record.status === "ACTIVE"}
-          onChange={() => toggleStatus(record)}
-          checkedChildren="ACTIVE"
-          unCheckedChildren="INACTIVE"
+          checked={status === "ACTIVE"}
+          onChange={(checked) => handleStatusChange(checked, record)}
+          checkedChildren="Active"
+          unCheckedChildren="Inactive"
         />
       ),
     },
@@ -237,10 +258,7 @@ const ProductManagement = () => {
             <Button
               type="default"
               icon={<InfoCircleOutlined />}
-              onClick={() => {
-                setSelectedProduct(record);
-                setDetailModalVisible(true);
-              }}
+              onClick={() => navigate(`/admin/product/detail/${record.id}`)}
             />
           </Tooltip>
           <Tooltip title="Edit">
@@ -338,43 +356,6 @@ const ProductManagement = () => {
           Are you sure you want to delete product "{selectedProduct?.name}"?
         </p>
         <p>This action cannot be undone.</p>
-      </Modal>
-      <Modal
-        title="Product Details"
-        open={detailModalVisible}
-        onCancel={() => {
-          setDetailModalVisible(false);
-          setSelectedProduct(null);
-        }}
-        footer={null}
-      >
-        {selectedProduct && (
-          <div className="space-y-4">
-            <div className="flex justify-center">
-              <img
-                src={selectedProduct.thumbnail}
-                alt={selectedProduct.name}
-                className="w-32 h-32 object-cover rounded"
-              />
-            </div>
-            <div>
-              <h3 className="font-bold">Product Name</h3>
-              <p>{selectedProduct.name}</p>
-            </div>
-            <div>
-              <h3 className="font-bold">Description</h3>
-              <p>{selectedProduct.description}</p>
-            </div>
-            <div>
-              <h3 className="font-bold">Price</h3>
-              <p>{selectedProduct.price?.toLocaleString("vi-VN")}đ</p>
-            </div>
-            <div>
-              <h3 className="font-bold">Status</h3>
-              <p>{selectedProduct.status}</p>
-            </div>
-          </div>
-        )}
       </Modal>
       <ToastContainer />
     </div>

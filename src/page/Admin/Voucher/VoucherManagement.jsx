@@ -31,6 +31,7 @@ const VoucherManagement = () => {
   const [viewModalVisible, setViewModalVisible] = useState(false);
 
   // Fetch vouchers from API
+  
   const fetchVouchers = async (params = {}) => {
     try {
       setLoading(true);
@@ -41,8 +42,9 @@ const VoucherManagement = () => {
         const { content, totalElements } = response.result;
         setVouchers(content);
         setPagination({ current, pageSize, total: totalElements });
+
       } else {
-        toast.error(response.message);
+        toast.error(response.message || "Failed to fetch vouchers");
       }
     } catch (error) {
       toast.error("Failed to fetch vouchers");
@@ -56,10 +58,8 @@ const VoucherManagement = () => {
   }, []);
 
   const handleTableChange = (newPagination) => {
-    fetchVouchers({
-      page: newPagination.current,
-      pageSize: newPagination.pageSize,
-    });
+    // Convert from 1-based to 0-based page number for API
+    fetchVouchers(newPagination.current - 1, newPagination.pageSize);
   };
 
   const showDeleteConfirm = (voucher) => {
@@ -89,7 +89,7 @@ const VoucherManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to delete voucher");
+      toast.error(error.message || "Failed to delete voucher");
     } finally {
       setDeletingVoucherId(null);
       setDeleteModalVisible(false);
@@ -124,11 +124,15 @@ const VoucherManagement = () => {
       sorter: (a, b) => a.id - b.id,
     },
     {
+      
       title: "Mã Voucher",
+
       dataIndex: "code",
       key: "code",
     },
     {
+
+      
       title: "Giảm Giá",
       dataIndex: "discount",
       key: "discount",
@@ -145,6 +149,7 @@ const VoucherManagement = () => {
       dataIndex: "minOrderValue",
       key: "minOrderValue",
       render: (value) => `$${value}`,
+
     },
     {
       title: "Điểm Yêu Cầu",
@@ -215,9 +220,13 @@ const VoucherManagement = () => {
         cancelText="Hủy"
         okButtonProps={{ danger: true, loading: deletingVoucherId !== null }}
       >
-        <p>Bạn có chắc chắn muốn xóa voucher "{selectedVoucher?.code}"?</p>
+
+        >This action cannot be undone.</p>
+
+<p>Bạn có chắc chắn muốn xóa voucher "{selectedVoucher?.code}"?</p>
         <p>Hành động này không thể hoàn tác.</p>
-      </Modal>
+
+  </Modal>
 
       <Modal
         title="Chi Tiết Voucher"
@@ -228,7 +237,10 @@ const VoucherManagement = () => {
         {selectedVoucher && (
           <div>
             <p>
-              <strong>Mã Voucher:</strong> {selectedVoucher.code}
+
+         <strong>Points Required:</strong> {selectedVoucher.point}
+
+         <strong>Mã Voucher:</strong> {selectedVoucher.code}
             </p>
             <p>
               <strong>Giảm Giá:</strong> {selectedVoucher.discount}%
@@ -239,10 +251,16 @@ const VoucherManagement = () => {
             <p>
               <strong>Giá Trị Đơn Hàng Tối Thiểu:</strong> $
               {selectedVoucher.minOrderValue}
-            </p>
+
+</p>
             <p>
               <strong>Điểm Yêu Cầu:</strong> {selectedVoucher.point}
             </p>
+            {selectedVoucher.quantity && (
+              <p>
+                <strong>Quantity:</strong> {selectedVoucher.quantity}
+              </p>
+            )}
           </div>
         )}
       </Modal>

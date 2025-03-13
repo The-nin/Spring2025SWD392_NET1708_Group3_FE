@@ -117,7 +117,7 @@ const ShopPage = () => {
           <div className="container mx-auto">
             <div className="flex flex-wrap items-center justify-between gap-4">
               {/* Categories Navigation */}
-              <div className="flex flex-wrap items-center gap-6">
+              <div className="flex flex-wrap items-center gap-6 cursor-pointer">
                 <a
                   className={`text-gray-700 hover:text-gray-600 transition-colors duration-200 ${
                     !slug ? "font-bold text-gray-600" : ""
@@ -126,7 +126,7 @@ const ShopPage = () => {
                     window.location.href = "/shop";
                   }}
                 >
-                  Shop All
+                  Tất cả sản phẩm
                 </a>
                 {categories.map((category) => (
                   <a
@@ -147,7 +147,7 @@ const ShopPage = () => {
               <div className="relative w-full md:w-72">
                 <input
                   type="text"
-                  placeholder="Search products..."
+                  placeholder="Tìm kiếm sản phẩm..."
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
                   className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-200"
@@ -175,13 +175,12 @@ const ShopPage = () => {
 
         {/* Header product */}
         <div className="p-8">
-          <p className="pb-3 text-lg">Reverd Formulations</p>
-          <h1 className="text-4xl ">Essentials For Every Skincare</h1>
+          <h1 className="text-4xl ">Chăm sóc da thiết yếu</h1>
         </div>
 
-        {/* Thêm UI chọn số lượng sản phẩm trên trang */}
+        {/* Items per page selector */}
         <div className="flex items-center justify-end px-8 gap-2">
-          <span>Show:</span>
+          <span>Hiển thị:</span>
           <select
             value={pageSize}
             onChange={(e) =>
@@ -194,14 +193,14 @@ const ShopPage = () => {
             <option value="12">12</option>
             <option value="16">16</option>
           </select>
-          <span>items per page</span>
+          <span>sản phẩm mỗi trang</span>
         </div>
 
         {/* Product List */}
         <div>
           {loading ? (
             <p className="flex justify-center alignitems-center">
-              Loading products...
+              Đang tải sản phẩm...
             </p>
           ) : errors ? (
             <p className="flex justify-center">{errors}</p>
@@ -220,7 +219,7 @@ const ShopPage = () => {
               ))}
             </div>
           ) : (
-            <p className="flex justify-center">No products available.</p>
+            <p className="flex justify-center">Không có sản phẩm nào.</p>
           )}
         </div>
 
@@ -233,7 +232,7 @@ const ShopPage = () => {
             onChange={onPageChange}
             showSizeChanger={false}
             showTotal={(total, range) =>
-              `${range[0]}-${range[1]} of ${total} items`
+              `${range[0]}-${range[1]} trong ${total} sản phẩm`
             }
           />
         </div>

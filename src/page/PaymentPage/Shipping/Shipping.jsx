@@ -1,7 +1,14 @@
 import PropTypes from "prop-types";
 import Total from "../Total";
 
-const Shipping = ({ onNext, selectedAddressId }) => {
+const Shipping = ({
+  onNext,
+  selectedAddressId,
+  cartData,
+  onVoucherApply,
+  appliedVoucher,
+  vouchers,
+}) => {
   const handleContinue = (cartId) => {
     if (!selectedAddressId) {
       alert("Vui lòng chọn địa chỉ giao hàng");
@@ -13,7 +20,7 @@ const Shipping = ({ onNext, selectedAddressId }) => {
   return (
     <div className=" grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2">
-        <h2 className="text-xl font-semibold mb-6">Shipment Method</h2>
+        <h2 className="text-xl font-semibold mb-6">Phương thức vận chuyển</h2>
 
         {/* Free Shipping Option */}
         <div className="border rounded-lg p-4 mb-3 hover:border-gray-900 cursor-pointer">
@@ -26,10 +33,9 @@ const Shipping = ({ onNext, selectedAddressId }) => {
             />
             <div className="flex justify-between w-full">
               <div>
-                <p className="font-semibold">Free</p>
-                <p className="text-sm text-gray-600">Regular Shipment</p>
+                <p className="font-semibold">Miễn phí</p>
+                <p className="text-sm text-gray-600">Vận chuyển thường</p>
               </div>
-              <p className="text-sm text-gray-600">01 Feb, 2023</p>
             </div>
           </label>
         </div>
@@ -75,7 +81,14 @@ const Shipping = ({ onNext, selectedAddressId }) => {
         </div> */}
       </div>
 
-      <Total buttonText="Continue to Payment" onNext={handleContinue} />
+      <Total
+        buttonText="Tiếp tục thanh toán"
+        onNext={handleContinue}
+        cartData={cartData}
+        onVoucherApply={onVoucherApply}
+        appliedVoucher={appliedVoucher}
+        vouchers={vouchers}
+      />
     </div>
   );
 };
@@ -83,6 +96,10 @@ const Shipping = ({ onNext, selectedAddressId }) => {
 Shipping.propTypes = {
   onNext: PropTypes.func.isRequired,
   selectedAddressId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  cartData: PropTypes.object,
+  onVoucherApply: PropTypes.func.isRequired,
+  appliedVoucher: PropTypes.object,
+  vouchers: PropTypes.array,
 };
 
 export default Shipping;

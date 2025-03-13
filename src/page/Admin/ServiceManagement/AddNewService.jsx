@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { createNewService } from "../../service/serviceManagement";
+import { createNewService } from "../../../service/serviceManagement";
 
 function AddNewService() {
   const navigate = useNavigate();
@@ -13,12 +13,12 @@ function AddNewService() {
   const onFinish = async (values) => {
     setLoading(true);
 
-    console.log("Received values of form: ", values)
+    console.log("Received values of form: ", values);
 
     const { serviceName, price, description } = values;
 
     const formattedPrice = parseFloat(price);
-    
+
     try {
       const data = await createNewService({
         serviceName,
@@ -46,13 +46,13 @@ function AddNewService() {
         onClick={() => navigate("/admin/service")}
         className="mb-4 hover:bg-gray-100"
       >
-        Back to Service
+        Quay lại
       </Button>
 
       <Card
         title={
           <h2 className="text-3xl font-semibold text-gray-800">
-            Add New Service
+            TẠO MỚI DỊCH VỤ
           </h2>
         }
       >
@@ -67,18 +67,18 @@ function AddNewService() {
             <Col span={12}>
               <Form.Item
                 name="serviceName"
-                label="Service Name"
+                label="Tên dịch vụ"
                 rules={[
-                  { required: true, message: "Please enter service name" },
+                  { required: true, message: "Bạn cần điền tên dịch vụ ở đây" },
                   {
                     min: 5,
-                    message: "Service name must be at least 5 characters",
+                    message: "Tên dịch vụ cần lớn hơn 5 ký tự",
                   },
                 ]}
                 className="mr-10"
               >
                 <Input
-                  placeholder="Enter service name"
+                  placeholder="Nhập tên dịch vụ"
                   className="rounded-md h-12"
                 />
               </Form.Item>
@@ -87,13 +87,13 @@ function AddNewService() {
             <Col span={12}>
               <Form.Item
                 name="price"
-                label="Price"
+                label="Giá"
                 rules={[
-                  { required: true, message: "Please enter price" },
+                  { required: true, message: "Bạn phải nhập giá ở đây" },
                   {
                     type: "number",
                     min: 0.01,
-                    message: "Price must be greater than 0",
+                    message: "Giá cần lớn hơn 0",
                   },
                 ]}
               >
@@ -113,18 +113,18 @@ function AddNewService() {
 
           <Form.Item
             name="description"
-            label="Description"
+            label="Mô tả"
             rules={[
-              { required: true, message: "Please enter description" },
+              { required: true, message: "Bạn cần phải nhập mô tả" },
               {
                 min: 10,
-                message: "Description must be at least 10 characters",
+                message: "Mô tả cần lớn hơn 10 ký tự",
               },
             ]}
           >
             <Input.TextArea
               rows={4}
-              placeholder="Enter product description"
+              placeholder="Nhập mô tả"
               maxLength={500}
               showCount
               className="rounded-md"
@@ -138,7 +138,7 @@ function AddNewService() {
               className="w-full md:w-auto px-8 h-12 rounded-md bg-blue-600 hover:bg-blue-700"
               loading={loading}
             >
-              Submit
+              Hoàn tất
             </Button>
           </Form.Item>
         </Form>

@@ -9,7 +9,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     district: "",
     ward: "",
     street: "",
-    default: false,
+    isDefault: false,
   });
 
   useEffect(() => {
@@ -37,11 +37,11 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg w-full max-w-md">
         <h2 className="text-xl font-semibold mb-4">
-          {initialData ? "Edit Address" : "Add New Address"}
+          {initialData ? "Chỉnh sửa địa chỉ" : "Thêm địa chỉ mới"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block mb-1">Full Name</label>
+            <label className="block mb-1">Họ tên</label>
             <input
               type="text"
               name="name"
@@ -52,7 +52,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             />
           </div>
           <div>
-            <label className="block mb-1">Phone Number</label>
+            <label className="block mb-1">Số điện thoại</label>
             <input
               type="tel"
               name="phone"
@@ -63,7 +63,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             />
           </div>
           <div>
-            <label className="block mb-1">City</label>
+            <label className="block mb-1">Thành phố</label>
             <input
               type="text"
               name="city"
@@ -74,7 +74,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             />
           </div>
           <div>
-            <label className="block mb-1">District</label>
+            <label className="block mb-1">Quận</label>
             <input
               type="text"
               name="district"
@@ -85,7 +85,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             />
           </div>
           <div>
-            <label className="block mb-1">Ward</label>
+            <label className="block mb-1">Phường</label>
             <input
               type="text"
               name="ward"
@@ -96,7 +96,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             />
           </div>
           <div>
-            <label className="block mb-1">Street</label>
+            <label className="block mb-1">Địa chỉ</label>
             <input
               type="text"
               name="street"
@@ -109,12 +109,12 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
           <div className="flex items-center">
             <input
               type="checkbox"
-              name="default"
-              checked={formData.default}
+              name="isDefault"
+              checked={formData.isDefault}
               onChange={handleChange}
               className="mr-2"
             />
-            <label>Set as default address</label>
+            <label>Đặt là địa chỉ mặc định</label>
           </div>
           <div className="flex justify-end space-x-4">
             <button
@@ -122,13 +122,13 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
               onClick={onClose}
               className="px-4 py-2 text-gray-600 hover:text-gray-900"
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800"
             >
-              {initialData ? "Save Changes" : "Add Address"}
+              {initialData ? "Lưu thay đổi" : "Thêm địa chỉ"}
             </button>
           </div>
         </form>
