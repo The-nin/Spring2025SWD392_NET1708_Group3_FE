@@ -1,268 +1,163 @@
-import React, { useState, useEffect } from "react";
-import {
-  Form,
-  Input,
-  Button,
-  Card,
-  DatePicker,
-  InputNumber,
-  Select,
-  Spin,
-} from "antd";
+import { useEffect, useState } from "react";
+import { Button, Form, Input, Select } from "antd";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { getVoucherById, updateVoucher } from "../../../service/voucher";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
-import { getVoucherById, updateVoucher } from "../../../service/voucher/index";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import dayjs from "dayjs";
 
-const { Option } = Select;
-
-// Disable past dates
-const disabledDate = (current) => current && current.isBefore(dayjs(), "day");
-
-const EditVoucher = () => {
-  const navigate = useNavigate();
-  const { id } = useParams();
+function EditVoucher({ fetchVouchers }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [voucherData, setVoucherData] = useState(null); // Store API data
+  const [voucher, setVoucher] = useState(null);
+  const navigate = useNavigate();
+  const { id } = useParams(); // Get voucher ID from URL params
 
+  // Fetch voucher details
   useEffect(() => {
-    if (id) {
-      fetchVoucherDetails();
-    }
-  }, [id]); // ✅ Fetch data when ID changes
-
-  useEffect(() => {
-    if (voucherData && Object.keys(voucherData).length > 0) {
-      console.log("📌 Updating form with:", voucherData);
-      form.setFieldsValue(voucherData);
-    }
-  }, [voucherData, form]);
-
-  const fetchVoucherDetails = async () => {
-    try {
-      const response = await getVoucherById(id);
-      console.log("✅ Raw API Response:", response);
-
-      if (!response.error && response.result && response.result.result) {
-        const voucher = response.result.result; // ✅ Correct data extraction
-
-        const formattedData = {
-          voucherName: voucher.voucherName ?? "Unknown Name",
-          voucherCode: voucher.voucherCode ?? "Unknown Code",
-          point: voucher.point ?? 0,
-          startDate: voucher.startDate ? dayjs(voucher.startDate) : null,
-          endDate: voucher.endDate ? dayjs(voucher.endDate) : null,
-          description: voucher.description ?? "No Description",
-          discountAmount: voucher.discountAmount ?? 0,
-          status: voucher.status ?? "INACTIVE",
-        };
-
-        console.log("📌 Final Processed Data Before Setting:", formattedData);
-        setVoucherData(formattedData); // ✅ Correctly setting the voucher data
-      } else {
-        toast.error(response.message || "Failed to fetch voucher details");
+    const fetchVoucher = async () => {
+      setLoading(true);
+      try {
+        const response = await getVoucherById(id);
+        if (!response.error) {
+          setVoucher(response.result);
+          form.setFieldsValue({
+            code: response.result.code,
+            discount: response.result.discount,
+            discountType: response.result.discountType,
+            minOrderValue: response.result.minOrderValue,
+            description: response.result.description,
+            point: response.result.point,
+            quantity: response.result.quantity,
+          });
+        } else {
+          toast.error("Failed to load voucher details");
+          navigate("/admin/voucher");
+        }
+      } catch (error) {
+        toast.error("Error fetching voucher details");
         navigate("/admin/voucher");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("❌ API Error:", error);
-      toast.error("Failed to fetch voucher details");
-      navigate("/admin/voucher");
-    } finally {
-      setInitialLoading(false);
-    }
-  };
+    };
 
-  const onFinish = async (values) => {
+    fetchVoucher();
+  }, [id, form, navigate]);
+
+  const handleSubmit = async (values) => {
     try {
       setLoading(true);
 
-      const voucherData = {
-        voucherName: values.voucherName?.trim() || "",
-        voucherCode: values.voucherCode?.trim() || "",
-        point: values.point ? Number(values.point) : 0,
-        startDate: values.startDate
-          ? values.startDate.format("YYYY-MM-DD")
-          : null,
-        endDate: values.endDate ? values.endDate.format("YYYY-MM-DD") : null,
-        description: values.description?.trim() || "No description",
-        discountAmount: values.discountAmount
-          ? parseFloat(values.discountAmount)
-          : 0,
-        status: values.status,
+      console.log("📤 Updating Voucher Data:", values);
+
+      const formattedValues = {
+        ...values,
+        code: values.code.trim(),
+        discount: Number(values.discount),
+        minOrderValue: Number(values.minOrderValue),
+        point: Number(values.point),
       };
 
-      console.log("📤 Sending JSON:", JSON.stringify(voucherData, null, 2));
-
-      const response = await updateVoucher(id, voucherData);
+      const response = await updateVoucher(id, formattedValues);
 
       if (!response.error) {
         toast.success("Voucher updated successfully!");
-        navigate("/admin/voucher");
+        fetchVouchers?.();
+        setTimeout(() => navigate("/admin/voucher"), 2000);
       } else {
-        toast.error(response.message);
+        toast.error(response.message || "Failed to update voucher");
       }
     } catch (error) {
-      console.error(
-        "❌ API Request Error:",
-        error.response?.data || error.message
-      );
-      toast.error(error.response?.data?.message || "Failed to update voucher");
+      toast.error("Error updating voucher");
     } finally {
       setLoading(false);
     }
   };
 
-  if (initialLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Spin size="large" />
-      </div>
-    );
-  }
+  if (!voucher) return <p>Loading voucher details...</p>;
 
   return (
-    <>
-      <ToastContainer position="top-right" autoClose={3000} />
-      <div className="p-6">
-        <Button
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate("/admin/voucher")}
-          className="mb-4"
+    <div className="max-w-4xl mx-auto p-4">
+      <Button
+        icon={<ArrowLeftOutlined />}
+        onClick={() => navigate("/admin/voucher")}
+        className="mb-4"
+      >
+        Quay lại danh sách Voucher
+      </Button>
+
+      <h2 className="text-2xl font-bold mb-4">Chỉnh Sửa Voucher</h2>
+
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        autoComplete="off"
+      >
+        <Form.Item
+          name="code"
+          label="Mã Voucher"
+          rules={[{ required: true, message: "Vui lòng nhập mã voucher" }]}
         >
-          Back to Vouchers
-        </Button>
+          <Input placeholder="Nhập mã voucher" />
+        </Form.Item>
 
-        <Card title="Edit Voucher" className="max-w-3xl">
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            autoComplete="off"
-          >
-            <Form.Item
-              name="voucherName"
-              label="Voucher Name"
-              rules={[
-                { required: true, message: "Please enter voucher name" },
-                {
-                  min: 5,
-                  message: "Voucher name must be at least 5 characters long",
-                },
-              ]}
-            >
-              <Input placeholder="Enter voucher name" />
-            </Form.Item>
+        <Form.Item
+          name="discount"
+          label="Mức Giảm Giá"
+          rules={[{ required: true, message: "Vui lòng nhập mức giảm giá" }]}
+        >
+          <Input type="number" placeholder="Nhập mức giảm giá" />
+        </Form.Item>
 
-            <Form.Item
-              name="voucherCode"
-              label="Voucher Code"
-              rules={[
-                { required: true, message: "Please enter voucher code" },
-                {
-                  min: 5,
-                  message: "Voucher code must be at least 5 characters long",
-                },
-              ]}
-            >
-              <Input placeholder="Enter voucher code" />
-            </Form.Item>
+        <Form.Item
+          name="discountType"
+          label="Loại Giảm Giá"
+          rules={[{ required: true }]}
+        >
+          <Select>
+            <Select.Option value="PERCENTAGE">Phần trăm</Select.Option>
+            <Select.Option value="FIXED">Giảm số tiền cố định</Select.Option>
+          </Select>
+        </Form.Item>
 
-            <Form.Item
-              name="description"
-              label="Voucher Description"
-              rules={[
-                { required: true, message: "Please enter voucher description" },
-                {
-                  min: 5,
-                  message:
-                    "Voucher description must be at least 5 characters long",
-                },
-              ]}
-            >
-              <Input.TextArea
-                rows={3}
-                placeholder="Enter voucher description"
-              />
-            </Form.Item>
+        <Form.Item
+          name="minOrderValue"
+          label="Giá Trị Đơn Hàng Tối Thiểu"
+          rules={[{ required: true }]}
+        >
+          <Input
+            type="number"
+            step="0.1"
+            placeholder="Nhập giá trị tối thiểu"
+          />
+        </Form.Item>
 
-            <Form.Item
-              name="point"
-              label="Points Required"
-              rules={[
-                { required: true, message: "Please enter required points" },
-              ]}
-            >
-              <InputNumber min={1} className="w-full" />
-            </Form.Item>
+        <Form.Item
+          name="description"
+          label="Mô Tả"
+          rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+        >
+          <Input.TextArea rows={3} placeholder="Nhập mô tả" />
+        </Form.Item>
 
-            <Form.Item
-              name="discountAmount"
-              label="Discount Amount (%)"
-              rules={[
-                { required: true, message: "Please enter discount amount" },
-              ]}
-            >
-              <InputNumber
-                min={0.01}
-                max={100}
-                step={0.01}
-                className="w-full"
-              />
-            </Form.Item>
+        <Form.Item
+          name="point"
+          label="Điểm Yêu Cầu"
+          rules={[{ required: true, message: "Vui lòng nhập số điểm yêu cầu" }]}
+        >
+          <Input type="number" placeholder="Nhập số điểm yêu cầu" />
+        </Form.Item>
 
-            <Form.Item
-              name="startDate"
-              label="Start Date"
-              rules={[
-                { required: true, message: "Please select a start date" },
-              ]}
-            >
-              <DatePicker
-                disabledDate={disabledDate}
-                format="YYYY-MM-DD"
-                className="w-full"
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="endDate"
-              label="Expiration Date"
-              rules={[
-                { required: true, message: "Please select an expiration date" },
-              ]}
-            >
-              <DatePicker
-                disabledDate={disabledDate}
-                format="YYYY-MM-DD"
-                className="w-full"
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="status"
-              label="Status"
-              rules={[{ required: true, message: "Please select a status" }]}
-            >
-              <Select>
-                <Option value="ACTIVE">Active</Option>
-                <Option value="INACTIVE">Inactive</Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                Update Voucher
-              </Button>
-            </Form.Item>
-          </Form>
-        </Card>
-      </div>
-    </>
+        <Form.Item>
+          <Button type="primary" htmlType="submit" loading={loading}>
+            Cập Nhật Voucher
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
   );
-};
+}
 
 export default EditVoucher;

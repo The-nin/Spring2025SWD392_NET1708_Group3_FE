@@ -30,7 +30,6 @@ export const getQuizById = async (quizId) => {
     const response = await instance.get(`/admin/quizs/${quizId}`, {
       headers: {
         authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
       },
     });
     return {
@@ -43,30 +42,29 @@ export const getQuizById = async (quizId) => {
   }
 };
 
-// ✅ Submit a quiz (Admin Access Required)
-export const addQuiz = async (quizId, quizData) => {
+export const addQuiz = async (quizData) => {
   const token = localStorage.getItem("token");
-
   try {
-    console.log("📤 Submitting Quiz:", JSON.stringify(quizData, null, 2)); // ✅ Logs the request body
+    console.log("Creating Voucher:", JSON.stringify(quizData, null, 2));
 
-    const response = await instance.post(`/admin/quizs/${quizId}`, quizData, {
+    const response = await instance.post("admin/quizs", quizData, {
+      // ✅ Fixed route
       headers: {
         authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
 
-    console.log("✅ API Response:", response.data); // ✅ Logs the response if successful
+    console.log("API Response:", response.data);
 
     return {
       error: false,
       result: response.data?.result,
-      message: response.data?.message,
+      message: response.data?.message || "Voucher created successfully",
     };
   } catch (error) {
-    console.error("❌ Error Response:", error.response?.data || error.message);
-    return handleError(error, "Failed to submit quiz");
+    console.error("Error Response:", error.response?.data || error.message);
+    return handleError(error, "Failed to create voucher");
   }
 };
 
@@ -103,32 +101,37 @@ export const deleteQuiz = async (quizId) => {
     return {
       error: false,
       result: response.data?.result,
-      message: response.data?.message,
+      message: response.data?.message || "Voucher deleted successfully",
     };
   } catch (error) {
-    return handleError(error, "Failed to delete quiz");
+    return handleError(error, "Failed to delete voucher");
   }
 };
 
-// ✅ Update quiz status (Admin Access Required)
 export const updateQuizStatus = async (quizId, status) => {
-  const token = localStorage.getItem("token");
   try {
+    const token = localStorage.getItem("token");
+    console.log(quizId, status);
     const response = await instance.patch(
-      `/quizs/${quizId}/status`,
-      { status },
+      `/admin/quizs/changeStatus/${quizId}?status=${status}`,
+      { status }, // Send status in the request body
       {
         headers: {
-          authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
     return {
       error: false,
-      result: response.data?.result,
+      result: response.data?.result, // Ensure correct response data
       message: response.data?.message,
     };
   } catch (error) {
-    return handleError(error, "Failed to update quiz status");
+    console.error("Update blog status error:", error);
+    return {
+      error: true,
+      message: error.response?.data?.message || "Failed to update blog status",
+    };
   }
 };
+// ✅ Update quiz status (Admin Access Required)

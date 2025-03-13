@@ -7,23 +7,20 @@ const handleError = (error, defaultMessage) => {
     message: error?.response?.result?.message || defaultMessage,
   };
 };
-
-// 🔹 Fetch all vouchers (Admin Access)
-export const getAllVouchers = async (page = 0, size = 10) => {
+export const getAllVouchers = async () => {
   const token = localStorage.getItem("token");
   try {
-    const response = await instance.get(
-      `admin/vouchers?page=${page}&size=${size}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await instance.get("/admin/vouchers", {
+      headers: {
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    console.log(response);
+    return response;
 
-    return response; // Trả về trực tiếp response vì nó đã có đúng format
   } catch (error) {
-    return handleError(error, "Failed to fetch vouchers");
+    return handleError(error, "Failed to fetch blogs");
   }
 };
 
@@ -37,16 +34,47 @@ export const getVoucherById = async (voucherId) => {
       },
     });
 
-    if (response && response.code === 200) {
-      return {
-        error: false,
-        result: response.result,
-        message: response.message,
-      };
-    }
-    throw new Error(response?.message || "Invalid response format");
+    return {
+      error: false,
+      result: response.data?.result,
+      message: response.data?.message,
+    };
   } catch (error) {
-    return handleError(error, "Failed to fetch voucher details");
+    return handleError(error, "Failed to fetch user vouchers");
+  }
+};
+export const getVoucherById = async (voucherId) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await instance.get(`admin/vouchers/${voucherId}`, {
+      headers: {
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    console.log(response);
+    return response;
+  } catch (error) {
+    return handleError(error, "Failed to fetch blogs");
+  }
+};
+export const updateVoucher = async (voucherId, voucherData) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await instance.put(
+      `admin/vouchers/${voucherId}`,
+      voucherData,
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log(response);
+    return response;
+  } catch (error) {
+    return handleError(error, "Failed to fetch blogs");
   }
 };
 
@@ -62,6 +90,8 @@ export const createVoucher = async (voucherData) => {
     }
 
     const response = await instance.post("admin/vouchers", voucherData, {
+
+      // ✅ Fixed route
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -84,31 +114,7 @@ export const createVoucher = async (voucherData) => {
   }
 };
 
-// 🔹 Update voucher
-export const updateVoucher = async (id, voucherData) => {
-  const token = localStorage.getItem("token");
-  try {
-    const response = await instance.put(`admin/vouchers/${id}`, voucherData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (response && response.code === 200) {
-      return {
-        error: false,
-        result: response.result,
-        message: response.message,
-      };
-    }
-    throw new Error(response?.message || "Invalid response format");
-  } catch (error) {
-    return handleError(error, "Failed to update voucher");
-  }
-};
-
-// 🔹 Delete voucher
+// 🔹 Delete a voucher (Admin Access Required)
 export const deleteVoucher = async (voucherId) => {
   const token = localStorage.getItem("token");
   try {
