@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tooltip, Modal, Select } from "antd";
+import { Table, Button, Space, Tooltip, Modal, Select, Switch } from "antd";
+import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   getUsersAdmin,
   updateUserStatus,
+  deleteUser,
 } from "../../../service/userManagement";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -71,6 +73,29 @@ const UserManagement = () => {
     }
   };
 
+  const handleDelete = (userId) => {
+    Modal.confirm({
+      title: "Are you sure you want to delete this user?",
+      content: "This action cannot be undone",
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          const response = await deleteUser(userId);
+          if (response && response.code === 200) {
+            toast.success("User deleted successfully!");
+            fetchUsers();
+          } else {
+            toast.error("Failed to delete user");
+          }
+        } catch (error) {
+          toast.error("Error deleting user");
+        }
+      },
+    });
+  };
+
   const columns = [
     {
       title: "STT",
@@ -128,12 +153,56 @@ const UserManagement = () => {
       dataIndex: "roleName",
       key: "roleName",
     },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status, record) => (
+        <Switch
+          checked={status === "ACTIVE"}
+          onChange={(checked) =>
+            handleStatusChange(record.id, checked ? "ACTIVE" : "INACTIVE")
+          }
+          onClick={(e) => e.stopPropagation()}
+        />
+      ),
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <Space size="middle" onClick={(e) => e.stopPropagation()}>
+          <Tooltip title="Edit">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => navigate(`/admin/user/edit/${record.id}`)}
+            />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(record.id)}
+            />
+          </Tooltip>
+        </Space>
+      ),
+    },
   ];
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">User Management</h2>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/admin/user/add")}
+        >
+          Add User
+        </Button>
       </div>
       <Table
         columns={columns}
@@ -143,7 +212,7 @@ const UserManagement = () => {
         loading={loading}
         onChange={handleTableChange}
         onRow={(record) => ({
-          onClick: () => navigate(`/admin/users/${record.id}`),
+          // onClick: () => navigate(`/admin/users/${record.id}`),
           style: { cursor: "pointer" },
         })}
       />

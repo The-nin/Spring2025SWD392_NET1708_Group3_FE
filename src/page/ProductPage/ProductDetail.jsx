@@ -325,11 +325,29 @@ const ProductDetail = () => {
                   >
                     <Minus size={16} />
                   </button>
-                  <span className="w-10 text-center font-medium">
-                    {quantity}
-                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={quantity}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      if (!isNaN(value) && value > 0) {
+                        setQuantity(value);
+                      } else if (e.target.value === "") {
+                        setQuantity("");
+                      }
+                    }}
+                    onBlur={() => {
+                      if (quantity === "" || quantity < 1) {
+                        setQuantity(1);
+                      }
+                    }}
+                    className="w-12 text-center font-medium border-none focus:ring-0 focus:outline-none"
+                  />
                   <button
-                    onClick={() => setQuantity(quantity + 1)}
+                    onClick={() =>
+                      setQuantity(quantity === "" ? 1 : quantity + 1)
+                    }
                     className="p-2 hover:bg-gray-100 rounded-md"
                   >
                     <Plus size={16} />

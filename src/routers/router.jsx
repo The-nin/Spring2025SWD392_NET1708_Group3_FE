@@ -47,6 +47,8 @@ import ProductDetailAdmin from "../page/Admin/ProducManagement/ProductDetail";
 import VNPayReturn from "../page/PaymentPage/Paid/VNPayReturn";
 import OrderFailed from "../components/Order/OrderFailed";
 import OrderSuccess from "../components/Order/OrderSuccess";
+import AddUser from "../page/Admin/UserManagement/AddUser";
+import EditUser from "../page/Admin/UserManagement/EditUser";
 
 export const router = createBrowserRouter([
   {
@@ -173,6 +175,14 @@ export const router = createBrowserRouter([
           {
             path: "user",
             element: <UserManagement />,
+          },
+          {
+            path: "user/add",
+            element: <AddUser />,
+          },
+          {
+            path: "user/edit/:id",
+            element: <EditUser />,
           },
           {
             path: "category",

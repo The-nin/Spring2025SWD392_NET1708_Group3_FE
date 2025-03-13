@@ -28,6 +28,11 @@ const Sidebar = ({ collapsed }) => {
       label: "Dashboard",
     },
     {
+      key: "/admin/user",
+      icon: <UserOutlined />,
+      label: "User Management",
+    },
+    {
       key: "/admin/product",
       icon: <ShoppingOutlined />,
       label: "Product Management",

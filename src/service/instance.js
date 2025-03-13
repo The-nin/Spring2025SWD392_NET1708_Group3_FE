@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const instance = axios.create({
-  baseURL: "http://localhost:8080/api/v1/swd392-skincare-products-sales-system",
+  baseURL: "http://localhost:8080/api/v1/swp391-skincare-products-sales-system",
   withCredentials: true,
   timeout: 5000,
   headers: {
