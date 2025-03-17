@@ -3,7 +3,7 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaShoppingBag, FaRegCreditCard } from "react-icons/fa";
-import { confirmPaymentSuccess } from "../../../../service/checkout";
+import { confirmPaymentSuccess } from "../../../service/checkout";
 
 const PaymentSuccess = () => {
   const [loading, setLoading] = useState(true);

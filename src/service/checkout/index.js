@@ -50,11 +50,10 @@ export const verifyVNPayPayment = async (queryString) => {
   }
 };
 
-export const confirmPaymentSuccess = async (paymentData) => {
+export const confirmPaymentSuccess = async (queryString) => {
   try {
-    const response = await instance.post(
-      "/orders/payment-success",
-      paymentData,
+    const response = await instance.get(
+      `/orders/payment-callback${queryString}`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -70,7 +69,7 @@ export const confirmPaymentSuccess = async (paymentData) => {
       redirectUrl: response.data?.redirectUrl,
     };
   } catch (error) {
-    console.error("Payment success confirmation error:", error);
+    console.error("Lỗi xác nhận thanh toán thành công:", error);
     return {
       error: true,
       code: error.response?.data?.code || 500,

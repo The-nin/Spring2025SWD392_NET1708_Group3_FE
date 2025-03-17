@@ -11,20 +11,24 @@ import {
   DatePicker,
   Table,
   Space,
-  message,
+  Popconfirm,
 } from "antd";
 import {
   ArrowLeftOutlined,
   InboxOutlined,
   PlusCircleOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { getProductById } from "../../../service/productManagement";
 import {
   addNewBatch,
   getBatches,
+  deleteBatch,
 } from "../../../service/productManagement/index";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -35,6 +39,7 @@ const ProductDetail = () => {
   const [viewBatchesModalVisible, setViewBatchesModalVisible] = useState(false);
   const [batches, setBatches] = useState([]);
   const [batchesLoading, setBatchesLoading] = useState(false);
+  const [deletingBatch, setDeletingBatch] = useState(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -66,10 +71,10 @@ const ProductDetail = () => {
         const batchData = response.result?.content || [];
         setBatches(batchData);
       } else {
-        message.error(response.message);
+        toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Không thể tải danh sách lô hàng");
+      toast.error(error.message);
     } finally {
       setBatchesLoading(false);
     }
@@ -85,7 +90,7 @@ const ProductDetail = () => {
 
       const response = await addNewBatch(id, batchData);
       if (!response.error) {
-        message.success("Thêm lô hàng thành công");
+        toast.success("Thêm lô hàng thành công");
         setAddBatchModalVisible(false);
         form.resetFields();
         // Refresh batches list if viewing
@@ -103,6 +108,24 @@ const ProductDetail = () => {
   const handleViewBatches = () => {
     setViewBatchesModalVisible(true);
     fetchBatches();
+  };
+
+  const handleDeleteBatch = async (batchId) => {
+    setDeletingBatch(true);
+    try {
+      const response = await deleteBatch(batchId);
+      if (!response.error) {
+        toast.success(response.message);
+        // Refresh batches list
+        fetchBatches();
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setDeletingBatch(false);
+    }
   };
 
   const batchColumns = [
@@ -128,6 +151,29 @@ const ProductDetail = () => {
       key: "expirationDate",
       render: (date) => dayjs(date).format("DD/MM/YYYY"),
     },
+    {
+      title: "Thao tác",
+      key: "actions",
+      render: (_, record) => (
+        <Popconfirm
+          title="Xóa lô hàng này?"
+          description="Bạn có chắc chắn muốn xóa lô hàng này? Hành động này không thể hoàn tác."
+          onConfirm={() => handleDeleteBatch(record.id)}
+          okText="Có"
+          cancelText="Không"
+          okButtonProps={{ loading: deletingBatch }}
+        >
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            size="small"
+            loading={deletingBatch}
+          >
+            Xóa
+          </Button>
+        </Popconfirm>
+      ),
+    },
   ];
 
   if (loading) {
@@ -146,7 +192,7 @@ const ProductDetail = () => {
           onClick={() => navigate("/admin/product")}
           className="mb-4 hover:bg-gray-100"
         >
-          Quay lại danh sách sản phẩm
+          Quay lại Sản phẩm
         </Button>
 
         <div className="flex justify-end mb-4">
@@ -260,7 +306,7 @@ const ProductDetail = () => {
                     <Descriptions.Item label="Xuất xứ">
                       {product.specification.origin}
                     </Descriptions.Item>
-                    <Descriptions.Item label="Nguồn gốc thương hiệu">
+                    <Descriptions.Item label="Xuất xứ thương hiệu">
                       {product.specification.brandOrigin}
                     </Descriptions.Item>
                     <Descriptions.Item label="Nơi sản xuất">
@@ -372,6 +418,7 @@ const ProductDetail = () => {
           />
         </Modal>
       </div>
+      <ToastContainer />
     </div>
   );
 };

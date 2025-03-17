@@ -43,7 +43,7 @@ import UserManagement from "../page/Admin/UserManagement/UserManagement";
 import ServiceManagement from "../page/Admin/ServiceManagement/ServiceManagement";
 import AddNewService from "../page/Admin/ServiceManagement/AddNewService";
 import ExpertService from "../page/Admin/ExpertService/ExpertService";
-import PaymentSuccess from "../page/PaymentSuccessPage/PaymentSuccess";
+import PaymentSuccess from "../page/PaymentPage/Paid/PaymentSuccess";
 import CategoryDetail from "../page/Admin/CategoryManagement/CategoryDetail";
 import BrandDetail from "../page/Admin/Brand/BrandDetail";
 import ProductDetailAdmin from "../page/Admin/ProducManagement/ProductDetail";
