@@ -16,6 +16,7 @@ function AddNewVoucher({ fetchVouchers }) {
     try {
       setLoading(true);
 
+
       console.log("📤 Submitted Voucher Data:", values);
 
       const formattedValues = {
@@ -25,11 +26,17 @@ function AddNewVoucher({ fetchVouchers }) {
         minOrderValue: Number(values.minOrderValue),
         description: values.description.trim(),
         point: Number(values.point),
+
       };
 
       const response = await createVoucher(formattedValues);
 
+      if (response.message) {
+        toast.success(response.message);
+      }
+
       if (!response.error) {
+
         toast.success("Voucher added successfully!");
         form.resetFields();
         fetchVouchers?.();
@@ -39,6 +46,7 @@ function AddNewVoucher({ fetchVouchers }) {
       }
     } catch (error) {
       toast.error("Failed to save the voucher. Please check the details.");
+
     } finally {
       setLoading(false);
     }
@@ -62,6 +70,7 @@ function AddNewVoucher({ fetchVouchers }) {
         onFinish={handleSubmit}
         autoComplete="off"
       >
+
         <Form.Item
           name="code"
           label="Mã Voucher"

@@ -10,16 +10,16 @@ const MyOrderedDetail = ({ order, onBack }) => {
         className="text-sky-700 hover:text-sky-900 mb-6 flex items-center gap-2 transition-colors"
       >
         <span>&larr;</span>
-        <span>Back to Orders</span>
+        <span>Quay lại danh sách đơn hàng</span>
       </button>
 
       {/* Header Section */}
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Order #{order.orderId}
+          Đơn hàng #{order.orderId}
         </h2>
         <p className="text-gray-600">
-          Placed on {new Date(order.orderDate).toLocaleDateString()}
+          Đặt ngày {new Date(order.orderDate).toLocaleDateString()}
         </p>
       </div>
 
@@ -33,7 +33,14 @@ const MyOrderedDetail = ({ order, onBack }) => {
             : "bg-gray-50 text-gray-700"
         }`}
       >
-        <div className="font-semibold">Status: {order.status}</div>
+        <div className="font-semibold">
+          Trạng thái:{" "}
+          {order.status === "PENDING"
+            ? "Đang xử lý"
+            : order.status === "COMPLETED"
+            ? "Hoàn thành"
+            : order.status}
+        </div>
         {order.orderInfo && (
           <div className="mt-2 text-sm">{order.orderInfo}</div>
         )}
@@ -43,19 +50,19 @@ const MyOrderedDetail = ({ order, onBack }) => {
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         <div className="bg-gray-50 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">
-            Customer Details
+            Thông tin khách hàng
           </h3>
           <div className="space-y-3">
             <p className="flex justify-between">
-              <span className="text-gray-600">Name:</span>
+              <span className="text-gray-600">Họ tên:</span>
               <span className="font-medium">{order.address.name}</span>
             </p>
             <p className="flex justify-between">
-              <span className="text-gray-600">Phone:</span>
+              <span className="text-gray-600">Số điện thoại:</span>
               <span className="font-medium">{order.address.phone}</span>
             </p>
             <p className="flex justify-between">
-              <span className="text-gray-600">Address:</span>
+              <span className="text-gray-600">Địa chỉ:</span>
               <span className="font-medium">{order.address.addressLine}</span>
             </p>
           </div>
@@ -63,16 +70,16 @@ const MyOrderedDetail = ({ order, onBack }) => {
 
         <div className="bg-gray-50 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">
-            Payment Information
+            Thông tin thanh toán
           </h3>
           <div className="space-y-3">
             <p className="flex justify-between">
-              <span className="text-gray-600">Payment Method:</span>
+              <span className="text-gray-600">Phương thức thanh toán:</span>
               <span className="font-medium">{order.paymentMethod}</span>
             </p>
             {order.paymentStatus && (
               <p className="flex justify-between">
-                <span className="text-gray-600">Payment Status:</span>
+                <span className="text-gray-600">Trạng thái thanh toán:</span>
                 <span
                   className={`font-medium ${
                     order.paymentStatus === "PAID"
@@ -80,7 +87,9 @@ const MyOrderedDetail = ({ order, onBack }) => {
                       : "text-red-600"
                   }`}
                 >
-                  {order.paymentStatus}
+                  {order.paymentStatus === "PAID"
+                    ? "Đã thanh toán"
+                    : "Chưa thanh toán"}
                 </span>
               </p>
             )}
@@ -92,7 +101,7 @@ const MyOrderedDetail = ({ order, onBack }) => {
       {order.orderResponseItemList && (
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">
-            Order Items
+            Danh sách sản phẩm
           </h3>
           <div className="bg-gray-50 rounded-lg overflow-hidden">
             {order.orderResponseItemList.map((item, index) => (
@@ -102,7 +111,7 @@ const MyOrderedDetail = ({ order, onBack }) => {
               >
                 <div className="flex items-center gap-4">
                   <img
-                    src={item.productImage || "placeholder-image-url"}
+                    src={item.thumbnailProduct || "placeholder-image-url"}
                     alt={item.productName}
                     className="w-16 h-16 object-cover rounded-lg"
                   />
@@ -110,7 +119,7 @@ const MyOrderedDetail = ({ order, onBack }) => {
                     <h4 className="font-medium text-gray-800">
                       {item.productName}
                     </h4>
-                    <p className="text-gray-600">Quantity: {item.quantity}</p>
+                    <p className="text-gray-600">Số lượng: {item.quantity}</p>
                   </div>
                 </div>
                 <span className="font-semibold text-gray-800">
@@ -125,7 +134,7 @@ const MyOrderedDetail = ({ order, onBack }) => {
       {/* Total and Actions */}
       <div className="border-t pt-6">
         <div className="flex justify-between items-center mb-6">
-          <span className="text-xl font-bold text-gray-800">Total Amount</span>
+          <span className="text-xl font-bold text-gray-800">Tổng tiền</span>
           <span className="text-xl font-bold text-gray-800">
             {order.totalAmount.toLocaleString()} đ
           </span>
@@ -134,7 +143,7 @@ const MyOrderedDetail = ({ order, onBack }) => {
         {order.status === "PENDING" && (
           <div className="flex justify-end">
             <button className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
-              Cancel Order
+              Hủy đơn hàng
             </button>
           </div>
         )}

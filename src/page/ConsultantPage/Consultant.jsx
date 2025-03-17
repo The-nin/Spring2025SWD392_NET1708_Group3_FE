@@ -7,6 +7,7 @@ import {
   Image,
   Input,
   InputNumber,
+  Modal,
   Row,
   Select,
   Upload,
@@ -14,7 +15,11 @@ import {
 import { UploadOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { useEffect, useState } from "react";
-import { createBooking, getAllExperts } from "../../service/booking";
+import {
+  createBooking,
+  createPayment,
+  getAllExperts,
+} from "../../service/booking";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { uploadToCloudinary } from "../../service/productManagement";
@@ -31,6 +36,8 @@ function Consultant() {
   const [fileList, setFileList] = useState([]);
   const [services, setServices] = useState([]);
   const [experts, setExperts] = useState([]);
+  const [openModalPayment, setOpenModalPayment] = useState(false);
+  const [tempBookingData, setTempBookingData] = useState(null);
 
   const navigate = useNavigate();
 
@@ -79,14 +86,53 @@ function Consultant() {
   };
 
   //Call api
+  // const onFinish = async (values) => {
+  //   console.log("Received values of form: ", values);
+
+  //   try {
+  //     setLoading(true);
+
+  //     const imageFiles = values.image.map((fileObj) => fileObj.originFileObj);
+
+  //     const imageURLs = await Promise.all(
+  //       imageFiles.map(async (file) => await uploadToCloudinary(file))
+  //     );
+
+  //     const bookingData = {
+  //       firstName: values.firstName,
+  //       lastName: values.lastName,
+  //       skinType: values.skinType,
+  //       skinCondition: values.skinCondition,
+  //       allergy: values.allergy || "",
+  //       bookDate: values.bookDate.toISOString(),
+  //       expertId: values.expertId || "",
+  //       age: values.age,
+  //       note: values.note || "",
+  //       skincareServiceId: values.skincareServiceId,
+  //       imageSkins: imageURLs.map((url) => ({ image: url })),
+  //     };
+
+  //     const response = await createBooking(bookingData);
+
+  //     if (response) {
+  //       toast.success("Hoàn tất đặt lịch");
+  //       form.resetFields();
+  //       setFileList([]);
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to create booking:", error);
+  //     toast.error("Thất bại trong việc dặt lịch");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const onFinish = async (values) => {
     console.log("Received values of form: ", values);
+    setLoading(true);
 
     try {
-      setLoading(true);
-
       const imageFiles = values.image.map((fileObj) => fileObj.originFileObj);
-
       const imageURLs = await Promise.all(
         imageFiles.map(async (file) => await uploadToCloudinary(file))
       );
@@ -105,18 +151,36 @@ function Consultant() {
         imageSkins: imageURLs.map((url) => ({ image: url })),
       };
 
-      const response = await createBooking(bookingData);
+      // Lưu tạm dữ liệu để dùng sau
+      setTempBookingData(bookingData);
+
+      setOpenModalPayment(true);
+    } catch (error) {
+      console.error("Failed to prepare booking:", error);
+      toast.error("Có lỗi xảy ra khi chuẩn bị dữ liệu");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLater = async () => {
+    try {
+      setLoading(true);
+
+      const response = await createBooking(tempBookingData);
 
       if (response) {
-        toast.success("Booking created successfully");
+        toast.success("Đặt lịch thành công (chờ thanh toán)");
         form.resetFields();
         setFileList([]);
       }
     } catch (error) {
       console.error("Failed to create booking:", error);
-      toast.error("Failed to create booking");
+      toast.error("Thất bại trong việc đặt lịch");
     } finally {
       setLoading(false);
+      setOpenModalPayment(false);
+      setTempBookingData(null);
     }
   };
 
@@ -154,6 +218,32 @@ function Consultant() {
     fetchExperts();
   }, []);
 
+  const handlePayment = async () => {
+    try {
+      setLoading(true);
+
+      const book = await createBooking(tempBookingData);
+      console.log(book.result);
+
+      const bookingId = book.result.bookingOrderId;
+
+      const response = await createPayment(bookingId);
+
+      console.log("Payment Response:", response);
+
+      const redirectUrl = response.redirectUrl;
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        console.error("Không lấy được URL thanh toán.");
+      }
+    } catch (error) {
+      console.error("Lỗi khi thanh toán:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <div className="">
@@ -173,7 +263,7 @@ function Consultant() {
         <Card
           title={
             <h2 className="text-2xl font-semibold text-gray-800">
-              INFORMATION ABOUT YOUR SKIN
+              Thông tin về da của bạn
             </h2>
           }
           className="max-w-5xl mx-auto shadow-md rounded-lg my-10"
@@ -188,22 +278,22 @@ function Consultant() {
             <Row>
               <Col span={8}>
                 <Form.Item
-                  name="firstName"
-                  label="First Name"
+                  name="lastName"
+                  label="Họ"
                   rules={[
                     {
                       required: true,
-                      message: "Please enter your first name here",
+                      message: "Bạn phải điền họ của mình vào ô này",
                     },
                     {
-                      min: 2,
-                      message: "Your name must be at least 2 character",
+                      min: 1,
+                      message: "Họ của bạn cần tối thiểu 1 ký tự",
                     },
                   ]}
                   className="mr-4"
                 >
                   <Input
-                    placeholder="Enter your first name"
+                    placeholder="Nhập họ của bạn"
                     className="rounded-md h-12"
                   />
                 </Form.Item>
@@ -211,22 +301,22 @@ function Consultant() {
 
               <Col span={8}>
                 <Form.Item
-                  name="lastName"
-                  label="Last Name"
+                  name="firstName"
+                  label="Tên"
                   rules={[
                     {
                       required: true,
-                      message: "Please enter your last name here",
+                      message: "Bạn phải điền tên của mình vào ô này",
                     },
                     {
-                      min: 2,
-                      message: "Your name must be at least 2 character",
+                      min: 1,
+                      message: "Tên của bạn cần tối thiểu 1 ký tự",
                     },
                   ]}
                   className="mr-4"
                 >
                   <Input
-                    placeholder="Enter your last name"
+                    placeholder="Nhập tên của bạn"
                     className="rounded-md h-12"
                   />
                 </Form.Item>
@@ -235,11 +325,13 @@ function Consultant() {
               <Col span={8}>
                 <Form.Item
                   name="age"
-                  label="Your Age"
-                  rules={[{ required: true, message: "Please enter your age" }]}
+                  label="Tuổi"
+                  rules={[
+                    { required: true, message: "Bạn cần phải nhập độ tuổi" },
+                  ]}
                 >
                   <InputNumber
-                    placeholder="Enter Your Age"
+                    placeholder="Nhập độ tuổi của bạn"
                     className="w-full rounded-md h-12"
                   />
                 </Form.Item>
@@ -250,16 +342,20 @@ function Consultant() {
               <Col span={12}>
                 <Form.Item
                   name="expertId"
-                  label="Choose Expert"
+                  label="Chọn tư vấn viên"
                   className="mr-4"
                 >
                   <Select
                     className="w-full rounded-md h-12"
-                    placeholder="Select an expert"
-                    options={experts.map((expert) => ({
-                      value: expert.id,
-                      label: `${expert.firstName} ${expert.lastName}`,
-                    }))}
+                    placeholder="Tư vấn viên"
+                    options={
+                      experts && experts.length > 0
+                        ? experts.map((expert) => ({
+                            value: expert.id,
+                            label: `${expert.lastName} ${expert.firstName}`,
+                          }))
+                        : []
+                    }
                   />
                 </Form.Item>
               </Col>
@@ -267,14 +363,12 @@ function Consultant() {
               <Col span={12}>
                 <Form.Item
                   name="skincareServiceId"
-                  label="Service"
-                  rules={[
-                    { required: true, message: "Please select a service" },
-                  ]}
+                  label="Dịch vụ"
+                  rules={[{ required: true, message: "Hãy lựa chọn dịch vụ" }]}
                 >
                   <Select
                     className="w-full rounded-md h-12"
-                    placeholder="Select a service"
+                    placeholder="Lựa chọn loại dịch vụ"
                     options={services.map((service) => ({
                       value: service.id,
                       label: `${
@@ -288,18 +382,21 @@ function Consultant() {
 
             <Form.Item
               name="skinCondition"
-              label="Description"
+              label="Mô tả của bạn"
               rules={[
-                { required: true, message: "Please enter description" },
+                {
+                  required: true,
+                  message: "Bạn phải nhập mô tả của bạn ở đây",
+                },
                 {
                   min: 10,
-                  message: "Description must be at least 10 characters",
+                  message: "Mô tả cần ít nhất 10 ký tự",
                 },
               ]}
             >
               <Input.TextArea
                 rows={4}
-                placeholder="Enter product description"
+                placeholder="Nhập mô tả ở đây"
                 maxLength={500}
                 showCount
                 className="rounded-md"
@@ -310,15 +407,16 @@ function Consultant() {
               <Col span={12}>
                 <Form.Item
                   name="bookDate"
-                  label="Booking Date"
+                  label="Ngày đặt lịch"
                   rules={[
                     {
                       required: true,
-                      message: "Please enter your first name here",
+                      message: "Hẫy chọn ngày bạn muốn tư vấn",
                     },
                   ]}
                 >
                   <DatePicker
+                    placeholder="Chọn ngày"
                     onChange={handleDateChange}
                     needConfirm
                     disabledDate={(current) => {
@@ -326,7 +424,6 @@ function Consultant() {
                     }}
                     className="w-full rounded-md h-12"
                   />
-                  {/* <TimePicker /> */}
                 </Form.Item>
               </Col>
 
@@ -358,43 +455,46 @@ function Consultant() {
               <Col span={12}>
                 <Form.Item
                   name="skinType"
-                  label="Your Skin Type"
+                  label="Loại da của bạn"
                   rules={[
-                    { required: true, message: "Please select a category" },
+                    {
+                      required: true,
+                      message: "Bạn phải nhập loại da của bạn",
+                    },
                   ]}
                   className="mr-4"
                 >
                   <Select
-                    placeholder="Select a Your Skin Type"
+                    placeholder="Lựa chọn loại da"
                     className="w-full rounded-md h-12"
                   >
-                    <Select.Option value="NORMAL_SKIN">Normal</Select.Option>
-                    <Select.Option value="OILY_SKIN">Oily</Select.Option>
+                    <Select.Option value="NORMAL_SKIN">Da thường</Select.Option>
+                    <Select.Option value="OILY_SKIN">Da dầu</Select.Option>
                     <Select.Option value="SENSITIVE_SKIN">
-                      Sensitive
+                      Da nhạy cảm
                     </Select.Option>
-                    <Select.Option value="DRY_SKIN">Dry</Select.Option>
+                    <Select.Option value="DRY_SKIN">Da khô</Select.Option>
                     <Select.Option value="COMBINATION_SKIN">
-                      Combination
+                      Da hỗn hợp
                     </Select.Option>
                   </Select>
                 </Form.Item>
                 <p className="text-sm text-gray-600">
-                  If you don&apos;t know your skin type, please{" "}
+                  Nêu bạn chưa biết mình thuộc kiểu da nào, bấm{" "}
                   <a
                     onClick={() => navigate("/skinquiz")}
                     className="text-blue-600 "
                   >
-                    Click here
+                    Ở ĐÂY
                   </a>
                 </p>
               </Col>
 
               <Col span={12}>
-                <Form.Item name="allergy" label="Allergy">
+                <Form.Item name="allergy" label="Dị ứng">
                   <Input
                     className="w-full rounded-md h-12"
-                    placeholder="Enter input allergy (if have)"
+                    placeholder="Nhập loại di ứng(nếu có)"
                   />
                 </Form.Item>
               </Col>
@@ -402,23 +502,23 @@ function Consultant() {
 
             <Form.Item
               name="image"
-              label="Your Image (Face skin, product)"
+              label="Hình ảnh( da mặt, sản phẩm)"
               valuePropName="fileList"
-              getValueFromEvent={normFile} // Keep this function to handle file list
-              rules={[{ required: true, message: "Please upload an image" }]} // Validation rule
+              getValueFromEvent={normFile}
+              rules={[{ required: true, message: "Bạn phải gửi ảnh" }]}
             >
               <Upload
                 listType="picture"
-                beforeUpload={() => false} // Prevent immediate upload
-                fileList={fileList} // Bind file list state
-                onChange={handleUploadChange} // Update file list state
+                beforeUpload={() => false}
+                fileList={fileList}
+                onChange={handleUploadChange}
                 multiple
                 accept="image/*"
                 onPreview={handlePreview}
                 className="upload-list-inline"
               >
                 <Button icon={<UploadOutlined />} className="rounded-md h-12">
-                  Select Image
+                  Chọn ảnh
                 </Button>
               </Upload>
             </Form.Item>
@@ -444,10 +544,42 @@ function Consultant() {
                 loading={loading}
                 className="w-full md:w-auto px-8 h-12 rounded-md bg-blue-600 hover:bg-blue-700"
               >
-                Send
+                Gửi
               </Button>
             </Form.Item>
           </Form>
+
+          <Modal
+            onCancel={() => setOpenModalPayment(false)}
+            open={openModalPayment}
+            footer={null}
+          >
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                Bạn cần thanh toán để hoàn tất đặt lịch
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Bạn có thể thanh toán sau, kiểm tra mục lịch sử đặt lịch tư vấn
+                trong trang cá nhân.
+              </p>
+              <div className="flex justify-end gap-4">
+                <Button
+                  onClick={handleLater}
+                  loading={loading}
+                  className="bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded-lg"
+                >
+                  Lúc khác
+                </Button>
+                <Button
+                  onClick={handlePayment}
+                  loading={loading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg"
+                >
+                  Thanh Toán
+                </Button>
+              </div>
+            </div>
+          </Modal>
         </Card>
       </div>
     </>

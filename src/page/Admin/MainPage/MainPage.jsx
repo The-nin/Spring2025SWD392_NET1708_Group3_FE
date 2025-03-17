@@ -13,8 +13,6 @@ const MainPage = () => {
   const [collapsed, setCollapsed] = useState(false);
   const adminUser = JSON.parse(localStorage.getItem("adminUser"));
 
-  console.log("AdminPage Rendered, User:", adminUser); // ✅ Kiểm tra user có load đúng không
-
   const handleLogout = () => {
     localStorage.removeItem("adminUser");
     navigate("/admin/login");

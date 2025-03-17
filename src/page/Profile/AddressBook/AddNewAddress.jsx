@@ -26,19 +26,19 @@ const AddNewAddress = ({ onClose, defaultValues, onAddAddress }) => {
   const validateForm = () => {
     let newErrors = {};
     if (!form.name || form.name.length < 2 || form.name.length > 50) {
-      newErrors.name = "The length must be between 2 and 50 characters.";
+      newErrors.name = "Độ dài phải từ 2 đến 50 ký tự.";
     }
     const phoneRegex = /^[0-9]{8,10}$/;
     if (!form.phone) {
-      newErrors.phone = "Required information.";
+      newErrors.phone = "Thông tin bắt buộc.";
     } else if (!phoneRegex.test(form.phone)) {
       newErrors.phone =
-        "The information you just entered is invalid. Please check again.";
+        "Thông tin vừa nhập không hợp lệ. Vui lòng kiểm tra lại.";
     }
-    if (!form.city) newErrors.city = "Required information.";
-    if (!form.district) newErrors.district = "Required information.";
-    if (!form.ward) newErrors.ward = "Required information.";
-    if (!form.street) newErrors.street = "Required information.";
+    if (!form.city) newErrors.city = "Thông tin bắt buộc.";
+    if (!form.district) newErrors.district = "Thông tin bắt buộc.";
+    if (!form.ward) newErrors.ward = "Thông tin bắt buộc.";
+    if (!form.street) newErrors.street = "Thông tin bắt buộc.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -55,7 +55,7 @@ const AddNewAddress = ({ onClose, defaultValues, onAddAddress }) => {
     <div className="p-6 bg-white w-full max-w-full border rounded-md">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-gray-700 mb-1">Name:</label>
+          <label className="block text-gray-700 mb-1">Họ tên:</label>
           <input
             type="text"
             name="name"
@@ -67,7 +67,7 @@ const AddNewAddress = ({ onClose, defaultValues, onAddAddress }) => {
         </div>
 
         <div>
-          <label className="block text-gray-700 mb-1">Phone number:</label>
+          <label className="block text-gray-700 mb-1">Số điện thoại:</label>
           <input
             type="text"
             name="phone"
@@ -81,7 +81,7 @@ const AddNewAddress = ({ onClose, defaultValues, onAddAddress }) => {
         </div>
 
         <div>
-          <label className="block text-gray-700 mb-1">City:</label>
+          <label className="block text-gray-700 mb-1">Tỉnh/Thành phố:</label>
           <input
             type="text"
             name="city"
@@ -93,7 +93,7 @@ const AddNewAddress = ({ onClose, defaultValues, onAddAddress }) => {
         </div>
 
         <div>
-          <label className="block text-gray-700 mb-1">District:</label>
+          <label className="block text-gray-700 mb-1">Quận/Huyện:</label>
           <input
             type="text"
             name="district"
@@ -107,7 +107,7 @@ const AddNewAddress = ({ onClose, defaultValues, onAddAddress }) => {
         </div>
 
         <div>
-          <label className="block text-gray-700 mb-1">Ward:</label>
+          <label className="block text-gray-700 mb-1">Phường/Xã:</label>
           <input
             type="text"
             name="ward"
@@ -119,7 +119,7 @@ const AddNewAddress = ({ onClose, defaultValues, onAddAddress }) => {
         </div>
 
         <div>
-          <label className="block text-gray-700 mb-1">Street:</label>
+          <label className="block text-gray-700 mb-1">Địa chỉ cụ thể:</label>
           <input
             type="text"
             name="street"
@@ -144,7 +144,7 @@ const AddNewAddress = ({ onClose, defaultValues, onAddAddress }) => {
             className="w-4 h-4"
           />
           <label htmlFor="defaultAddress" className="text-sm cursor-pointer">
-            Set as default address
+            Đặt làm địa chỉ mặc định
           </label>
         </div>
 
@@ -153,13 +153,13 @@ const AddNewAddress = ({ onClose, defaultValues, onAddAddress }) => {
             onClick={onClose}
             className="px-4 py-2 bg-neutral-400 hover:bg-neutral-900 text-white rounded"
           >
-            Cancel
+            Hủy
           </button>
           <button
             onClick={handleSubmit}
             className="px-4 py-2 bg-neutral-600 hover:bg-neutral-900 text-white rounded"
           >
-            Update
+            Cập nhật
           </button>
         </div>
       </div>
