@@ -269,9 +269,6 @@ const EditQuiz = () => {
                       </Card>
                     );
                   })}
-                  <Button type="dashed" onClick={() => add()}>
-                    Thêm câu hỏi
-                  </Button>
                 </div>
               )}
             </Form.List>
