@@ -1,6 +1,14 @@
+import { Button, Input, Modal } from "antd";
+import { toast } from "react-toastify";
+import { cancelBooking } from "../../../service/booking";
+import { useEffect, useState } from "react";
+
 /* eslint-disable react/prop-types */
 function BookingDetail({ order, onBack }) {
-  if (!order) return null;
+  const [isReasonModalVisible, setIsReasonModalVisible] = useState(false);
+  const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [statusOrder, setStatusOrder] = useState(order.status);
 
   const transSkintype = (skinType) => {
     switch (skinType) {
@@ -16,6 +24,49 @@ function BookingDetail({ order, onBack }) {
         return "Da hỗn hợp";
     }
   };
+
+  const handleCancelBooking = async (orderId) => {
+    try {
+      const response = await cancelBooking(orderId, cancelReason);
+      if (response && response.code === 200) {
+        toast.success(`Bạn đã hủy đơn số #${response.result.id} thành công`);
+        setStatusOrder("CANCELED");
+      }
+    } catch (error) {
+      console.error("Failed to cancel booking:", error);
+      toast.error("Thất bại trong việc hủy đơn dịch vụ");
+    }
+  };
+
+  useEffect(() => {
+    if (statusOrder === "CANCELED") {
+      setStatusOrder(statusOrder);
+    }
+  }, [statusOrder]);
+
+  const handleOpenReasonModal = () => {
+    setIsReasonModalVisible(true);
+  };
+
+  const handleSendReason = () => {
+    if (!cancelReason) {
+      toast.error("Vui lòng nhập lý do hủy đơn.");
+      return;
+    }
+    setIsReasonModalVisible(false);
+    setIsConfirmModalVisible(true);
+  };
+
+  const handleConfirmCancel = () => {
+    setIsConfirmModalVisible(false);
+    handleCancelBooking(order.id);
+  };
+
+  const handleCancelConfirm = () => {
+    setIsConfirmModalVisible(false);
+  };
+
+  if (!order) return null;
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
@@ -42,6 +93,8 @@ function BookingDetail({ order, onBack }) {
             ? "bg-yellow-50 text-yellow-700"
             : order.status === "COMPLETED"
             ? "bg-green-50 text-green-700"
+            : statusOrder === "CANCELED"
+            ? "bg-red-50 text-red-700"
             : "bg-gray-50 text-gray-700"
         }`}
       >
@@ -147,12 +200,53 @@ function BookingDetail({ order, onBack }) {
 
         {order.status === "PENDING" && (
           <div className="flex justify-end">
-            <button className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+            <Button
+              onClick={handleOpenReasonModal}
+              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+            >
               Cancel Order
-            </button>
+            </Button>
           </div>
         )}
       </div>
+
+      {/* Modal lý do hủy đơn */}
+      <Modal
+        title="Cho chúng mình biết được vì sao bạn muốn hủy nhé"
+        visible={isReasonModalVisible}
+        onCancel={() => setIsReasonModalVisible(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setIsReasonModalVisible(false)}>
+            Hủy
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleSendReason}>
+            Gửi
+          </Button>,
+        ]}
+      >
+        <Input.TextArea
+          placeholder="Nhập lý do hủy đơn..."
+          value={cancelReason}
+          onChange={(e) => setCancelReason(e.target.value)}
+        />
+      </Modal>
+
+      {/* Modal Xác nhận hủy đơn */}
+      <Modal
+        title="Xác nhận hủy đơn"
+        visible={isConfirmModalVisible}
+        onCancel={handleCancelConfirm}
+        footer={[
+          <Button key="no" onClick={handleCancelConfirm}>
+            Không
+          </Button>,
+          <Button key="yes" type="primary" danger onClick={handleConfirmCancel}>
+            Chắc chắn
+          </Button>,
+        ]}
+      >
+        <p>Bạn có chắc chắn muốn hủy đơn #{order.id} không?</p>
+      </Modal>
     </div>
   );
 }
