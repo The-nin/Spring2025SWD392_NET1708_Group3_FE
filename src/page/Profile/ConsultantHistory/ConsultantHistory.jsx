@@ -66,7 +66,7 @@ export default function History() {
 
   const getExpertNameById = (expertId) => {
     const expert = experts.find((e) => e.id === expertId);
-    return expert ? `${expert.lastName} ${expert.firstname}` : "Đang tải...";
+    return expert ? `${expert.lastName} ${expert.firstName}` : "Đang tải...";
   };
 
   const handlePayment = async (bookingOrderID) => {
@@ -144,15 +144,18 @@ export default function History() {
                   <p className="text-right font-semibold text-lg">
                     Tổng giá: {book.price.toLocaleString()} VNĐ
                   </p>
-                  <div>
-                    <Button
-                      type="dashed"
-                      danger
-                      onClick={() => handlePayment(book.id)}
-                    >
-                      Thanh toán
-                    </Button>
-                  </div>
+
+                  {book.paymentStatus !== "PAID" && (
+                    <div>
+                      <Button
+                        type="dashed"
+                        danger
+                        onClick={() => handlePayment(book.id)}
+                      >
+                        Thanh toán
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))
           )}

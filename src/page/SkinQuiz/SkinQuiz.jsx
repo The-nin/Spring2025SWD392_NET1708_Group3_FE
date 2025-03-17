@@ -1,118 +1,53 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { FaArrowRight } from "react-icons/fa";
-
-const questions = [
-  {
-    question: "How does your skin feel after washing?",
-    options: [
-      { text: "Tight and dry", type: "dry" },
-      { text: "Soft and balanced", type: "normal" },
-      { text: "Oily and greasy", type: "oily" },
-      { text: "Red or irritated", type: "sensitive" },
-    ],
-  },
-  {
-    question: "How often do you experience breakouts?",
-    options: [
-      { text: "Rarely", type: "dry" },
-      { text: "Occasionally", type: "normal" },
-      { text: "Frequently", type: "oily" },
-      { text: "Only when using new products", type: "sensitive" },
-    ],
-  },
-  {
-    question: "How does your skin react to the sun?",
-    options: [
-      { text: "Burns easily and feels dry", type: "dry" },
-      { text: "Tans evenly with minimal irritation", type: "normal" },
-      { text: "Gets shiny and oily", type: "oily" },
-      { text: "Gets red and inflamed", type: "sensitive" },
-    ],
-  },
-  {
-    question: "How often do you use moisturizer?",
-    options: [
-      { text: "Every day", type: "dry" },
-      { text: "Only when needed", type: "normal" },
-      { text: "Rarely, it makes me oily", type: "oily" },
-      { text: "Always, my skin is sensitive", type: "sensitive" },
-    ],
-  },
-  {
-    question: "How does your skin feel at midday?",
-    options: [
-      { text: "Dry and flaky", type: "dry" },
-      { text: "Normal, no issues", type: "normal" },
-      { text: "Oily, especially in the T-zone", type: "oily" },
-      { text: "Sensitive or irritated", type: "sensitive" },
-    ],
-  },
-  {
-    question: "How visible are your pores?",
-    options: [
-      { text: "Almost invisible", type: "dry" },
-      { text: "Small but visible", type: "normal" },
-      { text: "Large and noticeable", type: "oily" },
-      { text: "Varies with irritation", type: "sensitive" },
-    ],
-  },
-  {
-    question: "How does your skin feel in cold weather?",
-    options: [
-      { text: "Extremely dry", type: "dry" },
-      { text: "Slightly drier but manageable", type: "normal" },
-      { text: "Oily as usual", type: "oily" },
-      { text: "Red and irritated", type: "sensitive" },
-    ],
-  },
-  {
-    question: "Do skincare products often cause irritation?",
-    options: [
-      { text: "Never", type: "dry" },
-      { text: "Rarely", type: "normal" },
-      { text: "Only with heavy products", type: "oily" },
-      { text: "Often, my skin reacts easily", type: "sensitive" },
-    ],
-  },
-  {
-    question: "How does your skin feel in humid weather?",
-    options: [
-      { text: "Still dry", type: "dry" },
-      { text: "Normal and balanced", type: "normal" },
-      { text: "Extra oily", type: "oily" },
-      { text: "Sticky and irritated", type: "sensitive" },
-    ],
-  },
-  {
-    question: "What best describes your skin overall?",
-    options: [
-      { text: "Dry, rough, or flaky", type: "dry" },
-      { text: "Normal and healthy", type: "normal" },
-      { text: "Oily and shiny", type: "oily" },
-      { text: "Sensitive and reactive", type: "sensitive" },
-    ],
-  },
-];
+import { getAllQuizs } from "../../service/quiz"; // API fetch quiz
 
 function SkinQuiz() {
+  const [activeQuizzes, setActiveQuizzes] = useState([]);
+  const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [result, setResult] = useState(null);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const navigate = useNavigate();
 
-  const handleAnswer = (type) => {
-    setSelectedAnswer(type);
+  useEffect(() => {
+    async function fetchQuizzes() {
+      try {
+        const response = await getAllQuizs();
+        if (response.code === 200) {
+          const activeQuizzes = response.result.filter(
+            (q) => q.status === "ACTIVE"
+          );
+          setActiveQuizzes(activeQuizzes);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải quiz:", error);
+      }
+    }
+    fetchQuizzes();
+  }, []);
+
+  const handleSelectQuiz = (quiz) => {
+    setSelectedQuiz(quiz);
+    setCurrentQuestion(0);
+    setAnswers([]);
+    setResult(null);
+  };
+
+  const handleAnswer = (answerText) => {
+    setSelectedAnswer(answerText);
 
     setTimeout(() => {
-      const newAnswers = [...answers, type];
+      const newAnswers = [...answers];
+      newAnswers[currentQuestion] = answerText;
+
       setAnswers(newAnswers);
 
-      if (currentQuestion + 1 < questions.length) {
+      if (currentQuestion + 1 < selectedQuiz.question.length) {
         setCurrentQuestion(currentQuestion + 1);
-        setSelectedAnswer(null);
+        setSelectedAnswer(answers[currentQuestion + 1] || null);
       } else {
         calculateResult(newAnswers);
       }
@@ -121,33 +56,48 @@ function SkinQuiz() {
 
   const handleBack = () => {
     if (currentQuestion > 0) {
-      setAnswers(answers.slice(0, -1)); // Remove last answer
       setCurrentQuestion(currentQuestion - 1);
-      setSelectedAnswer(null);
+      setSelectedAnswer(answers[currentQuestion - 1] || null);
     }
   };
-
+  const skinTypeMap = {
+    DRY_SKIN: "Da Khô",
+    SENSITIVE_SKIN: "Da Nhạy Cảm",
+    OILY_SKIN: "Da Dầu",
+    NORMAL_SKIN: "Da Thường",
+    COMBINATION_SKIN: "Da Hỗn Hợp",
+  };
   const calculateResult = (answers) => {
-    const totalAnswers = answers.length;
-    const typeCounts = answers.reduce((acc, type) => {
-      acc[type] = (acc[type] || 0) + 1;
+    const skinTypeCounts = answers.reduce((acc, answerText) => {
+      const answer = selectedQuiz.question
+        .flatMap((q) => q.answers)
+        .find((a) => a.answerText === answerText);
+
+      if (answer && answer.skinType) {
+        acc[answer.skinType] = (acc[answer.skinType] || 0) + 1;
+      }
       return acc;
     }, {});
 
-    const formattedResults = Object.keys(typeCounts)
-      .map(
-        (type) =>
-          `${Math.round((typeCounts[type] / totalAnswers) * 100)}% ${
-            type.charAt(0).toUpperCase() + type.slice(1)
-          }`
-      )
-      .join("\n");
+    // Tìm số lần xuất hiện cao nhất
+    const maxCount = Math.max(...Object.values(skinTypeCounts));
 
-    setResult(formattedResults);
+    // Lấy danh sách các loại da có số lần xuất hiện cao nhất
+    const mostCommonSkinTypes = Object.keys(skinTypeCounts).filter(
+      (key) => skinTypeCounts[key] === maxCount
+    );
+
+    // Nếu có nhiều hơn 1 loại da xuất hiện nhiều nhất -> "Da Hỗn Hợp"
+    const finalResult =
+      mostCommonSkinTypes.length > 1
+        ? "Da Hỗn Hợp"
+        : skinTypeMap[mostCommonSkinTypes[0]] || "Không xác định";
+
+    setResult(finalResult);
   };
 
   const restartQuiz = () => {
-    setCurrentQuestion(0);
+    setSelectedQuiz(null);
     setAnswers([]);
     setResult(null);
     setSelectedAnswer(null);
@@ -162,96 +112,143 @@ function SkinQuiz() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <h1 className="text-3xl font-bold">Skin&apos;s Quiz</h1>
-        <p className="text-lg mt-2">Discover your skin type with our quiz!</p>
+        <h1 className="text-3xl font-bold">Skin Quiz</h1>
+        <p className="text-lg mt-2">Chọn một quiz để bắt đầu!</p>
       </motion.header>
 
-      {/* Progress Bar */}
-      <div className="w-full max-w-md mt-4">
-        <div className="w-full bg-gray-300 rounded-full h-3">
-          <motion.div
-            className="bg-blue-600 h-3 rounded-full"
-            initial={{ width: "0%" }}
-            animate={{
-              width: `${((currentQuestion + 1) / questions.length) * 100}%`,
-            }}
-            transition={{ duration: 0.5 }}
-          />
-        </div>
-        <p className="text-center text-gray-600 mt-2">
-          Question {currentQuestion + 1} of {questions.length}
-        </p>
-      </div>
-
-      {/* Quiz Section */}
-      <div className="bg-white shadow-lg rounded-lg p-6 mt-6 w-full max-w-md">
-        {result ? (
-          <motion.div
-            className="text-center whitespace-pre-line"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <h2 className="text-2xl font-semibold">
-              Your Skin Type Breakdown:
-            </h2>
-            <p className="text-xl mt-4 text-blue-600">{result}</p>
-            <p className="text-md mt-4 text-gray-600">
-              If you experience persistent skin issues, consult an expert.
-            </p>
-            <div className="mt-6 flex justify-center space-x-4">
-              <button
-                onClick={restartQuiz}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-              >
-                Retake Quiz
-              </button>
-              <button
-                onClick={() => navigate("/skin-consultation")}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-              >
-                Consult an Expert
-              </button>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key={currentQuestion}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <h2 className="text-xl font-semibold">
-              {questions[currentQuestion].question}
-            </h2>
-            <div className="mt-4 space-y-3">
-              {questions[currentQuestion].options.map((option, index) => (
-                <motion.button
-                  key={index}
-                  onClick={() => handleAnswer(option.type)}
-                  className={`block w-full py-3 px-4 rounded-lg text-lg font-medium transition 
-                    ${
-                      selectedAnswer === option.type
-                        ? "bg-blue-600 text-white scale-105"
-                        : "bg-gray-200 hover:bg-gray-300 text-gray-900"
-                    }`}
+      {/* Chọn Quiz */}
+      {!selectedQuiz ? (
+        <motion.div
+          className="mt-6 bg-white shadow-lg rounded-lg p-6 w-full max-w-md"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <h2 className="text-xl font-semibold text-center">Chọn Quiz:</h2>
+          <div className="mt-4 space-y-4">
+            {activeQuizzes.length > 0 ? (
+              activeQuizzes.map((quiz) => (
+                <motion.div
+                  key={quiz.id}
+                  onClick={() => handleSelectQuiz(quiz)}
+                  className="cursor-pointer p-4 border border-gray-300 rounded-lg bg-white shadow-md transition-transform transform hover:scale-105 hover:shadow-lg"
                   whileTap={{ scale: 0.95 }}
                 >
-                  {option.text}
-                </motion.button>
-              ))}
-            </div>
-
-            {/* Back Button */}
-            {currentQuestion > 0 && (
-              <button
-                onClick={handleBack}
-                className="mt-4 w-full bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition"
-              >
-                Back
-              </button>
+                  {/* Tiêu đề quiz - IN ĐẬM */}
+                  <h3 className="text-lg font-bold text-[#CBB596]">
+                    {quiz.title}
+                  </h3>
+                  {/* Mô tả quiz */}
+                  {quiz.description && (
+                    <p className="text-gray-600 text-sm mt-1">
+                      {quiz.description}
+                    </p>
+                  )}
+                </motion.div>
+              ))
+            ) : (
+              <p className="text-gray-600">Không có quiz nào đang hoạt động.</p>
             )}
-          </motion.div>
-        )}
-      </div>
+          </div>
+        </motion.div>
+      ) : (
+        <div className="bg-white shadow-lg rounded-lg p-6 mt-6 w-full max-w-md">
+          {/* Hiển thị quiz đã chọn */}
+          <h2 className="text-xl font-bold text-center text-[#CBB596]">
+            {selectedQuiz.title}
+          </h2>
+          {selectedQuiz.description && (
+            <p className="text-gray-600 text-center mt-2">
+              {selectedQuiz.description}
+            </p>
+          )}
+          {/* Thanh tiến trình */}
+          <div className="w-full bg-gray-300 rounded-full h-3 mt-4">
+            <motion.div
+              className="bg-[#CBB596] h-3 rounded-full"
+              initial={{ width: "0%" }}
+              animate={{
+                width: `${
+                  ((currentQuestion + 1) / selectedQuiz.question.length) * 100
+                }%`,
+              }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
+          <p className="text-center text-gray-600 mt-2">
+            Câu hỏi {currentQuestion + 1} / {selectedQuiz.question.length}
+          </p>
+          {/* Hiển thị Quiz */}
+          {result ? (
+            <motion.div
+              className="text-center whitespace-pre-line"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <h2 className="text-2xl font-semibold">Kết quả của bạn:</h2>
+              <p className="text-xl mt-4 text-[#CBB596]">{result}</p>
+              <p className="text-md mt-4 text-gray-600">
+                Nếu bạn có vấn đề về da, hãy tham khảo ý kiến chuyên gia.
+              </p>
+              <div className="mt-6 flex justify-center space-x-4">
+                <button
+                  onClick={restartQuiz}
+                  className="bg-[#CBB596] text-white px-4 py-2 rounded-lg hover:bg-[#B89D84] transition"
+                >
+                  Chọn lại Quiz
+                </button>
+                <button
+                  onClick={() => navigate("/skin-consultation")}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+                >
+                  Tư vấn Chuyên gia
+                </button>
+              </div>
+            </motion.div>
+          ) : (
+            selectedQuiz.question.length > 0 && (
+              <motion.div
+                key={currentQuestion}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <h2 className="text-xl font-semibold">
+                  {selectedQuiz.question[currentQuestion]?.title}
+                </h2>
+                <div className="mt-4 space-y-3">
+                  {selectedQuiz.question[currentQuestion]?.answers?.map(
+                    (answer, index) => (
+                      <motion.button
+                        key={index}
+                        onClick={() => handleAnswer(answer.answerText)}
+                        className={`block w-full py-3 px-4 rounded-lg text-lg font-medium transition 
+                        ${
+                          selectedAnswer === answer.answerText
+                            ? "bg-[#CBB596] text-white scale-105"
+                            : "bg-gray-200 hover:bg-gray-300 text-gray-900"
+                        }
+                      `}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {answer.answerText}
+                      </motion.button>
+                    )
+                  )}
+                </div>
+
+                {/* Nút Quay lại */}
+                {currentQuestion > 0 && (
+                  <button
+                    onClick={handleBack}
+                    className="mt-4 w-full bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition"
+                  >
+                    Quay lại
+                  </button>
+                )}
+              </motion.div>
+            )
+          )}
+        </div>
+      )}
     </div>
   );
 }

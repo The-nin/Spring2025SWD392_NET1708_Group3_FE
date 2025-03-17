@@ -1,141 +1,291 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Button, Form, Input, Select, Alert, Spin } from "antd";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import React, { useState, useEffect } from "react";
+import { Form, Input, Button, Card, Select } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { getQuizById, updateQuiz } from "../../../service/quiz/index"; // Import API calls
+import { useNavigate, useParams } from "react-router-dom";
+import { getQuizById, updateQuiz } from "../../../service/quiz/index";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-function EditQuiz() {
-  const { quizId } = useParams(); // Get quiz ID from URL
-  const navigate = useNavigate(); // Initialize navigation
+const { Option } = Select;
 
+const EditQuiz = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [quizData, setQuizData] = useState(null);
+  const [quiz, setQuiz] = useState(null);
 
   useEffect(() => {
-    const fetchQuizDetails = async () => {
-      setLoading(true);
-      const response = await getQuizById(quizId);
-
-      if (!response.error) {
-        setQuizData(response.result);
-        form.setFieldsValue({ quiz: [response.result] });
-      } else {
-        toast.error("Failed to load quiz details");
-        navigate("/admin/quiz"); // Redirect if error
+    const fetchQuiz = async () => {
+      try {
+        setLoading(true);
+        const response = await getQuizById(id);
+        if (response && response.result) {
+          setQuiz(response.result);
+          form.setFieldsValue({
+            title: response.result.title,
+            description: response.result.description,
+            questions: response.result.question || [],
+          });
+        } else {
+          toast.error("Không thể tải Quiz");
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu Quiz:", error);
+        toast.error("Lỗi khi lấy dữ liệu Quiz");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    fetchQuizDetails();
-  }, [quizId, form, navigate]);
+    fetchQuiz();
+  }, [id, form]);
 
-  const handleSubmit = async (values) => {
+  // Xóa câu hỏi (cập nhật isDeleted)
+  const handleDeleteQuestion = (index) => {
+    const updatedQuestions = form
+      .getFieldValue("questions")
+      .map((q, qIndex) => (qIndex === index ? { ...q, isDeleted: true } : q));
+
+    form.setFieldsValue({ questions: updatedQuestions });
+    setQuiz((prev) => ({
+      ...prev,
+      questions: updatedQuestions,
+    }));
+  };
+
+  // Xóa câu trả lời (cập nhật isDeleted)
+  const handleDeleteAnswer = (qIndex, aIndex) => {
+    const updatedQuestions = form.getFieldValue("questions").map((q, qIdx) => {
+      if (qIdx === qIndex) {
+        return {
+          ...q,
+          answers: q.answers.map((a, aIdx) =>
+            aIdx === aIndex ? { ...a, isDeleted: true } : a
+          ),
+        };
+      }
+      return q;
+    });
+
+    form.setFieldsValue({ questions: updatedQuestions });
+    setQuiz((prev) => ({
+      ...prev,
+      questions: updatedQuestions,
+    }));
+  };
+
+  // Xử lý cập nhật quiz
+  const onFinish = async (values) => {
+    if (!values.title || !values.description) {
+      toast.error("Vui lòng nhập đầy đủ thông tin");
+      return;
+    }
+
     try {
       setLoading(true);
-      console.log("📤 Updating Quiz Data:", values.quiz);
 
-      const response = await updateQuiz(quizId, values.quiz[0]);
+      const updatedQuizData = {
+        title: values.title,
+        description: values.description,
+        questions: values.questions
+          ? values.questions
+              .filter((q) => !q.isDeleted) // Bỏ câu hỏi bị xóa
+              .map((q, index) => ({
+                questionId: q.questionId || index + 1,
+                title: q.title,
+                answers: q.answers
+                  ? q.answers
+                      .filter((a) => !a.isDeleted) // Bỏ câu trả lời bị xóa
+                      .map((a, idx) => ({
+                        answerId: a.answerId || idx + 1,
+                        answerText: a.answerText,
+                        skinType: a.skinType,
+                      }))
+                  : [],
+              }))
+          : [],
+      };
 
+      console.log("📤 Đang cập nhật Quiz:", updatedQuizData);
+
+      const response = await updateQuiz(id, updatedQuizData);
       if (!response.error) {
-        toast.success("Quiz updated successfully!");
-        navigate("/admin/quiz"); // Redirect after update
+        setTimeout(() => navigate("/admin/quiz"), 2000);
+        toast.success("Quiz đã được cập nhật thành công!");
       } else {
-        toast.error(response.message || "Failed to update quiz");
+        toast.error(response.message);
       }
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Failed to update quiz");
+      toast.error("Không thể cập nhật Quiz");
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading || !quizData) {
-    return (
-      <Spin
-        size="large"
-        className="flex justify-center items-center h-screen"
-      />
-    );
-  }
-
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <Button
-        icon={<ArrowLeftOutlined />}
-        onClick={() => navigate("/admin/quiz")}
-        className="mb-4"
-      >
-        Back to Quizzes
-      </Button>
-      <h2 className="text-2xl font-bold mb-4">Edit Quiz</h2>
-
-      <Alert
-        message="Edit Quiz Information"
-        description="Modify the question and options as needed. Ensure each option is linked to a skin type."
-        type="info"
-        showIcon
-        className="mb-4"
+    <div className="h-[calc(100vh-64px)] bg-gray-50">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
       />
-
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        onValuesChange={(changedValues, allValues) => {
-          setQuizData(allValues.quiz);
-        }}
-      >
-        <Form.Item
-          name={["quiz", 0, "question"]}
-          label="Question"
-          rules={[{ required: true, message: "Please enter a question" }]}
+      <div className="p-6">
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate("/admin/quiz")}
+          className="mb-4 hover:bg-gray-100"
         >
-          <Input placeholder="Enter quiz question" />
-        </Form.Item>
+          Quay lại danh sách Quiz
+        </Button>
 
-        {quizData.options.map((_, index) => (
-          <Form.Item key={index} label={`Option ${index + 1}`}>
-            <Input.Group compact>
-              <Form.Item
-                name={["quiz", 0, "options", index]}
-                rules={[{ required: true, message: "Option required" }]}
-              >
-                <Input placeholder={`Option ${index + 1}`} />
-              </Form.Item>
-              <Form.Item
-                name={["quiz", 0, "skinTypes", index]}
-                rules={[
-                  { required: true, message: "Select related skin type" },
-                ]}
-              >
-                <Select placeholder="Skin Type">
-                  <Select.Option value="NORMAL_SKIN">Normal</Select.Option>
-                  <Select.Option value="OILY_SKIN">Oily</Select.Option>
-                  <Select.Option value="SENSITIVE_SKIN">
-                    Sensitive
-                  </Select.Option>
-                  <Select.Option value="DRY_SKIN">Dry</Select.Option>
-                  <Select.Option value="COMBINATION_SKIN">
-                    Combination
-                  </Select.Option>
-                </Select>
-              </Form.Item>
-            </Input.Group>
-          </Form.Item>
-        ))}
+        <Card title="Chỉnh sửa Quiz" className="max-w-6xl mx-auto shadow-md">
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={onFinish}
+            autoComplete="off"
+          >
+            <Form.Item
+              name="title"
+              label="Tiêu đề Quiz"
+              rules={[
+                { required: true, message: "Vui lòng nhập tiêu đề Quiz" },
+              ]}
+            >
+              <Input placeholder="Nhập tiêu đề Quiz" />
+            </Form.Item>
 
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading}>
-            Update Quiz
-          </Button>
-        </Form.Item>
-      </Form>
+            <Form.Item
+              name="description"
+              label="Mô tả Quiz"
+              rules={[{ required: true, message: "Vui lòng nhập mô tả Quiz" }]}
+            >
+              <Input.TextArea rows={3} placeholder="Nhập mô tả Quiz" />
+            </Form.Item>
+
+            <Form.List name="questions">
+              {(fields, { add }) => (
+                <div>
+                  {fields.map(({ key, name }) => {
+                    const question = form.getFieldValue(["questions", name]);
+                    if (question?.isDeleted) return null;
+
+                    return (
+                      <Card
+                        key={key}
+                        className="mb-4"
+                        title={`Câu hỏi ${key + 1}`}
+                      >
+                        <Form.Item
+                          name={[name, "title"]}
+                          label="Tiêu đề câu hỏi"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Vui lòng nhập tiêu đề câu hỏi",
+                            },
+                          ]}
+                        >
+                          <Input placeholder="Nhập tiêu đề câu hỏi" />
+                        </Form.Item>
+
+                        <Form.List name={[name, "answers"]}>
+                          {(answerFields, { add: addAnswer }) => (
+                            <div>
+                              {answerFields.map(
+                                ({ key: answerKey, name: answerName }) => {
+                                  const answer = form.getFieldValue([
+                                    "questions",
+                                    name,
+                                    "answers",
+                                    answerName,
+                                  ]);
+                                  if (answer?.isDeleted) return null;
+
+                                  return (
+                                    <div
+                                      key={answerKey}
+                                      className="flex gap-4 items-end"
+                                    >
+                                      <Form.Item
+                                        name={[answerName, "answerText"]}
+                                        label="Câu trả lời"
+                                        rules={[
+                                          {
+                                            required: true,
+                                            message:
+                                              "Vui lòng nhập câu trả lời",
+                                          },
+                                        ]}
+                                        className="flex-1"
+                                      >
+                                        <Input placeholder="Nhập câu trả lời" />
+                                      </Form.Item>
+
+                                      <Form.Item
+                                        name={[answerName, "skinType"]}
+                                        label="Loại Skin"
+                                        rules={[
+                                          {
+                                            required: true,
+                                            message: "Vui lòng chọn loại Skin",
+                                          },
+                                        ]}
+                                        className="flex-1"
+                                      >
+                                        <Select placeholder="Chọn loại Skin">
+                                          <Option value="DRY_SKIN">
+                                            Da khô
+                                          </Option>
+                                          <Option value="NORMAL_SKIN">
+                                            Da thường
+                                          </Option>
+                                          <Option value="OILY_SKIN">
+                                            Da dầu
+                                          </Option>
+                                          <Option value="SENSITIVE_SKIN">
+                                            Da nhạy cảm
+                                          </Option>
+                                        </Select>
+                                      </Form.Item>
+                                    </div>
+                                  );
+                                }
+                              )}
+                              <Button type="dashed" onClick={() => addAnswer()}>
+                                Thêm câu trả lời
+                              </Button>
+                            </div>
+                          )}
+                        </Form.List>
+
+                        <Button
+                          type="dashed"
+                          onClick={() => handleDeleteQuestion(name)}
+                        >
+                          Xóa câu hỏi
+                        </Button>
+                      </Card>
+                    );
+                  })}
+                  <Button type="dashed" onClick={() => add()}>
+                    Thêm câu hỏi
+                  </Button>
+                </div>
+              )}
+            </Form.List>
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit" loading={loading}>
+                Cập nhật Quiz
+              </Button>
+            </Form.Item>
+          </Form>
+        </Card>
+      </div>
     </div>
   );
-}
+};
 
 export default EditQuiz;

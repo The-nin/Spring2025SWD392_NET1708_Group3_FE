@@ -23,6 +23,21 @@ export const getAllBlogs = async () => {
     return handleError(error, "Failed to fetch blogs");
   }
 };
+export const getUserBlogs = async () => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await instance.get("/blog", {
+      headers: {
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    console.log(response);
+    return response;
+  } catch (error) {
+    return handleError(error, "Failed to fetch blogs");
+  }
+};
 export const getBlogById = async (id) => {
   const token = localStorage.getItem("token");
   try {
@@ -109,20 +124,26 @@ export const addBlog = async (formData) => {
 };
 
 export const updateBlog = async (blogId, blogData, imageFile) => {
+  const token = localStorage.getItem("token");
+
   try {
-    const token = localStorage.getItem("token");
     let imageUrl = blogData.image;
 
-    // Upload new image if provided
-    if (imageFile) {
+    // Upload new image if provided and it's actually a file
+    if (imageFile && imageFile instanceof File) {
       try {
         imageUrl = await uploadToCloudinary(imageFile);
+        console.log("Image uploaded successfully:", imageUrl);
       } catch (uploadError) {
-        return handleError(uploadError, "Failed to upload image to Cloudinary");
+        console.error("Failed to upload image:", uploadError);
+        return {
+          error: true,
+          message: "Failed to upload image to Cloudinary",
+        };
       }
     }
 
-    // Prepare updated blog data
+    // Prepare updated blog data - only include necessary fields
     const updatedBlogData = {
       blogName: blogData.blogName,
       description: blogData.description,
@@ -132,6 +153,11 @@ export const updateBlog = async (blogId, blogData, imageFile) => {
       image: imageUrl,
       status: blogData.status || "ACTIVE",
     };
+    // Log request data for debugging
+    console.log("Sending blog update request:", {
+      url: `admin/blog/${blogId}`,
+      data: updatedBlogData,
+    });
 
     // Send the updated blog data to the server
     const response = await instance.put(
@@ -147,11 +173,24 @@ export const updateBlog = async (blogId, blogData, imageFile) => {
 
     return {
       error: false,
-      result: response.data?.result,
-      message: response.data?.message,
+      result: response.result,
+      message: response.message,
     };
   } catch (error) {
-    return handleError(error, "Failed to update blog");
+    // Enhanced error logging
+    console.error("Update blog error details:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      serverMessage: error.response?.data?.message,
+      errorData: error.response?.data,
+      blogId,
+      requestData: blogData,
+    });
+
+    return {
+      error: true,
+      message: error.response?.message || "Failed to update blog",
+    };
   }
 };
 

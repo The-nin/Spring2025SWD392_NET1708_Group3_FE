@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { Button, Form, Input, DatePicker, Select } from "antd";
+import { Button, Form, Input, Select } from "antd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import dayjs from "dayjs";
 import { createVoucher } from "../../../service/voucher";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
-function AddNewVoucher({ fetchVouchers }) {
+function AddNewVoucher({}) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -15,34 +14,36 @@ function AddNewVoucher({ fetchVouchers }) {
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
+      console.log("📤 Submitted Voucher Data:", values);
 
       const formattedValues = {
-        code: values.voucherCode.trim(),
-        discount: parseFloat(values.discountAmount),
+        code: values.code.trim(),
+        discount: Number(values.discount),
         discountType: values.discountType,
-        minOrderValue: parseFloat(values.minOrderValue),
+        minOrderValue: Number(values.minOrderValue),
         description: values.description.trim(),
-        point: parseInt(values.point),
+        point: Number(values.point),
       };
 
       const response = await createVoucher(formattedValues);
 
-      if (response.message) {
-        toast.success(response.message);
+      console.log("📩 API Response:", response); // Debugging log
+
+      // ✅ Check for actual errors instead of throwing an error by default
+      if (response?.error) {
+        throw new Error(response.message || "Failed to add voucher");
       }
 
-      if (!response.error) {
-        form.resetFields();
-        if (fetchVouchers) {
-          await fetchVouchers();
-        }
-        navigate("/admin/voucher");
-      }
+      // ✅ Display success message
+      toast.success(response.message || "Voucher added successfully!");
+
+      // ✅ Navigate only after success
+      setTimeout(() => navigate("/admin/voucher"), 2000);
     } catch (error) {
-      console.error("Error:", error);
-      if (error.message) {
-        toast.error(error.message);
-      }
+      console.error("⚠️ Create voucher error:", error);
+      toast.error(
+        error.message || "Failed to save the voucher. Please check the details."
+      );
     } finally {
       setLoading(false);
     }
@@ -55,10 +56,10 @@ function AddNewVoucher({ fetchVouchers }) {
         onClick={() => navigate("/admin/voucher")}
         className="mb-4"
       >
-        Back to Vouchers
+        Quay lại danh sách Voucher
       </Button>
 
-      <h2 className="text-2xl font-bold mb-4">Add New Voucher</h2>
+      <h2 className="text-2xl font-bold mb-4">Thêm Voucher Mới</h2>
 
       <Form
         form={form}
@@ -66,115 +67,67 @@ function AddNewVoucher({ fetchVouchers }) {
         onFinish={handleSubmit}
         autoComplete="off"
       >
-        {/* Voucher Code */}
         <Form.Item
-          name="voucherCode"
-          label="Voucher Code"
-          rules={[{ required: true, message: "Please enter a voucher code" }]}
+          name="code"
+          label="Mã Voucher"
+          rules={[{ required: true, message: "Vui lòng nhập mã voucher" }]}
         >
-          <Input placeholder="Enter voucher code" />
+          <Input placeholder="Nhập mã voucher" />
         </Form.Item>
 
-        {/* Discount Type */}
+        <Form.Item
+          name="discount"
+          label="Mức Giảm Giá"
+          rules={[{ required: true, message: "Vui lòng nhập mức giảm giá" }]}
+        >
+          <Input type="number" placeholder="Nhập mức giảm giá" />
+        </Form.Item>
+
         <Form.Item
           name="discountType"
-          label="Discount Type"
-          initialValue="FIXED_AMOUNT"
-          rules={[{ required: true, message: "Please select discount type" }]}
+          label="Loại Giảm Giá"
+          initialValue="PERCENTAGE"
+          rules={[{ required: true }]}
         >
           <Select>
+            <Select.Option value="PERCENTAGE">Phần trăm</Select.Option>
             <Select.Option value="FIXED_AMOUNT">
-              Fixed Amount (VND)
+              Giảm số tiền cố định
             </Select.Option>
-            <Select.Option value="PERCENTAGE">Percentage (%)</Select.Option>
           </Select>
         </Form.Item>
 
-        {/* Discount Amount */}
-        <Form.Item
-          name="discountAmount"
-          label="Discount Amount"
-          rules={[
-            { required: true, message: "Please enter a discount amount" },
-            {
-              type: "number",
-              transform: (value) => Number(value),
-              message: "Please enter a valid number",
-            },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                const discountType = getFieldValue("discountType");
-                if (discountType === "PERCENTAGE" && value > 100) {
-                  return Promise.reject(
-                    "Percentage cannot be greater than 100%"
-                  );
-                }
-                if (value <= 0) {
-                  return Promise.reject("Amount must be greater than 0");
-                }
-                return Promise.resolve();
-              },
-            }),
-          ]}
-        >
-          <Input
-            type="number"
-            placeholder={`Enter discount ${
-              form.getFieldValue("discountType") === "PERCENTAGE"
-                ? "(0-100)"
-                : "amount"
-            }`}
-          />
-        </Form.Item>
-
-        {/* Minimum Order Value */}
         <Form.Item
           name="minOrderValue"
-          label="Minimum Order Value"
-          rules={[
-            { required: true, message: "Please enter minimum order value" },
-            {
-              type: "number",
-              min: 0.1,
-              transform: (value) => Number(value),
-            },
-          ]}
+          label="Giá Trị Đơn Hàng Tối Thiểu"
+          rules={[{ required: true }]}
         >
           <Input
             type="number"
             step="0.1"
-            placeholder="Enter minimum order value"
+            placeholder="Nhập giá trị tối thiểu"
           />
         </Form.Item>
 
-        {/* Points */}
-        <Form.Item
-          name="point"
-          label="Points"
-          rules={[
-            { required: true, message: "Please enter points" },
-            {
-              type: "number",
-              transform: (value) => Number(value),
-            },
-          ]}
-        >
-          <Input type="number" placeholder="Enter points" />
-        </Form.Item>
-
-        {/* Description */}
         <Form.Item
           name="description"
-          label="Description"
-          rules={[{ required: true, message: "Please enter a description" }]}
+          label="Mô Tả"
+          rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
         >
-          <Input.TextArea rows={3} placeholder="Enter description" />
+          <Input.TextArea rows={3} placeholder="Nhập mô tả" />
         </Form.Item>
 
-        {/* Submit Button */}
+        <Form.Item
+          name="point"
+          label="Điểm Yêu Cầu"
+          rules={[{ required: true, message: "Vui lòng nhập số điểm yêu cầu" }]}
+        >
+          <Input type="number" placeholder="Nhập số điểm yêu cầu" />
+        </Form.Item>
+
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading}>
-            Add Voucher
+            Thêm Voucher
           </Button>
         </Form.Item>
       </Form>

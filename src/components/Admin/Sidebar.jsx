@@ -15,6 +15,7 @@ import {
   GiftOutlined,
   SolutionOutlined, // 🎁 Icon for Vouchers
 } from "@ant-design/icons";
+import { label } from "framer-motion/client";
 
 const { Sider } = Layout;
 
@@ -22,58 +23,95 @@ const Sidebar = ({ collapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const userRole = localStorage.getItem("role") || "STAFF";
+
+  const permissions = {
+    "/admin": ["ADMIN"],
+    "/admin/user": ["ADMIN"],
+    "/admin/product": ["ADMIN", "MANAGER", "STAFF"],
+    "/admin/order": ["ADMIN", "MANAGER", "STAFF", "DELIVERY"],
+    "/admin/category": ["ADMIN", "MANAGER"],
+    "/admin/brand": ["ADMIN", "MANAGER"],
+    "/admin/blog": ["ADMIN", "MANAGER", "EXPERT"],
+    "/admin/quiz": ["ADMIN", "MANAGER", "EXPERT"],
+    "/admin/voucher": ["ADMIN", "MANAGER"],
+    "/admin/service": ["ADMIN", "MANAGER", "STAFF"],
+    "/admin/consultant-booking": ["EXPERT"],
+    "/admin/consultant-all-booking": ["ADMIN", "MANAGER"],
+    "/admin/staff-manage-consultant-order": ["STAFF"],
+  };
+
   const menuItems = [
     {
       key: "/admin",
       icon: <DashboardOutlined />,
-      label: "Dashboard",
+      label: "Trang chủ",
+    },
+    {
+      key: "/admin/user",
+      icon: <UserOutlined />,
+      label: "Quản lý người dùng",
     },
     {
       key: "/admin/product",
       icon: <ShoppingOutlined />,
-      label: "Product Management",
+      label: "Quản lý sản phẩm",
     },
     {
       key: "/admin/order",
       icon: <AppstoreOutlined />,
-      label: "Order Management",
+      label: "Quản lý đơn hàng",
     },
     {
       key: "/admin/category",
       icon: <AppstoreOutlined />,
-      label: "Category Management",
+      label: "Quản lý danh mục",
     },
     {
       key: "/admin/brand",
       icon: <AppstoreOutlined />,
-      label: "Brand Management",
+      label: "Quản lý thương hiệu",
     },
     {
       key: "/admin/blog",
-      icon: <ReadOutlined />, // 📖 New Blog icon
-      label: "Blog Management",
+      icon: <ReadOutlined />,
+      label: "Quản lý bài viết",
     },
     {
       key: "/admin/quiz",
-      icon: <QuestionCircleOutlined />, // ❓ New Quiz icon
-      label: "Quiz Management",
+      icon: <QuestionCircleOutlined />,
+      label: "Quản lý câu hỏi",
     },
     {
       key: "/admin/voucher",
-      icon: <GiftOutlined />, // 🎁 Voucher icon
-      label: "Voucher Management",
+      icon: <GiftOutlined />,
+      label: "Quản lý voucher",
     },
     {
       key: "/admin/service",
       icon: <CustomerServiceOutlined />,
-      label: "Service Management",
+      label: "Quản lý dịch vụ",
     },
     {
       key: "/admin/consultant-booking",
       icon: <SolutionOutlined />,
-      label: "Quản lý đặt tư vấn"
-    }
+      label: "Quản lý đặt tư vấn",
+    },
+    {
+      key: "/admin/consultant-all-booking",
+      icon: <SolutionOutlined />,
+      label: "Quản lý đặt tư vấn",
+    },
+    {
+      key: "/admin/staff-manage-consultant-order",
+      icon: <SolutionOutlined />,
+      label: "Quản lý đặt tư vấn",
+    },
   ];
+
+  const filteredMenuItems = menuItems.filter((item) =>
+    permissions[item.key]?.includes(userRole)
+  );
 
   return (
     <Sider
@@ -106,14 +144,15 @@ const Sidebar = ({ collapsed }) => {
             fontSize: collapsed ? "14px" : "18px",
           }}
         >
-          {collapsed ? "Admin" : "Admin Panel"}
+          {collapsed ? "Quản trị" : "Trang Quản trị"}
         </h1>
       </div>
       <Menu
         theme="dark"
         mode="inline"
         defaultSelectedKeys={[location.pathname]}
-        items={menuItems}
+        // items={menuItems}
+        items={filteredMenuItems}
         onClick={({ key }) => navigate(key)}
       />
     </Sider>

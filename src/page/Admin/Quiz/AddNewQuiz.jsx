@@ -7,48 +7,119 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const { Option } = Select;
-const skinTypes = ["SENSITIVE_SKIN", "OILY_SKIN", "DRY_SKIN", "NORMAL_SKIN"];
 
 const AddNewQuiz = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [questions, setQuestions] = useState([
+    {
+      title: "",
+      questionId: Date.now(),
+      answers: [
+        { answerId: Date.now(), answerText: "", skinType: "SENSITIVE_SKIN" },
+      ],
+    },
+  ]);
 
+  // ✅ Handle form submission
   const onFinish = async (values) => {
-    if (!values.title || !values.description || !values.questions) {
-      toast.error("Please fill all required fields");
+    if (
+      !values.title.trim() ||
+      !values.description.trim() ||
+      questions.length === 0
+    ) {
+      toast.error("Vui lòng điền đầy đủ các thông tin bắt buộc");
       return;
     }
 
+    const formattedQuiz = {
+      title: values.title,
+      description: values.description,
+      questions,
+    };
+
     try {
       setLoading(true);
-      const quizData = {
-        title: values.title,
-        description: values.description,
-        questions: values.questions.map((q) => ({
-          title: q.title,
-          answers: q.answers.map((a) => ({
-            answerText: a.answerText,
-            skinType: a.skinType,
-          })),
-        })),
-      };
+      console.log("📤 Sending Quiz Data:", formattedQuiz);
+      const response = await addQuiz(formattedQuiz);
 
-      console.log("📤 Sending Quiz Data:", quizData);
-      const response = await addQuiz(quizData);
-
-      if (response && response.result) {
-        toast.success("Quiz added successfully!");
+      if (response) {
+        toast.success("Đã thêm Quiz thành công!");
         setTimeout(() => navigate("/admin/quiz"), 2000);
       } else {
-        toast.error(response?.message || "Error adding quiz");
+        toast.error(response?.message || "Lỗi khi thêm quiz");
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Failed to add quiz");
+      toast.error("Không thể thêm quiz");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Add a new question
+  const addQuestion = () => {
+    setQuestions([
+      ...questions,
+      {
+        title: "",
+        questionId: Date.now(),
+        answers: [
+          { answerId: Date.now(), answerText: "", skinType: "SENSITIVE_SKIN" },
+        ],
+      },
+    ]);
+  };
+
+  // Remove a question
+  const removeQuestion = (index) => {
+    if (questions.length > 1) {
+      const updatedQuestions = [...questions];
+      updatedQuestions.splice(index, 1);
+      setQuestions(updatedQuestions);
+    }
+  };
+
+  // Update question title
+  const handleQuestionChange = (index, value) => {
+    const updatedQuestions = [...questions];
+    updatedQuestions[index].title = value;
+    setQuestions(updatedQuestions);
+  };
+
+  // Add answer to a question
+  const addAnswer = (questionIndex) => {
+    const updatedQuestions = [...questions];
+    updatedQuestions[questionIndex].answers.push({
+      answerId: Date.now(),
+      answerText: "",
+      skinType: "SENSITIVE_SKIN",
+    });
+    setQuestions(updatedQuestions);
+  };
+
+  // Remove an answer from a question
+  const removeAnswer = (questionIndex, answerIndex) => {
+    const updatedQuestions = [...questions];
+    if (updatedQuestions[questionIndex].answers.length > 1) {
+      updatedQuestions[questionIndex].answers.splice(answerIndex, 1);
+      setQuestions(updatedQuestions);
+    }
+  };
+
+  // Update answer text
+  const handleAnswerChange = (questionIndex, answerIndex, value) => {
+    const updatedQuestions = [...questions];
+    updatedQuestions[questionIndex].answers[answerIndex].answerText = value;
+    setQuestions(updatedQuestions);
+  };
+
+  // Update answer skin type
+  const handleSkinTypeChange = (questionIndex, answerIndex, value) => {
+    const updatedQuestions = [...questions];
+    updatedQuestions[questionIndex].answers[answerIndex].skinType = value;
+    setQuestions(updatedQuestions);
   };
 
   return (
@@ -64,137 +135,117 @@ const AddNewQuiz = () => {
           onClick={() => navigate("/admin/quiz")}
           className="mb-4 hover:bg-gray-100"
         >
-          Back to Quizzes
+          Quay lại danh sách Quiz
         </Button>
 
-        <Card title="Add New Quiz" className="max-w-6xl mx-auto shadow-md">
+        <Card title="Thêm Quiz Mới" className="max-w-4xl mx-auto shadow-md">
           <Form
             form={form}
             layout="vertical"
             onFinish={onFinish}
             autoComplete="off"
           >
-            {/* Quiz Title */}
+            {/* Tiêu đề Quiz */}
             <Form.Item
               name="title"
-              label="Quiz Title"
-              rules={[{ required: true, message: "Please enter quiz title" }]}
-            >
-              <Input placeholder="Enter quiz title" />
-            </Form.Item>
-
-            {/* Quiz Description */}
-            <Form.Item
-              name="description"
-              label="Quiz Description"
+              label="Tiêu Đề Quiz"
               rules={[
-                { required: true, message: "Please enter quiz description" },
+                { required: true, message: "Vui lòng nhập tiêu đề quiz" },
               ]}
             >
-              <Input.TextArea rows={3} placeholder="Enter quiz description" />
+              <Input placeholder="Nhập tiêu đề quiz" />
             </Form.Item>
 
-            {/* Questions */}
-            <Form.List name="questions">
-              {(fields, { add, remove }) => (
-                <div>
-                  {fields.map(({ key, name, ...restField }) => (
-                    <Card
-                      key={key}
-                      className="mb-4"
-                      title={`Question ${key + 1}`}
+            {/* Mô tả Quiz */}
+            <Form.Item
+              name="description"
+              label="Mô Tả Quiz"
+              rules={[{ required: true, message: "Vui lòng nhập mô tả quiz" }]}
+            >
+              <Input.TextArea rows={3} placeholder="Nhập mô tả quiz" />
+            </Form.Item>
+
+            {/* Câu hỏi động */}
+            {questions.map((question, qIndex) => (
+              <Card key={question.questionId} className="mb-4">
+                <Form.Item
+                  label={`Câu Hỏi ${qIndex + 1}`}
+                  required
+                  rules={[
+                    {
+                      required: true,
+                      message: "Vui lòng nhập nội dung câu hỏi",
+                    },
+                  ]}
+                >
+                  <Input
+                    placeholder="Nhập nội dung câu hỏi"
+                    value={question.title}
+                    onChange={(e) =>
+                      handleQuestionChange(qIndex, e.target.value)
+                    }
+                  />
+                </Form.Item>
+
+                {/* Đáp án cho câu hỏi này */}
+                {question.answers.map((answer, aIndex) => (
+                  <div
+                    key={answer.answerId}
+                    className="flex space-x-2 items-center mb-2"
+                  >
+                    <Input
+                      placeholder="Nhập đáp án"
+                      value={answer.answerText}
+                      onChange={(e) =>
+                        handleAnswerChange(qIndex, aIndex, e.target.value)
+                      }
+                      style={{ width: "60%" }}
+                    />
+                    <Select
+                      value={answer.skinType}
+                      onChange={(value) =>
+                        handleSkinTypeChange(qIndex, aIndex, value)
+                      }
+                      style={{ width: "30%" }}
                     >
-                      <Form.Item
-                        {...restField}
-                        name={[name, "title"]}
-                        label="Question Title"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please enter question title",
-                          },
-                        ]}
-                      >
-                        <Input placeholder="Enter question title" />
-                      </Form.Item>
+                      <Option value="SENSITIVE_SKIN">Da Nhạy Cảm</Option>
+                      <Option value="OILY_SKIN">Da Dầu</Option>
+                      <Option value="DRY_SKIN">Da Khô</Option>
+                      <Option value="NORMAL_SKIN">Da Thường</Option>
+                    </Select>
+                    <Button
+                      type="danger"
+                      onClick={() => removeAnswer(qIndex, aIndex)}
+                    >
+                      -
+                    </Button>
+                  </div>
+                ))}
 
-                      <Form.List name={[name, "answers"]}>
-                        {(
-                          answerFields,
-                          { add: addAnswer, remove: removeAnswer }
-                        ) => (
-                          <div>
-                            {answerFields.map(
-                              ({
-                                key: answerKey,
-                                name: answerName,
-                                ...answerRestField
-                              }) => (
-                                <div key={answerKey} className="flex gap-2">
-                                  <Form.Item
-                                    {...answerRestField}
-                                    name={[answerName, "answerText"]}
-                                    label="Answer Text"
-                                    rules={[
-                                      {
-                                        required: true,
-                                        message: "Please enter answer text",
-                                      },
-                                    ]}
-                                  >
-                                    <Input placeholder="Enter answer text" />
-                                  </Form.Item>
-                                  <Form.Item
-                                    {...answerRestField}
-                                    name={[answerName, "skinType"]}
-                                    label="Skin Type"
-                                    rules={[
-                                      {
-                                        required: true,
-                                        message: "Please select skin type",
-                                      },
-                                    ]}
-                                  >
-                                    <Select placeholder="Select skin type">
-                                      {skinTypes.map((type) => (
-                                        <Option key={type} value={type}>
-                                          {type}
-                                        </Option>
-                                      ))}
-                                    </Select>
-                                  </Form.Item>
-                                  <Button
-                                    type="dashed"
-                                    onClick={() => removeAnswer(answerName)}
-                                  >
-                                    Remove Answer
-                                  </Button>
-                                </div>
-                              )
-                            )}
-                            <Button type="dashed" onClick={() => addAnswer()}>
-                              Add Answer
-                            </Button>
-                          </div>
-                        )}
-                      </Form.List>
+                <Button type="dashed" onClick={() => addAnswer(qIndex)}>
+                  + Thêm Đáp Án
+                </Button>
 
-                      <Button type="dashed" onClick={() => remove(name)}>
-                        Remove Question
-                      </Button>
-                    </Card>
-                  ))}
-                  <Button type="dashed" onClick={() => add()}>
-                    Add Question
+                {questions.length > 1 && (
+                  <Button
+                    type="link"
+                    danger
+                    onClick={() => removeQuestion(qIndex)}
+                  >
+                    Xóa Câu Hỏi
                   </Button>
-                </div>
-              )}
-            </Form.List>
+                )}
+              </Card>
+            ))}
 
-            {/* Submit Button */}
+            <Button type="dashed" onClick={addQuestion}>
+              + Thêm Câu Hỏi
+            </Button>
+
+            {/* Nút gửi */}
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Add Quiz
+                Thêm Quiz
               </Button>
             </Form.Item>
           </Form>

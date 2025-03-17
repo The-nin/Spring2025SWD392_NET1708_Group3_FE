@@ -46,7 +46,7 @@ const AddNewBrand = () => {
         const file = values.thumbnail[0].originFileObj;
 
         if (!file) {
-          toast.error("Please select a file");
+          toast.error("Vui lòng chọn một tệp");
           return;
         }
 
@@ -68,7 +68,7 @@ const AddNewBrand = () => {
         }
       } catch (error) {
         console.error("Error:", error);
-        toast.error("Failed to add brand");
+        toast.error("Thêm thương hiệu thất bại");
       } finally {
         setLoading(false);
       }
@@ -102,11 +102,11 @@ const AddNewBrand = () => {
           onClick={() => navigate("/admin/brand")}
           className="mb-4 hover:bg-gray-100"
         >
-          Back to Brands
+          Quay lại Thương hiệu
         </Button>
 
         <Card
-          title="Add New Brand"
+          title="Thêm Thương hiệu Mới"
           className="w-full shadow-md"
           headStyle={{
             fontSize: "1.5rem",
@@ -123,29 +123,27 @@ const AddNewBrand = () => {
           >
             <Form.Item
               name="name"
-              label="Brand Name"
+              label="Tên Thương hiệu"
               rules={[
-                { required: true, message: "Please enter brand name" },
-                { min: 3, message: "Name must be at least 3 characters" },
+                { required: true, message: "Vui lòng nhập tên thương hiệu" },
+                { min: 3, message: "Tên phải có ít nhất 3 ký tự" },
               ]}
             >
               <Input
-                placeholder="Enter brand name"
+                placeholder="Nhập tên thương hiệu"
                 className="h-10 text-base"
               />
             </Form.Item>
 
             <Form.Item
               name="description"
-              label="Description"
+              label="Mô tả"
               rules={[
-                { required: true, message: "Please enter description" },
+                { required: true, message: "Vui lòng nhập mô tả" },
                 {
                   validator: (_, value) => {
                     if (!editorContent || editorContent.trim().length < 10) {
-                      return Promise.reject(
-                        "Description must be at least 10 characters"
-                      );
+                      return Promise.reject("Mô tả phải có ít nhất 10 ký tự");
                     }
                     return Promise.resolve();
                   },
@@ -167,10 +165,12 @@ const AddNewBrand = () => {
 
             <Form.Item
               name="thumbnail"
-              label="Thumbnail"
+              label="Hình ảnh"
               valuePropName="fileList"
               getValueFromEvent={normFile}
-              rules={[{ required: true, message: "Please upload an image" }]}
+              rules={[
+                { required: true, message: "Vui lòng tải lên một hình ảnh" },
+              ]}
             >
               <Upload
                 beforeUpload={() => false}
@@ -178,7 +178,7 @@ const AddNewBrand = () => {
                 accept="image/*"
                 listType="picture"
               >
-                <Button icon={<UploadOutlined />}>Select Image</Button>
+                <Button icon={<UploadOutlined />}>Chọn Hình ảnh</Button>
               </Upload>
             </Form.Item>
 
@@ -189,7 +189,7 @@ const AddNewBrand = () => {
                 loading={loading}
                 className="h-10 px-8 text-base font-medium"
               >
-                Add Brand
+                Thêm Thương hiệu
               </Button>
             </Form.Item>
           </Form>

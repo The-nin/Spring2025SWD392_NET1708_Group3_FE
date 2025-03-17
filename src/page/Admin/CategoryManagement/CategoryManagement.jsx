@@ -111,43 +111,43 @@ const CategoryManagement = () => {
 
   const columns = [
     {
-      title: "Image",
+      title: "Hình ảnh",
       dataIndex: "thumbnail",
       key: "image",
       render: (image) => (
         <img
           src={image}
-          alt="category"
+          alt="danh mục"
           className="w-16 h-16 object-cover rounded"
         />
       ),
     },
     {
-      title: "Category Name",
+      title: "Tên danh mục",
       dataIndex: "name",
       key: "name",
       sorter: true,
     },
     {
-      title: "Actions",
+      title: "Thao tác",
       key: "actions",
       render: (_, record) => (
         <Space>
-          <Tooltip title="Details">
+          <Tooltip title="Chi tiết">
             <Button
               type="default"
               icon={<InfoCircleOutlined />}
               onClick={() => navigate(`/admin/category/detail/${record.id}`)}
             />
           </Tooltip>
-          <Tooltip title="Edit">
+          <Tooltip title="Chỉnh sửa">
             <Button
               type="primary"
               icon={<EditOutlined />}
               onClick={() => navigate(`/admin/category/edit/${record.id}`)}
             />
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Xóa">
             <Button
               danger
               icon={<DeleteOutlined />}
@@ -162,18 +162,18 @@ const CategoryManagement = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Category Management</h2>
+        <h2 className="text-2xl font-bold">Quản lý danh mục</h2>
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => navigate("/admin/category/add")}
         >
-          Add New Category
+          Thêm danh mục mới
         </Button>
       </div>
       <div className="mb-4">
         <Input.Search
-          placeholder="Search by category name"
+          placeholder="Tìm kiếm theo tên danh mục"
           onSearch={(value) => {
             const params = {
               page: pagination.current,
@@ -194,28 +194,26 @@ const CategoryManagement = () => {
           ...pagination,
           showSizeChanger: true,
           showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} items`,
+            `${range[0]}-${range[1]} trong tổng số ${total} mục`,
           pageSizeOptions: ["10", "20", "50", "100"],
         }}
         loading={loading}
         onChange={handleTableChange}
       />
       <Modal
-        title="Confirm Delete"
+        title="Xác nhận xóa"
         open={deleteModalVisible}
         onOk={handleDeleteConfirm}
         onCancel={() => {
           setDeleteModalVisible(false);
           setSelectedCategory(null);
         }}
-        okText="Delete"
-        cancelText="Cancel"
+        okText="Xóa"
+        cancelText="Hủy"
         okButtonProps={{ danger: true }}
       >
-        <p>
-          Are you sure you want to delete category "{selectedCategory?.name}"?
-        </p>
-        <p>This action cannot be undone.</p>
+        <p>Bạn có chắc chắn muốn xóa danh mục "{selectedCategory?.name}"?</p>
+        <p>Hành động này không thể hoàn tác.</p>
       </Modal>
       <ToastContainer />
     </div>
