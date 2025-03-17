@@ -272,3 +272,28 @@ export const getBatches = async (productId) => {
     };
   }
 };
+
+export const deleteBatch = async (batchId) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await instance.delete(
+      `admin/products/delete-batch/${batchId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return {
+      error: false,
+      result: response.result,
+      message: response.message,
+    };
+  } catch (error) {
+    console.error("Delete batch error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "Failed to delete batch",
+    };
+  }
+};

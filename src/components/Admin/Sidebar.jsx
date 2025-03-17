@@ -27,6 +27,7 @@ const Sidebar = ({ collapsed }) => {
 
   const permissions = {
     "/admin": ["ADMIN"],
+    "/admin/user": ["ADMIN"],
     "/admin/product": ["ADMIN", "MANAGER", "STAFF"],
     "/admin/order": ["ADMIN", "MANAGER", "STAFF", "DELIVERY"],
     "/admin/category": ["ADMIN", "MANAGER"],
@@ -44,55 +45,60 @@ const Sidebar = ({ collapsed }) => {
     {
       key: "/admin",
       icon: <DashboardOutlined />,
-      label: "Dashboard",
+      label: "Trang chủ",
+    },
+    {
+      key: "/admin/user",
+      icon: <UserOutlined />,
+      label: "Quản lý người dùng",
     },
     {
       key: "/admin/product",
       icon: <ShoppingOutlined />,
-      label: "Product Management",
+      label: "Quản lý sản phẩm",
     },
     {
       key: "/admin/order",
       icon: <AppstoreOutlined />,
-      label: "Order Management",
+      label: "Quản lý đơn hàng",
     },
     {
       key: "/admin/category",
       icon: <AppstoreOutlined />,
-      label: "Category Management",
+      label: "Quản lý danh mục",
     },
     {
       key: "/admin/brand",
       icon: <AppstoreOutlined />,
-      label: "Brand Management",
+      label: "Quản lý thương hiệu",
     },
     {
       key: "/admin/blog",
-      icon: <ReadOutlined />, // 📖 New Blog icon
-      label: "Blog Management",
+      icon: <ReadOutlined />,
+      label: "Quản lý bài viết",
     },
     {
       key: "/admin/quiz",
-      icon: <QuestionCircleOutlined />, // ❓ New Quiz icon
-      label: "Quiz Management",
+      icon: <QuestionCircleOutlined />,
+      label: "Quản lý câu hỏi",
     },
     {
       key: "/admin/voucher",
-      icon: <GiftOutlined />, // 🎁 Voucher icon
-      label: "Voucher Management",
+      icon: <GiftOutlined />,
+      label: "Quản lý voucher",
     },
     {
       key: "/admin/service",
       icon: <CustomerServiceOutlined />,
-      label: "Service Management",
+      label: "Quản lý dịch vụ",
     },
     {
-      key: "/admin/consultant-booking", //Quản lý tư vấn theo từng expert
+      key: "/admin/consultant-booking",
       icon: <SolutionOutlined />,
       label: "Quản lý đặt tư vấn",
     },
     {
-      key: "/admin/consultant-all-booking", //Quản lý tư vấn role admin
+      key: "/admin/consultant-all-booking",
       icon: <SolutionOutlined />,
       label: "Quản lý đặt tư vấn",
     },
@@ -138,7 +144,7 @@ const Sidebar = ({ collapsed }) => {
             fontSize: collapsed ? "14px" : "18px",
           }}
         >
-          {collapsed ? "Admin" : "Admin Panel"}
+          {collapsed ? "Quản trị" : "Trang Quản trị"}
         </h1>
       </div>
       <Menu

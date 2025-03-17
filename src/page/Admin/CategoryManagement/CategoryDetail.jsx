@@ -47,9 +47,9 @@ const CategoryDetail = () => {
         onClick={() => navigate("/admin/category")}
         className="mb-4"
       >
-        Back to Categories
+        Quay lại Danh mục
       </Button>
-      <Card title="Category Details">
+      <Card title="Chi tiết Danh mục">
         {category && (
           <div className="space-y-8">
             <div className="flex justify-center">
@@ -62,15 +62,13 @@ const CategoryDetail = () => {
 
             <div className="border-b pb-4">
               <h3 className="font-bold text-lg mb-2 text-gray-800">
-                Category Name
+                Tên Danh mục
               </h3>
               <p className="text-gray-700 text-lg">{category.name}</p>
             </div>
 
             <div>
-              <h3 className="font-bold text-lg mb-2 text-gray-800">
-                Description
-              </h3>
+              <h3 className="font-bold text-lg mb-2 text-gray-800">Mô tả</h3>
               <div
                 dangerouslySetInnerHTML={{ __html: category.description }}
                 className="prose prose-sm md:prose-base lg:prose-lg max-w-none [&>*]:text-center [&_p]:text-center [&_div]:text-center [&_h1]:text-center [&_h2]:text-center [&_h3]:text-center"

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../../../service/login/index"; // Import API login
+import { login } from "../../../service/auth"; // Import API login
 
 const LoginAdmin = () => {
   const navigate = useNavigate();
@@ -29,13 +29,6 @@ const LoginAdmin = () => {
         return;
       }
 
-      // if (response?.code === 200) {
-      //   // Kiểm tra role ADMIN
-      //   if (response.result.roleName !== "ADMIN") {
-      //     setError("Bạn không có quyền truy cập vào trang quản trị");
-      //     return;
-      //   }
-
       localStorage.setItem("admin", response.result.roleName);
 
       const roleValid = [
@@ -53,10 +46,27 @@ const LoginAdmin = () => {
           setError("Bạn không có quyền truy cập vào trang quản trị");
           return;
         }
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        localStorage.removeItem("userTokenExpiration");
+        localStorage.setItem("admin", response.result.roleName);
 
         localStorage.setItem("role", response.result.roleName);
         localStorage.setItem("token", response.result.token);
-        navigate("/admin");
+        const expirationTime = new Date().getTime() + 5 * 60 * 60 * 1000;
+        localStorage.setItem("adminTokenExpiration", expirationTime.toString());
+
+        // Redirect based on role
+        if (response.result.roleName === "ADMIN") {
+          navigate("/admin"); // Admin goes to dashboard
+        } else if (
+          response.result.roleName === "STAFF" ||
+          response.result.roleName === "MANAGER"
+        ) {
+          navigate("/admin/product"); // Other roles go to order management
+        } else {
+          navigate("/admin/order"); // Other roles go to order management
+        }
       } else {
         setError("Tên đăng nhập hoặc mật khẩu không đúng");
       }

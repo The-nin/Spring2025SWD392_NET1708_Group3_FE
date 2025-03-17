@@ -243,7 +243,7 @@ const OrderManagement = () => {
 
   const columns = [
     {
-      title: "Order ID",
+      title: "Mã đơn hàng",
       dataIndex: "orderId",
       key: "orderId",
       sorter: true,
@@ -259,73 +259,82 @@ const OrderManagement = () => {
       ),
     },
     {
-      title: "Customer Name",
+      title: "Tên khách hàng",
       dataIndex: ["address", "name"],
       key: "customerName",
     },
     {
-      title: "Username",
+      title: "Tên đăng nhập",
       dataIndex: "username",
       key: "username",
     },
     {
-      title: "Total Amount",
+      title: "Tổng tiền",
       dataIndex: "totalAmount",
       key: "totalAmount",
       sorter: true,
       render: (amount) => `$${amount.toLocaleString()}`,
     },
     {
-      title: "Order Date",
+      title: "Ngày đặt hàng",
       dataIndex: "orderDate",
       key: "orderDate",
       sorter: true,
       render: (date) => new Date(date).toLocaleDateString(),
     },
     {
-      title: "Payment Method",
+      title: "Phương thức thanh toán",
       dataIndex: "paymentMethod",
       key: "paymentMethod",
     },
     {
-      title: "Payment Status",
+      title: "Trạng thái thanh toán",
       dataIndex: "paymentStatus",
       key: "paymentStatus",
       render: (status) => (
         <span className={status === "PAID" ? "text-green-600" : "text-red-600"}>
-          {status}
+          {status === "PAID" ? "Đã thanh toán" : "Chưa thanh toán"}
         </span>
       ),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status) => {
         let color;
+        let statusText;
+
         switch (status) {
           case "PENDING":
             color = "text-yellow-500";
+            statusText = "Chờ xử lý";
             break;
           case "PROCESSING":
             color = "text-blue-500";
+            statusText = "Đang xử lý";
             break;
           case "DONE":
             color = "text-green-600";
+            statusText = "Hoàn thành";
             break;
           case "DELIVERING":
             color = "text-purple-500";
+            statusText = "Đang giao hàng";
             break;
           case "DELIVERY_FAILED":
             color = "text-orange-600";
+            statusText = "Giao hàng thất bại";
             break;
           case "CANCELLED":
             color = "text-red-600";
+            statusText = "Đã hủy";
             break;
           default:
             color = "text-gray-500";
+            statusText = status;
         }
-        return <span className={color}>{status}</span>;
+        return <span className={color}>{statusText}</span>;
       },
     },
   ];
@@ -333,38 +342,40 @@ const OrderManagement = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Order Management</h2>
+        <h2 className="text-2xl font-bold">Quản lý đơn hàng</h2>
       </div>
       <div className="mb-4 flex gap-4">
         <Input.Search
-          placeholder="Search by order ID, customer name or username"
+          placeholder="Tìm kiếm theo mã đơn hàng, tên khách hàng hoặc tên đăng nhập"
           onSearch={handleSearch}
           style={{ width: 300 }}
           allowClear
         />
         <Select
-          placeholder="Filter by Status"
+          placeholder="Lọc theo trạng thái"
           style={{ width: 200 }}
           allowClear
           onChange={handleStatusFilter}
           value={filters.status}
         >
-          <Select.Option value="PENDING">Pending</Select.Option>
-          <Select.Option value="PROCESSING">Processing</Select.Option>
-          <Select.Option value="DONE">Done</Select.Option>
-          <Select.Option value="DELIVERING">Delivering</Select.Option>
-          <Select.Option value="DELIVERY_FAILED">Delivery Failed</Select.Option>
-          <Select.Option value="CANCELLED">Cancelled</Select.Option>
+          <Select.Option value="PENDING">Chờ xử lý</Select.Option>
+          <Select.Option value="PROCESSING">Đang xử lý</Select.Option>
+          <Select.Option value="DONE">Hoàn thành</Select.Option>
+          <Select.Option value="DELIVERING">Đang giao hàng</Select.Option>
+          <Select.Option value="DELIVERY_FAILED">
+            Giao hàng thất bại
+          </Select.Option>
+          <Select.Option value="CANCELLED">Đã hủy</Select.Option>
         </Select>
         <Select
-          placeholder="Filter by Payment Status"
+          placeholder="Lọc theo trạng thái thanh toán"
           style={{ width: 200 }}
           allowClear
           onChange={handlePaymentStatusFilter}
           value={filters.paymentStatus}
         >
-          <Select.Option value="PAID">Paid</Select.Option>
-          <Select.Option value="NOT_PAID">Not Paid</Select.Option>
+          <Select.Option value="PAID">Đã thanh toán</Select.Option>
+          <Select.Option value="NOT_PAID">Chưa thanh toán</Select.Option>
         </Select>
       </div>
       <Table
@@ -376,7 +387,7 @@ const OrderManagement = () => {
           total: getCurrentPageData().total,
           showSizeChanger: true,
           showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} items`,
+            `${range[0]}-${range[1]} của ${total} mục`,
           pageSizeOptions: ["10", "20", "50", "100"],
         }}
         loading={loading}

@@ -142,12 +142,12 @@ const ProductManagement = () => {
           page: pagination.current,
           pageSize: pagination.pageSize,
         });
-        toast.success("Product deleted successfully!");
+        toast.success("Xóa sản phẩm thành công!");
       } else {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to delete product");
+      toast.error("Không thể xóa sản phẩm");
     } finally {
       setLoading(false);
       setDeleteModalVisible(false);
@@ -172,7 +172,7 @@ const ProductManagement = () => {
       const response = await updateProductStatus(record.id, newStatus);
 
       if (!response.error) {
-        toast.success("Product status updated successfully!");
+        toast.success("Cập nhật trạng thái sản phẩm thành công!");
         // Refresh the current page
         fetchProducts({
           page: pagination.current,
@@ -184,7 +184,7 @@ const ProductManagement = () => {
         record.status = !checked ? "ACTIVE" : "INACTIVE";
       }
     } catch (error) {
-      toast.error("Failed to update product status");
+      toast.error("Không thể cập nhật trạng thái sản phẩm");
       // Revert the switch if there's an error
       record.status = !checked ? "ACTIVE" : "INACTIVE";
     } finally {
@@ -194,7 +194,7 @@ const ProductManagement = () => {
 
   const columns = [
     {
-      title: "Thumbnail",
+      title: "Hình ảnh",
       dataIndex: "thumbnail",
       key: "thumbnail",
       render: (thumbnail) => (
@@ -206,38 +206,38 @@ const ProductManagement = () => {
       ),
     },
     {
-      title: "Product Name",
+      title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
       sorter: true,
     },
     {
-      title: "Category",
+      title: "Danh mục",
       dataIndex: ["category", "name"],
       key: "category",
       render: (text, record) => record.category?.name || "N/A",
     },
     {
-      title: "Brand",
+      title: "Thương hiệu",
       dataIndex: ["brand", "name"],
       key: "brand",
       render: (text, record) => record.brand?.name || "N/A",
     },
     {
-      title: "Price",
+      title: "Giá",
       dataIndex: "price",
       key: "price",
       sorter: true,
       render: (price) => (price ? `${price.toLocaleString("vi-VN")}đ` : "N/A"),
     },
     {
-      title: "Stock",
+      title: "Tồn kho",
       dataIndex: "stock",
       key: "stock",
       render: (stock) => stock || 0,
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status, record) => (
@@ -245,30 +245,30 @@ const ProductManagement = () => {
           checked={status === "ACTIVE"}
           onChange={(checked) => handleStatusChange(checked, record)}
           checkedChildren="Active"
-          unCheckedChildren="Inactive"
+          unCheckedChildren="Unactive"
         />
       ),
     },
     {
-      title: "Actions",
+      title: "Thao tác",
       key: "actions",
       render: (_, record) => (
         <Space>
-          <Tooltip title="Details">
+          <Tooltip title="Chi tiết">
             <Button
               type="default"
               icon={<InfoCircleOutlined />}
               onClick={() => navigate(`/admin/product/detail/${record.id}`)}
             />
           </Tooltip>
-          <Tooltip title="Edit">
+          <Tooltip title="Chỉnh sửa">
             <Button
               type="primary"
               icon={<EditOutlined />}
               onClick={() => navigate(`/admin/product/edit/${record.id}`)}
             />
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Xóa">
             <Button
               danger
               icon={<DeleteOutlined />}
@@ -283,24 +283,24 @@ const ProductManagement = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Product Management</h2>
+        <h2 className="text-2xl font-bold">Quản lý sản phẩm</h2>
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => navigate("/admin/product/add")}
         >
-          Add New Product
+          Thêm sản phẩm mới
         </Button>
       </div>
       <div className="mb-4 flex gap-4">
         <Input.Search
-          placeholder="Search by keyword"
+          placeholder="Tìm kiếm theo từ khóa"
           onSearch={(value) => handleFilterChange("keyword", value)}
           style={{ width: 300 }}
           allowClear
         />
         <Select
-          placeholder="Filter by Category"
+          placeholder="Lọc theo danh mục"
           style={{ width: 200 }}
           allowClear
           onChange={(value) => handleFilterChange("categorySlug", value)}
@@ -313,7 +313,7 @@ const ProductManagement = () => {
         </Select>
         {brands.length > 0 && (
           <Select
-            placeholder="Filter by Brand"
+            placeholder="Lọc theo thương hiệu"
             style={{ width: 200 }}
             allowClear
             onChange={(value) => handleFilterChange("brandSlug", value)}
@@ -334,28 +334,26 @@ const ProductManagement = () => {
           ...pagination,
           showSizeChanger: true,
           showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} items`,
+            `${range[0]}-${range[1]} của ${total} mục`,
           pageSizeOptions: ["10", "20", "50", "100"],
         }}
         loading={loading}
         onChange={handleTableChange}
       />
       <Modal
-        title="Confirm Delete"
+        title="Xác nhận xóa"
         open={deleteModalVisible}
         onOk={handleDeleteConfirm}
         onCancel={() => {
           setDeleteModalVisible(false);
           setSelectedProduct(null);
         }}
-        okText="Delete"
-        cancelText="Cancel"
+        okText="Xóa"
+        cancelText="Hủy"
         okButtonProps={{ danger: true }}
       >
-        <p>
-          Are you sure you want to delete product "{selectedProduct?.name}"?
-        </p>
-        <p>This action cannot be undone.</p>
+        <p>Bạn có chắc chắn muốn xóa sản phẩm "{selectedProduct?.name}"?</p>
+        <p>Hành động này không thể hoàn tác.</p>
       </Modal>
       <ToastContainer />
     </div>

@@ -147,43 +147,43 @@ const BrandManagement = () => {
 
   const columns = [
     {
-      title: "Image",
+      title: "Hình ảnh",
       dataIndex: "thumbnail",
       key: "image",
       render: (image) => (
         <img
           src={image}
-          alt="brand"
+          alt="thương hiệu"
           className="w-16 h-16 object-cover rounded"
         />
       ),
     },
     {
-      title: "Brand Name",
+      title: "Tên thương hiệu",
       dataIndex: "name",
       key: "name",
       sorter: true,
     },
     {
-      title: "Actions",
+      title: "Thao tác",
       key: "actions",
       render: (_, record) => (
         <Space>
-          <Tooltip title="Details">
+          <Tooltip title="Chi tiết">
             <Button
               type="default"
               icon={<InfoCircleOutlined />}
               onClick={() => navigate(`/admin/brand/detail/${record.id}`)}
             />
           </Tooltip>
-          <Tooltip title="Edit">
+          <Tooltip title="Chỉnh sửa">
             <Button
               type="primary"
               icon={<EditOutlined />}
               onClick={() => navigate(`/admin/brand/edit/${record.id}`)}
             />
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Xóa">
             <Button
               danger
               icon={<DeleteOutlined />}
@@ -198,18 +198,18 @@ const BrandManagement = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Brand Management</h2>
+        <h2 className="text-2xl font-bold">Quản lý thương hiệu</h2>
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => navigate("/admin/brand/add")}
         >
-          Add New Brand
+          Thêm thương hiệu mới
         </Button>
       </div>
       <div className="mb-4">
         <Input.Search
-          placeholder="Search by brand name"
+          placeholder="Tìm kiếm theo tên thương hiệu"
           onSearch={(value) => {
             const params = {
               page: pagination.current,
@@ -230,26 +230,26 @@ const BrandManagement = () => {
           ...pagination,
           showSizeChanger: true,
           showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} items`,
+            `${range[0]}-${range[1]} của ${total} mục`,
           pageSizeOptions: ["10", "20", "50", "100"],
         }}
         loading={loading}
         onChange={handleTableChange}
       />
       <Modal
-        title="Confirm Delete"
+        title="Xác nhận xóa"
         open={deleteModalVisible}
         onOk={handleDeleteConfirm}
         onCancel={() => {
           setDeleteModalVisible(false);
           setSelectedBrand(null);
         }}
-        okText="Delete"
-        cancelText="Cancel"
+        okText="Xóa"
+        cancelText="Hủy"
         okButtonProps={{ danger: true }}
       >
-        <p>Are you sure you want to delete brand "{selectedBrand?.name}"?</p>
-        <p>This action cannot be undone.</p>
+        <p>Bạn có chắc chắn muốn xóa thương hiệu "{selectedBrand?.name}"?</p>
+        <p>Hành động này không thể hoàn tác.</p>
       </Modal>
       <ToastContainer />
     </div>

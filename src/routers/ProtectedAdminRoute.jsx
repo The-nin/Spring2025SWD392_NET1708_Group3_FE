@@ -26,8 +26,13 @@
 // };
 
 import { Navigate } from "react-router-dom";
+import { clearExpiredToken } from "../service/auth";
 
 export const ProtectedAdminRoute = ({ children }) => {
+  if (clearExpiredToken("admin")) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
   const admin = localStorage.getItem("admin");
   const staff = localStorage.getItem("staff");
   const manager = localStorage.getItem("manager");

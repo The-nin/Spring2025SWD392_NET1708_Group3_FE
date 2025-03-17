@@ -43,19 +43,20 @@ import UserManagement from "../page/Admin/UserManagement/UserManagement";
 import ServiceManagement from "../page/Admin/ServiceManagement/ServiceManagement";
 import AddNewService from "../page/Admin/ServiceManagement/AddNewService";
 import ExpertService from "../page/Admin/ExpertService/ExpertService";
-import PaymentSuccess from "../page/PaymentSuccessPage/PaymentSuccess";
+import PaymentSuccess from "../page/PaymentPage/Paid/PaymentSuccess";
 import CategoryDetail from "../page/Admin/CategoryManagement/CategoryDetail";
 import BrandDetail from "../page/Admin/Brand/BrandDetail";
 import ProductDetailAdmin from "../page/Admin/ProducManagement/ProductDetail";
 import VNPayReturn from "../page/PaymentPage/Paid/VNPayReturn";
 import OrderFailed from "../components/Order/OrderFailed";
 import OrderSuccess from "../components/Order/OrderSuccess";
+import AddUser from "../page/Admin/UserManagement/AddUser";
+import EditUser from "../page/Admin/UserManagement/EditUser";
 import RoutineForm from "../page/Admin/ExpertService/RoutineForm";
 import ConsultantOrderDetail from "../page/Admin/ExpertService/ConsultantOrderDetail";
 import ConsultantBookingAdmin from "../page/Admin/AdminConsultantMng/ConsultantBookingAdmin";
 import StaffMngConsultant from "../page/Admin/StaffConsultantMng/StaffMngConsultant";
 import MyRoutine from "../page/Profile/ConsultantHistory/MyRoutine";
-
 
 export const router = createBrowserRouter([
   {
@@ -163,7 +164,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "payment-success",
+        path: "/payment-success",
         element: <PaymentSuccess />,
       },
     ],
@@ -190,6 +191,14 @@ export const router = createBrowserRouter([
           {
             path: "user",
             element: <UserManagement />,
+          },
+          {
+            path: "user/add",
+            element: <AddUser />,
+          },
+          {
+            path: "user/edit/:id",
+            element: <EditUser />,
           },
           {
             path: "category",
