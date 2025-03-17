@@ -31,7 +31,7 @@ import AddNewVoucher from "../page/Admin/Voucher/AddNewVoucher";
 import VoucherManagement from "../page/Admin/Voucher/VoucherManagement";
 import EditVoucher from "../page/Admin/Voucher/EditVoucher";
 import EditQuiz from "../page/Admin/Quiz/EditQuiz";
-import AddNewQuiz from "../page/Admin/Quiz/AddNewquiz";
+import AddNewQuiz from "../page/Admin/Quiz/AddNewQuiz";
 import Payment from "../page/PaymentPage/Payment";
 import { ProtectedUserRoute } from "./ProtectedUserRoute";
 import ProductDetail from "../page/ProductPage/ProductDetail";
