@@ -135,10 +135,10 @@ const EditBrand = () => {
             onClick={() => navigate("/admin/brand")}
             className="mb-4 hover:bg-gray-100"
           >
-            Back to Brands
+            Quay lại Thương hiệu
           </Button>
 
-          <Card title="Edit Brand" className="w-full">
+          <Card title="Chỉnh sửa Thương hiệu" className="w-full">
             <Form
               form={form}
               layout="vertical"
@@ -147,26 +147,24 @@ const EditBrand = () => {
             >
               <Form.Item
                 name="name"
-                label="Brand Name"
+                label="Tên Thương hiệu"
                 rules={[
-                  { required: true, message: "Please enter brand name" },
-                  { min: 3, message: "Name must be at least 3 characters" },
+                  { required: true, message: "Vui lòng nhập tên thương hiệu" },
+                  { min: 3, message: "Tên phải có ít nhất 3 ký tự" },
                 ]}
               >
-                <Input placeholder="Enter brand name" />
+                <Input placeholder="Nhập tên thương hiệu" />
               </Form.Item>
 
               <Form.Item
                 name="description"
-                label="Description"
+                label="Mô tả"
                 rules={[
-                  { required: true, message: "Please enter description" },
+                  { required: true, message: "Vui lòng nhập mô tả" },
                   {
                     validator: (_, value) => {
                       if (!editorContent || editorContent.trim().length < 10) {
-                        return Promise.reject(
-                          "Description must be at least 10 characters"
-                        );
+                        return Promise.reject("Mô tả phải có ít nhất 10 ký tự");
                       }
                       return Promise.resolve();
                     },
@@ -186,11 +184,11 @@ const EditBrand = () => {
                 />
               </Form.Item>
 
-              <Form.Item label="Current Thumbnail">
+              <Form.Item label="Hình ảnh hiện tại">
                 {currentThumbnail && (
                   <img
                     src={currentThumbnail}
-                    alt="Current thumbnail"
+                    alt="Hình ảnh hiện tại"
                     className="max-w-xs mb-4"
                     style={{ maxHeight: "200px" }}
                   />
@@ -199,7 +197,7 @@ const EditBrand = () => {
 
               <Form.Item
                 name="thumbnail"
-                label="New Thumbnail"
+                label="Hình ảnh mới"
                 valuePropName="fileList"
                 getValueFromEvent={normFile}
               >
@@ -209,13 +207,15 @@ const EditBrand = () => {
                   accept="image/*"
                   listType="picture"
                 >
-                  <Button icon={<UploadOutlined />}>Upload New Image</Button>
+                  <Button icon={<UploadOutlined />}>
+                    Tải lên hình ảnh mới
+                  </Button>
                 </Upload>
               </Form.Item>
 
               <Form.Item>
                 <Button type="primary" htmlType="submit" loading={loading}>
-                  Update Brand
+                  Cập nhật Thương hiệu
                 </Button>
               </Form.Item>
             </Form>

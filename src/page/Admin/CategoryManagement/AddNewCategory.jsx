@@ -46,7 +46,7 @@ const AddNewCategory = () => {
         const file = values.thumbnail[0].originFileObj;
 
         if (!file) {
-          toast.error("Please select a file");
+          toast.error("Vui lòng chọn một tệp");
           return;
         }
 
@@ -55,7 +55,7 @@ const AddNewCategory = () => {
           .trim();
 
         if (cleanDescription.length < 10) {
-          toast.error("Description must be at least 10 characters");
+          toast.error("Mô tả phải có ít nhất 10 ký tự");
           return;
         }
 
@@ -78,7 +78,7 @@ const AddNewCategory = () => {
             state: { message: response.message, type: "success" },
           });
         } else {
-          toast.error(response.message || "Failed to add category");
+          toast.error(response.message || "Thêm danh mục thất bại");
         }
       } catch (error) {
         console.error("Error details:", {
@@ -86,12 +86,12 @@ const AddNewCategory = () => {
           response: error.response?.data,
           status: error.response?.status,
         });
-        toast.error(error.response?.data?.message || "Failed to add category");
+        toast.error(error.response?.data?.message || "Thêm danh mục thất bại");
       } finally {
         setLoading(false);
       }
     } else {
-      toast.error("Please fill in all required fields");
+      toast.error("Vui lòng điền đầy đủ thông tin bắt buộc");
     }
   };
 
@@ -122,11 +122,11 @@ const AddNewCategory = () => {
           onClick={() => navigate("/admin/category")}
           className="mb-4 hover:bg-gray-100"
         >
-          Back to Categories
+          Quay lại Danh mục
         </Button>
 
         <Card
-          title="Add New Category"
+          title="Thêm Danh Mục Mới"
           className="w-full shadow-md"
           headStyle={{
             fontSize: "1.5rem",
@@ -143,15 +143,15 @@ const AddNewCategory = () => {
           >
             <Form.Item
               name="name"
-              label="Category Name"
+              label="Tên Danh Mục"
               rules={[
-                { required: true, message: "Please enter category name" },
-                { min: 3, message: "Name must be at least 3 characters" },
-                { whitespace: true, message: "Name cannot be empty" },
+                { required: true, message: "Vui lòng nhập tên danh mục" },
+                { min: 3, message: "Tên phải có ít nhất 3 ký tự" },
+                { whitespace: true, message: "Tên không được để trống" },
               ]}
             >
               <Input
-                placeholder="Enter category name"
+                placeholder="Nhập tên danh mục"
                 className="h-10 text-base"
                 maxLength={100}
               />
@@ -159,15 +159,13 @@ const AddNewCategory = () => {
 
             <Form.Item
               name="description"
-              label="Description"
+              label="Mô tả"
               rules={[
-                { required: true, message: "Please enter description" },
+                { required: true, message: "Vui lòng nhập mô tả" },
                 {
                   validator: (_, value) => {
                     if (!editorContent || editorContent.trim().length < 10) {
-                      return Promise.reject(
-                        "Description must be at least 10 characters"
-                      );
+                      return Promise.reject("Mô tả phải có ít nhất 10 ký tự");
                     }
                     return Promise.resolve();
                   },
@@ -189,10 +187,12 @@ const AddNewCategory = () => {
 
             <Form.Item
               name="thumbnail"
-              label="Thumbnail"
+              label="Hình ảnh"
               valuePropName="fileList"
               getValueFromEvent={normFile}
-              rules={[{ required: true, message: "Please upload an image" }]}
+              rules={[
+                { required: true, message: "Vui lòng tải lên một hình ảnh" },
+              ]}
             >
               <Upload
                 beforeUpload={() => false}
@@ -200,7 +200,7 @@ const AddNewCategory = () => {
                 accept="image/*"
                 listType="picture"
               >
-                <Button icon={<UploadOutlined />}>Select Image</Button>
+                <Button icon={<UploadOutlined />}>Chọn Hình Ảnh</Button>
               </Upload>
             </Form.Item>
 
@@ -211,7 +211,7 @@ const AddNewCategory = () => {
                 loading={loading}
                 className="h-10 px-8 text-base font-medium"
               >
-                Add Category
+                Thêm Danh Mục
               </Button>
             </Form.Item>
           </Form>

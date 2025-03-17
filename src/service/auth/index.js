@@ -1,3 +1,4 @@
+// LOGIN
 import { instance } from "../instance";
 
 export const login = async (username, password) => {
@@ -51,4 +52,68 @@ export const clearExpiredToken = (tokenType = "user") => {
     return true;
   }
   return false;
+};
+
+// LOGOUT
+export const logout = async (token) => {
+  try {
+    const response = await instance.post("auth/logout", {
+      token,
+    });
+    return response;
+  } catch (error) {
+    console.error("Logout error:", error);
+
+    return {
+      error: true,
+      message: error.response?.message || "Logout failed",
+    };
+  }
+};
+
+// REGISTER
+export const register = async (data) => {
+  try {
+    const response = await instance.post("/auth/register", data);
+    return response;
+  } catch (error) {
+    console.error("Register error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "Registration failed",
+    };
+  }
+};
+
+export const verifyOTP = async (userId, otpCode) => {
+  try {
+    const response = await instance.post("/auth/verify-otp", null, {
+      params: {
+        userId,
+        otpCode,
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error("OTP verification error:", error);
+    return {
+      error: true,
+      message: error.response?.message || "OTP verification failed",
+    };
+  }
+};
+
+//CHANGE PASSWORD
+export const changePassword = async (data) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await instance.post("/auth/change-password", data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
 };

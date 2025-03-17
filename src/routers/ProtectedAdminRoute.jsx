@@ -26,7 +26,7 @@
 // };
 
 import { Navigate } from "react-router-dom";
-import { isTokenExpired, clearExpiredToken } from "../service/login/index";
+import { clearExpiredToken } from "../service/auth";
 
 export const ProtectedAdminRoute = ({ children }) => {
   if (clearExpiredToken("admin")) {

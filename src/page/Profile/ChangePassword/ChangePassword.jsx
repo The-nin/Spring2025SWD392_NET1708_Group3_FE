@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { message } from "antd";
-import { changePassword } from "../../../service/changePassword";
+import { changePassword } from "../../../service/auth";
 
 const ChangePassword = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);

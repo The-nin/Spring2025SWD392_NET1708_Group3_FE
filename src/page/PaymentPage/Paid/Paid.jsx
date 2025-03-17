@@ -1,9 +1,8 @@
 import PropTypes from "prop-types";
-import visaicon from "../../../assets/img/visa.png";
-import mastercardicon from "../../../assets/img/mastercard.png";
 import Total from "../Total";
 import { useState } from "react";
 import { checkout } from "../../../service/checkout";
+c;
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
@@ -15,7 +14,7 @@ const Paid = ({
   appliedVoucher,
   vouchers,
 }) => {
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("COD");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("VNPAY");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -26,13 +25,21 @@ const Paid = ({
   const handleOrder = async () => {
     setIsLoading(true);
     try {
+      if (!selectedPaymentMethod) {
+        toast.error("Vui lòng chọn phương thức thanh toán");
+        setIsLoading(false);
+        return;
+      }
+
       const checkoutData = {
         addressId: parseInt(selectedAddressId),
         cartId: parseInt(cartId),
         paymentMethod: selectedPaymentMethod,
         voucherCode: appliedVoucher?.code,
-        returnUrl: `${window.location.origin}/payment/vnpay-return`,
+        returnUrl: `${window.location.origin}/payment-success`,
       };
+
+      console.log("Checkout data:", checkoutData);
 
       const response = await checkout(checkoutData);
 
@@ -69,7 +76,7 @@ const Paid = ({
               type="radio"
               name="payment"
               className="h-5 w-5 text-gray-900"
-              defaultChecked
+              checked={selectedPaymentMethod === "VNPAY"}
               value="VNPAY"
               onChange={(e) => handlePaymentMethodChange(e.target.value)}
               disabled={isLoading}
@@ -90,6 +97,7 @@ const Paid = ({
               type="radio"
               name="payment"
               className="h-5 w-5 text-gray-900"
+              checked={selectedPaymentMethod === "COD"}
               value="COD"
               onChange={(e) => handlePaymentMethodChange(e.target.value)}
               disabled={isLoading}

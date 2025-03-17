@@ -43,7 +43,7 @@ const ProductCard = ({
       if (response.error) {
         toast.error(response.message);
       } else {
-        toast.success("Added to cart successfully!");
+        toast.success(response.message);
       }
     } catch (error) {
       toast.error("Failed to add item to cart");

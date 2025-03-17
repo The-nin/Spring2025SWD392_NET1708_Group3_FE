@@ -61,7 +61,7 @@ const AddUser = () => {
   return (
     <div className="p-6">
       <div className="mb-4">
-        <h2 className="text-2xl font-bold">Add New User</h2>
+        <h2 className="text-2xl font-bold">Thêm Người Dùng Mới</h2>
       </div>
       <Form
         form={form}
@@ -71,7 +71,7 @@ const AddUser = () => {
       >
         <Form.Item
           name="avatar"
-          label="Avatar"
+          label="Ảnh đại diện"
           valuePropName="fileList"
           getValueFromEvent={normFile}
         >
@@ -82,71 +82,71 @@ const AddUser = () => {
             beforeUpload={() => false}
             accept="image/*"
           >
-            <Button icon={<UploadOutlined />}>Upload Avatar</Button>
+            <Button icon={<UploadOutlined />}>Tải ảnh lên</Button>
           </Upload>
         </Form.Item>
 
-        <Form.Item name="firstName" label="First Name">
+        <Form.Item name="firstName" label="Tên">
           <Input />
         </Form.Item>
 
-        <Form.Item name="lastName" label="Last Name">
+        <Form.Item name="lastName" label="Họ">
           <Input />
         </Form.Item>
 
         <Form.Item
           name="birthday"
-          label="Birthday"
-          rules={[{ required: true, message: "Please select birthday!" }]}
+          label="Ngày sinh"
+          rules={[{ required: true, message: "Vui lòng chọn ngày sinh!" }]}
         >
           <DatePicker format="YYYY-MM-DD" />
         </Form.Item>
 
-        <Form.Item name="gender" label="Gender">
+        <Form.Item name="gender" label="Giới tính">
           <Select>
-            <Select.Option value="MALE">Male</Select.Option>
-            <Select.Option value="FEMALE">Female</Select.Option>
+            <Select.Option value="MALE">Nam</Select.Option>
+            <Select.Option value="FEMALE">Nữ</Select.Option>
           </Select>
         </Form.Item>
 
         <Form.Item
           name="username"
-          label="Username"
-          rules={[{ required: true, message: "Please input username!" }]}
+          label="Tên đăng nhập"
+          rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập!" }]}
         >
           <Input />
         </Form.Item>
 
         <Form.Item
           name="password"
-          label="Password"
-          rules={[{ required: true, message: "Please input password!" }]}
+          label="Mật khẩu"
+          rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
         >
           <Input.Password />
         </Form.Item>
 
-        <Form.Item name="phone" label="Phone">
+        <Form.Item name="phone" label="Số điện thoại">
           <Input />
         </Form.Item>
 
         <Form.Item
           name="roleName"
-          label="Role"
-          rules={[{ required: true, message: "Please select role!" }]}
+          label="Vai trò"
+          rules={[{ required: true, message: "Vui lòng chọn vai trò!" }]}
         >
           <Select>
-            <Select.Option value="STAFF">Staff</Select.Option>
-            <Select.Option value="DELIVERY">Delivery</Select.Option>
-            <Select.Option value="CUSTOMER">Customer</Select.Option>
+            <Select.Option value="STAFF">Nhân viên</Select.Option>
+            <Select.Option value="DELIVERY">Giao hàng</Select.Option>
+            <Select.Option value="CUSTOMER">Khách hàng</Select.Option>
           </Select>
         </Form.Item>
 
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading}>
-            Add User
+            Thêm người dùng
           </Button>
           <Button className="ml-2" onClick={() => navigate("/admin/user")}>
-            Cancel
+            Hủy
           </Button>
         </Form.Item>
       </Form>

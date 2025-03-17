@@ -112,7 +112,7 @@ const EditUser = () => {
   return (
     <div className="p-6">
       <div className="mb-4">
-        <h2 className="text-2xl font-bold">Edit User</h2>
+        <h2 className="text-2xl font-bold">Chỉnh Sửa Người Dùng</h2>
       </div>
       {initialData ? (
         <Form
@@ -123,7 +123,7 @@ const EditUser = () => {
         >
           <Form.Item
             name="avatar"
-            label="Avatar"
+            label="Ảnh Đại Diện"
             valuePropName="fileList"
             getValueFromEvent={normFile}
           >
@@ -146,65 +146,65 @@ const EditUser = () => {
                   : []
               }
             >
-              <Button icon={<UploadOutlined />}>Change Avatar</Button>
+              <Button icon={<UploadOutlined />}>Thay Đổi Ảnh Đại Diện</Button>
             </Upload>
           </Form.Item>
 
-          <Form.Item name="firstName" label="First Name">
+          <Form.Item name="firstName" label="Tên">
             <Input />
           </Form.Item>
 
-          <Form.Item name="lastName" label="Last Name">
+          <Form.Item name="lastName" label="Họ">
             <Input />
           </Form.Item>
 
-          <Form.Item name="birthday" label="Birthday">
+          <Form.Item name="birthday" label="Ngày Sinh">
             <DatePicker format="YYYY-MM-DD" />
           </Form.Item>
 
-          <Form.Item name="gender" label="Gender">
+          <Form.Item name="gender" label="Giới Tính">
             <Select>
-              <Select.Option value="MALE">Male</Select.Option>
-              <Select.Option value="FEMALE">Female</Select.Option>
-              <Select.Option value="OTHER">Other</Select.Option>
+              <Select.Option value="MALE">Nam</Select.Option>
+              <Select.Option value="FEMALE">Nữ</Select.Option>
+              <Select.Option value="OTHER">Khác</Select.Option>
             </Select>
           </Form.Item>
 
-          <Form.Item name="username" label="Username">
+          <Form.Item name="username" label="Tên Đăng Nhập">
             <Input disabled />
           </Form.Item>
 
-          <Form.Item name="roleName" label="Role">
+          <Form.Item name="roleName" label="Vai Trò">
             <Select>
-              <Select.Option value="CUSTOMER">Customer</Select.Option>
-              <Select.Option value="DELIVERY">Delivery</Select.Option>
-              <Select.Option value="STAFF">Staff</Select.Option>
+              <Select.Option value="CUSTOMER">Khách Hàng</Select.Option>
+              <Select.Option value="DELIVERY">Người Giao Hàng</Select.Option>
+              <Select.Option value="STAFF">Nhân Viên</Select.Option>
             </Select>
           </Form.Item>
 
-          <Form.Item name="phone" label="Phone">
+          <Form.Item name="phone" label="Số Điện Thoại">
             <Input />
           </Form.Item>
 
           <Form.Item
             name="password"
-            label="Password"
-            extra="Leave blank to keep current password"
+            label="Mật Khẩu"
+            extra="Để trống nếu không muốn thay đổi mật khẩu"
           >
             <Input.Password />
           </Form.Item>
 
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading}>
-              Update User
+              Cập Nhật
             </Button>
-            <Button className="ml-2" onClick={() => navigate("/admin/")}>
-              Cancel
+            <Button className="ml-2" onClick={() => navigate("/admin/user")}>
+              Hủy
             </Button>
           </Form.Item>
         </Form>
       ) : (
-        <div>Loading...</div>
+        <div>Đang tải...</div>
       )}
       <ToastContainer />
     </div>

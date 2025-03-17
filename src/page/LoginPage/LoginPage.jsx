@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import img1 from "../../assets/img/hero-photo.png";
 import RegisterForm from "./RegisterForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
-import { login, clearExpiredToken } from "../../service/login/index";
+import { login } from "../../service/auth";
 
 const LoginModal = ({ isOpen, onClose }) => {
   const [activeForm, setActiveForm] = useState("login");

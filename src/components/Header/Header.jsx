@@ -1,15 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { FiSearch } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import { BsBag } from "react-icons/bs";
-import { FaArrowRightLong } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import LoginModal from "../../page/LoginPage/LoginPage";
 import ShopDropdown from "./ShopDropdown";
 import { FiUser } from "react-icons/fi";
-import { logout } from "../../service/logout";
-import { getCart } from "../../service/cart/cart";
-import { clearExpiredToken } from "../../service/login/index";
+import { logout, clearExpiredToken } from "../../service/auth";
 import ChangePassword from "../../page/Profile/ChangePassword/ChangePassword";
 
 const Header = () => {

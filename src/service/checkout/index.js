@@ -49,3 +49,34 @@ export const verifyVNPayPayment = async (queryString) => {
     };
   }
 };
+
+export const confirmPaymentSuccess = async (paymentData) => {
+  try {
+    const response = await instance.post(
+      "/orders/payment-success",
+      paymentData,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    return {
+      error: false,
+      code: response.data?.code || 200,
+      message: response.data?.message || "Xác nhận thanh toán thành công",
+      result: response.data?.result,
+      redirectUrl: response.data?.redirectUrl,
+    };
+  } catch (error) {
+    console.error("Payment success confirmation error:", error);
+    return {
+      error: true,
+      code: error.response?.data?.code || 500,
+      message:
+        error.response?.data?.message ||
+        "Có lỗi xảy ra khi xác nhận thanh toán",
+    };
+  }
+};
