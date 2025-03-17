@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FaArrowRight } from "react-icons/fa";
-import { getAllBlogs } from "../../service/blog/index"; // Import API call
+import { getUserBlogs } from "../../service/blog/index"; // Import API call
 import { Spin } from "antd";
 
 const BlogPage = () => {
@@ -12,7 +12,7 @@ const BlogPage = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await getAllBlogs();
+        const response = await getUserBlogs();
         if (!response.error && Array.isArray(response.result)) {
           // ✅ Filter only blogs with "ACTIVE" status
           const activeBlogs = response.result.filter(
@@ -51,16 +51,14 @@ const BlogPage = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <h1 className="text-3xl font-bold">Skincare Blog</h1>
-        <p className="text-lg mt-2">
-          Stay updated with the latest skincare tips
-        </p>
+        <h1 className="text-3xl font-bold">Blog Chăm Sóc Da</h1>
+        <p className="text-lg mt-2">Cập nhật những mẹo chăm sóc da mới nhất</p>
       </motion.header>
 
       {/* Blog Sections */}
       {blogs.length === 0 ? (
         <p className="text-center text-gray-600 mt-6">
-          No active blogs available yet.
+          Hiện chưa có bài viết nào.
         </p>
       ) : (
         blogs.map(({ id, blogName, description, image }, index) => (
@@ -80,14 +78,14 @@ const BlogPage = () => {
                 </h2>
                 <p className="text-gray-700 text-justify">{description}</p>
                 <Link
-                  to={`/blog/${id}`} // ✅ Navigate to blog details page
+                  to={`/blog/${id}`} // ✅ Điều hướng đến trang chi tiết blog
                   className="inline-flex items-center text-black hover:opacity-75 transition-opacity"
                 >
                   <motion.div
                     className="border border-black px-8 py-4 flex items-center justify-between min-w-[180px] mt-4"
                     whileHover={{ scale: 1.1 }}
                   >
-                    <span className="text-gray-700">Read more</span>
+                    <span className="text-gray-700">Đọc thêm</span>
                     <FaArrowRight className="ml-4" />
                   </motion.div>
                 </Link>

@@ -30,6 +30,7 @@ import QuizManagement from "../page/Admin/Quiz/QuizManagement";
 import AddNewVoucher from "../page/Admin/Voucher/AddNewVoucher";
 import VoucherManagement from "../page/Admin/Voucher/VoucherManagement";
 import EditVoucher from "../page/Admin/Voucher/EditVoucher";
+import EditQuiz from "../page/Admin/Quiz/EditQuiz";
 import AddNewQuiz from "../page/Admin/Quiz/AddNewquiz";
 import Payment from "../page/PaymentPage/Payment";
 import { ProtectedUserRoute } from "./ProtectedUserRoute";
@@ -54,6 +55,7 @@ import ConsultantOrderDetail from "../page/Admin/ExpertService/ConsultantOrderDe
 import ConsultantBookingAdmin from "../page/Admin/AdminConsultantMng/ConsultantBookingAdmin";
 import StaffMngConsultant from "../page/Admin/StaffConsultantMng/StaffMngConsultant";
 import MyRoutine from "../page/Profile/ConsultantHistory/MyRoutine";
+
 
 export const router = createBrowserRouter([
   {
@@ -108,12 +110,10 @@ export const router = createBrowserRouter([
           </ProtectedUserRoute>
         ),
       },
-
       {
         path: "/my-routine",
         element: <MyRoutine />,
       },
-
       {
         path: "/shop",
         element: <ShopPage />,
@@ -276,6 +276,10 @@ export const router = createBrowserRouter([
           {
             path: "quiz/add",
             element: <AddNewQuiz />,
+          },
+          {
+            path: "quiz/edit/:id",
+            element: <EditQuiz />,
           },
           {
             path: "voucher",

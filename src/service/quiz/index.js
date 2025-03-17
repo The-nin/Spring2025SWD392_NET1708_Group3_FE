@@ -19,60 +19,59 @@ export const getAllQuizs = async () => {
     });
     return response;
   } catch (error) {
-    return handleError(error, "Failed to fetch quizzes");
+    return handleError(error, "Không thể lấy danh sách Quiz");
   }
 };
 
-// ✅ Fetch quiz details by ID (Admin Access Required)
-export const getQuizById = async (quizId) => {
+// ✅ Lấy chi tiết Quiz theo ID (Yêu cầu quyền Admin)
+
+export const getQuizById = async (id) => {
   const token = localStorage.getItem("token");
   try {
-    const response = await instance.get(`/admin/quizs/${quizId}`, {
+    const response = await instance.get(`/admin/quizs/${id}`, {
       headers: {
         authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
-    return {
-      error: false,
-      result: response.data?.result,
-      message: response.data?.message,
-    };
+    console.log(response);
+    return response;
   } catch (error) {
-    return handleError(error, "Failed to fetch quiz details");
+    return handleError(error, "Không thể lấy chi tiết Quiz");
   }
 };
 
-// ✅ Submit a quiz (Admin Access Required)
-export const addQuiz = async (quizId, quizData) => {
+export const addQuiz = async (quizData) => {
   const token = localStorage.getItem("token");
-
   try {
-    console.log("📤 Submitting Quiz:", JSON.stringify(quizData, null, 2)); // ✅ Logs the request body
+    console.log("Đang tạo Quiz:", JSON.stringify(quizData, null, 2));
 
-    const response = await instance.post(`/admin/quizs/${quizId}`, quizData, {
+    const response = await instance.post("admin/quizs", quizData, {
       headers: {
         authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
 
-    console.log("✅ API Response:", response.data); // ✅ Logs the response if successful
+    console.log("Phản hồi API:", response.data);
 
     return {
       error: false,
       result: response.data?.result,
-      message: response.data?.message,
+      message: response.data?.message || "Tạo Quiz thành công",
     };
   } catch (error) {
-    console.error("❌ Error Response:", error.response?.data || error.message);
-    return handleError(error, "Failed to submit quiz");
+    console.error("Lỗi phản hồi:", error.response?.data || error.message);
+    return handleError(error, "Không thể tạo Quiz");
   }
 };
 
-// ✅ Update an existing quiz (Admin Access Required)
+// ✅ Cập nhật Quiz (Yêu cầu quyền Admin)
 export const updateQuiz = async (quizId, quizData) => {
+  console.log("📤 Dữ liệu Quiz:", JSON.stringify({ quizData }, null, 2));
+
   const token = localStorage.getItem("token");
+
   try {
     const response = await instance.put(`/admin/quizs/${quizId}`, quizData, {
       headers: {
@@ -82,16 +81,16 @@ export const updateQuiz = async (quizId, quizData) => {
     });
 
     return {
-      error: false,
-      result: response.data?.result,
-      message: response.data?.message,
+      success: response.status === 200 || response.status === 201,
+      result: response.data?.result ?? null,
+      message: response.data?.message ?? "Cập nhật Quiz thành công!",
     };
   } catch (error) {
-    return handleError(error, "Failed to update quiz");
+    return handleError(error, "Không thể cập nhật Quiz");
   }
 };
 
-// ✅ Delete a quiz (Admin Access Required)
+// ✅ Xóa Quiz (Yêu cầu quyền Admin)
 export const deleteQuiz = async (quizId) => {
   const token = localStorage.getItem("token");
   try {
@@ -103,32 +102,37 @@ export const deleteQuiz = async (quizId) => {
     return {
       error: false,
       result: response.data?.result,
-      message: response.data?.message,
+      message: response.data?.message || "Xóa Quiz thành công",
     };
   } catch (error) {
-    return handleError(error, "Failed to delete quiz");
+    return handleError(error, "Không thể xóa Quiz");
   }
 };
 
-// ✅ Update quiz status (Admin Access Required)
 export const updateQuizStatus = async (quizId, status) => {
-  const token = localStorage.getItem("token");
   try {
+    const token = localStorage.getItem("token");
+    console.log(quizId, status);
     const response = await instance.patch(
-      `/quizs/${quizId}/status`,
+      `/admin/quizs/changeStatus/${quizId}?status=${status}`,
       { status },
       {
         headers: {
-          authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
     return {
       error: false,
       result: response.data?.result,
-      message: response.data?.message,
+      message: response.data?.message || "Cập nhật trạng thái Quiz thành công",
     };
   } catch (error) {
-    return handleError(error, "Failed to update quiz status");
+    console.error("Lỗi cập nhật trạng thái Quiz:", error);
+    return {
+      error: true,
+      message:
+        error.response?.data?.message || "Không thể cập nhật trạng thái Quiz",
+    };
   }
 };

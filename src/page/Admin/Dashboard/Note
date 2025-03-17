@@ -1,0 +1,154 @@
+import React, { useEffect, useState } from "react";
+import { Card, Col, Row, Statistic, Table, Spin, message } from "antd";
+import { Line, Pie, Column } from "@ant-design/charts";
+import { getDashboardData } from "../../../service/dashboard/index"; // ✅ API Call
+
+const Dashboard = () => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getDashboardData(); // Fetch data from API
+        setStats(data);
+      } catch (error) {
+        message.error("Lỗi khi tải dữ liệu từ server!");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", padding: "50px" }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  // ✅ Ensure `stats` is available before accessing properties
+  const lineConfig = {
+    data: stats?.salesData || [],
+    xField: "month",
+    yField: "sales",
+    smooth: true,
+    height: 300,
+    point: { size: 5, shape: "circle" },
+    color: "#1890ff",
+  };
+
+  const pieConfig = {
+    data: stats?.productRevenue || [],
+    angleField: "revenue",
+    colorField: "category",
+    height: 250,
+    label: { type: "spider", style: { fontSize: 14 } },
+  };
+
+  const topCustomersConfig = {
+    data: stats?.topSpendingCustomers || [],
+    xField: "customer",
+    yField: "spent",
+    height: 250,
+    color: "#ff4d4f",
+    label: { position: "top" },
+    xAxis: { label: { rotate: 45 } },
+  };
+
+  const productColumns = [
+    { title: "Sản phẩm", dataIndex: "product", key: "product" },
+    { title: "Số lượng bán", dataIndex: "quantity", key: "quantity" },
+  ];
+
+  return (
+    <div style={{ padding: 20 }}>
+      {/* Thống kê tổng quan */}
+      <Row gutter={[16, 16]}>
+        <Col xs={12} sm={12} md={6}>
+          <Card
+            bordered={false}
+            style={{ boxShadow: "0px 4px 10px rgba(0,0,0,0.1)" }}
+          >
+            <Statistic
+              title="Tổng số khách hàng"
+              value={stats?.totalCustomers || 0}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={12} md={6}>
+          <Card
+            bordered={false}
+            style={{ boxShadow: "0px 4px 10px rgba(0,0,0,0.1)" }}
+          >
+            <Statistic
+              title="Tổng doanh thu"
+              value={stats?.totalRevenue || 0}
+              prefix="₫"
+              formatter={(value) => value.toLocaleString()}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={12} md={6}>
+          <Card
+            bordered={false}
+            style={{ boxShadow: "0px 4px 10px rgba(0,0,0,0.1)" }}
+          >
+            <Statistic
+              title="Tổng đơn hàng"
+              value={stats?.totalOrders?.toLocaleString() || 0}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={12} md={6}>
+          <Card
+            bordered={false}
+            style={{ boxShadow: "0px 4px 10px rgba(0,0,0,0.1)" }}
+          >
+            <Statistic
+              title="Tổng sản phẩm đã bán"
+              value={stats?.totalProductsSold?.toLocaleString() || 0}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Biểu đồ */}
+      <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
+        <Col xs={24} md={12}>
+          <Card title="Tổng quan doanh số theo tháng">
+            <Line {...lineConfig} />
+          </Card>
+        </Col>
+        <Col xs={24} md={12}>
+          <Card title="Doanh thu theo danh mục sản phẩm">
+            <Pie {...pieConfig} />
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
+        <Col xs={24} md={12}>
+          <Card title="Khách hàng chi tiêu nhiều nhất">
+            <Column {...topCustomersConfig} />
+          </Card>
+        </Col>
+        <Col xs={24} md={12}>
+          <Card title="Sản phẩm bán chạy nhất">
+            <Table
+              dataSource={stats?.topSellingProducts || []}
+              columns={productColumns}
+              pagination={false}
+              bordered
+            />
+          </Card>
+        </Col>
+      </Row>
+    </div>
+  );
+};
+
+export default Dashboard;

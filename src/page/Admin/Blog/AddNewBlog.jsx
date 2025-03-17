@@ -34,14 +34,14 @@ const AddNewBlog = () => {
       !values.imageUrl ||
       !content.trim()
     ) {
-      toast.error("Please fill all required fields");
+      toast.error("Hãy nhập toàn bộ ô trống");
       return;
     }
 
     // Extract file from the Ant Design Upload component
     const file = values.imageUrl?.[0]?.originFileObj;
     if (!file) {
-      toast.error("Please upload a valid image");
+      toast.error("Hãy thêm hình ảnh");
       return;
     }
 
@@ -51,7 +51,7 @@ const AddNewBlog = () => {
       // ✅ Upload image to Cloudinary
       const imageUrl = await uploadToCloudinary(file);
       if (!imageUrl) {
-        toast.error("Image upload failed");
+        toast.error("Thêm hình ảnh thất bại");
         return;
       }
 
@@ -101,10 +101,10 @@ const AddNewBlog = () => {
           onClick={() => navigate("/admin/blog")}
           className="mb-4 hover:bg-gray-100"
         >
-          Back to Blogs
+          Quay lại quản lý Blog
         </Button>
 
-        <Card title="Add New Blog" className="max-w-6xl mx-auto shadow-md">
+        <Card title="Thêm Blog mới" className="max-w-6xl mx-auto shadow-md">
           <Form
             form={form}
             layout="vertical"
@@ -114,37 +114,40 @@ const AddNewBlog = () => {
             {/* Blog Title */}
             <Form.Item
               name="blogTitle"
-              label="Blog Title"
+              label="Tiêu đề"
               rules={[
-                { required: true, message: "Please enter blog title" },
-                { min: 3, message: "Title must be at least 3 characters" },
+                { required: true, message: "Nhập tiêu đề " },
+                { min: 3, message: "Tiêu đề có ít nhất 3 chữ cái" },
               ]}
             >
-              <Input placeholder="Enter blog title" />
+              <Input placeholder="Nhập tiêu đề" />
             </Form.Item>
 
             {/* Blog Introduction */}
             <Form.Item
               name="blogIntroduction"
-              label="Blog Introduction"
+              label="Giới thiệu Blog"
               rules={[
-                { required: true, message: "Please enter blog introduction" },
+                { required: true, message: "Nhập đoạn giới thiệu Blog" },
                 {
                   min: 50,
-                  message: "Introduction must be at least 50 characters",
+                  message: "Giới thiệu có ít nhất 50 chữ cái",
                 },
               ]}
             >
-              <Input.TextArea rows={3} placeholder="Enter blog introduction" />
+              <Input.TextArea
+                rows={3}
+                placeholder="Nhập đoạn giới thiệu Blog"
+              />
             </Form.Item>
 
             {/* Image URL */}
             <Form.Item
               name="imageUrl"
-              label="Thumbnail Image URL"
+              label="Ảnh Thumbnail"
               valuePropName="fileList"
               getValueFromEvent={normFile}
-              rules={[{ required: true, message: "Please upload an image" }]}
+              rules={[{ required: true, message: "Thêm ảnh" }]}
             >
               <Upload
                 beforeUpload={() => false}
@@ -152,18 +155,16 @@ const AddNewBlog = () => {
                 accept="image/*"
                 listType="picture"
               >
-                <Button icon={<UploadOutlined />}>Select Image</Button>
+                <Button icon={<UploadOutlined />}>Chọn hình ảnh</Button>
               </Upload>
             </Form.Item>
 
             {/* Blog Content */}
-            <Form.Item label="Blog Content">
+            <Form.Item label="Content Blog">
               <Form.Item
                 name="content"
                 noStyle
-                rules={[
-                  { required: true, message: "Please enter blog content" },
-                ]}
+                rules={[{ required: true, message: "Hãy nhập blog content" }]}
               >
                 <ReactQuill
                   theme="snow"
@@ -176,10 +177,8 @@ const AddNewBlog = () => {
             {/* Publish Date */}
             <Form.Item
               name="publishDate"
-              label="Publish Date"
-              rules={[
-                { required: true, message: "Please select a publish date" },
-              ]}
+              label="Ngày sản xuất"
+              rules={[{ required: true, message: "Hãy nhập ngày tạo" }]}
             >
               <DatePicker
                 disabledDate={disabledDate}
@@ -189,13 +188,13 @@ const AddNewBlog = () => {
             </Form.Item>
             <Form.Item
               name="author"
-              label="Create By"
+              label="Tác giả"
               rules={[
-                { required: true, message: "Please enter athor" },
-                { min: 3, message: "Title must be at least 3 characters" },
+                { required: true, message: "Hãy nhập tác giả" },
+                { min: 3, message: "Tác giả có ít nhất 3 chữ cái" },
               ]}
             >
-              <Input placeholder="Enter blog title" />
+              <Input placeholder="Hãy nhập tác giả" />
             </Form.Item>
             {/* Submit Button */}
             <Form.Item>

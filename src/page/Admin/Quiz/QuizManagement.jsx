@@ -1,221 +1,328 @@
 import React, { useEffect, useState } from "react";
-import { Form, Input, Button, Card, Select } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
-import { useNavigate, useParams } from "react-router-dom";
-import { getQuizById, updateQuiz } from "../../../service/quiz/index";
+import { Table, Button, Space, Tooltip, Modal, Switch } from "antd";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  LoadingOutlined,
+  EyeOutlined,
+  UndoOutlined,
+} from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import {
+  getAllQuizs,
+  deleteQuiz,
+  updateQuizStatus,
+} from "../../../service/quiz/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const { Option } = Select;
-const skinTypes = ["SENSITIVE_SKIN", "OILY_SKIN", "DRY_SKIN", "NORMAL_SKIN"];
-
-const EditQuiz = () => {
+const QuizManagement = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [quizzes, setQuizzes] = useState([]);
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+  const [selectedQuiz, setSelectedQuiz] = useState(null);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [deletingQuizId, setDeletingQuizId] = useState(null);
 
   useEffect(() => {
-    const fetchQuiz = async () => {
-      try {
-        const response = await getQuizById(id);
-        if (response && response.result) {
-          form.setFieldsValue(response.result);
-        } else {
-          toast.error("Failed to fetch quiz data");
-        }
-      } catch (error) {
-        console.error("Error fetching quiz:", error);
-        toast.error("Error fetching quiz");
-      }
-    };
-    fetchQuiz();
-  }, [id, form]);
+    fetchQuizzes();
+  }, [showDeleted]);
 
-  const onFinish = async (values) => {
-    if (!values.title || !values.description || !values.questions) {
-      toast.error("Please fill all required fields");
-      return;
-    }
-
+  const fetchQuizzes = async (params = {}) => {
     try {
       setLoading(true);
-      const quizData = {
-        id,
-        title: values.title,
-        description: values.description,
-        questions: values.questions.map((q) => ({
-          title: q.title,
-          answers: q.answers.map((a) => ({
-            answerText: a.answerText,
-            skinType: a.skinType,
-          })),
-        })),
-      };
+      const response = await getAllQuizs(params.page, params.pageSize);
 
-      const response = await updateQuiz(quizData);
+      if (!response.error) {
+        let quizList = Array.isArray(response.result) ? response.result : [];
 
-      if (response && response.result) {
-        toast.success("Quiz updated successfully!");
-        setTimeout(() => navigate("/admin/quiz"), 2000);
+        if (!showDeleted) {
+          quizList = quizList.filter((quiz) => !quiz.isDeleted);
+        }
+
+        setQuizzes(quizList);
+        setPagination((prev) => ({
+          ...prev,
+          current: params.page || prev.current,
+          pageSize: params.pageSize || prev.pageSize,
+          total: quizList.length,
+        }));
       } else {
-        toast.error(response?.message || "Error updating quiz");
+        toast.error(response.message);
       }
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Failed to update quiz");
+      toast.error("Failed to fetch quizzes");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const getSkinTypeLabel = (skinType) => {
+    const skinTypeMap = {
+      DRY_SKIN: "Da Khô",
+      SENSITIVE_SKIN: "Da Nhạy Cảm",
+      OILY_SKIN: "Da Dầu",
+      NORMAL_SKIN: "Da Thường",
+      COMBINATION_SKIN: "Da Hỗn Hợp",
+    };
+    return skinTypeMap[skinType] || "Không xác định"; // Trả về "Không xác định" nếu không khớp
+  };
+  const handleTableChange = (newPagination) => {
+    setPagination(newPagination);
+    fetchQuizzes({
+      page: newPagination.current,
+      pageSize: newPagination.pageSize,
+    });
+  };
+
+  const toggleQuizStatus = async (quiz) => {
+    try {
+      setLoading(true);
+      const newStatus = quiz.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+      const response = await updateQuizStatus(quiz.id, newStatus);
+
+      if (!response.error) {
+        toast.success("Quiz status updated successfully!");
+        setQuizzes((prevQuiz) =>
+          prevQuiz.map((b) =>
+            b.id === quiz.id ? { ...b, status: newStatus } : b
+          )
+        );
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error("Failed to update quiz status");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="h-[calc(100vh-64px)] bg-gray-50">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-      />
-      <div className="p-6">
-        <Button
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate("/admin/quiz")}
-          className="mb-4 hover:bg-gray-100"
-        >
-          Back to Quizzes
-        </Button>
+  const showDeleteConfirm = (quiz) => {
+    setSelectedQuiz(quiz);
+    setDeleteModalVisible(true);
+  };
 
-        <Card title="Edit Quiz" className="max-w-6xl mx-auto shadow-md">
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            autoComplete="off"
-          >
-            <Form.Item
-              name="title"
-              label="Quiz Title"
-              rules={[{ required: true, message: "Please enter quiz title" }]}
-            >
-              <Input placeholder="Enter quiz title" />
-            </Form.Item>
+  const handleDeleteConfirm = async () => {
+    if (!selectedQuiz) return;
 
-            <Form.Item
-              name="description"
-              label="Quiz Description"
-              rules={[
-                { required: true, message: "Please enter quiz description" },
-              ]}
-            >
-              <Input.TextArea rows={3} placeholder="Enter quiz description" />
-            </Form.Item>
+    try {
+      setLoading(true);
+      const response = await deleteQuiz(selectedQuiz.id, { isDeleted: true });
 
-            <Form.List name="questions">
-              {(fields, { add, remove }) => (
-                <div>
-                  {fields.map(({ key, name, ...restField }) => (
-                    <Card
-                      key={key}
-                      className="mb-4"
-                      title={`Question ${key + 1}`}
-                    >
-                      <Form.Item
-                        {...restField}
-                        name={[name, "title"]}
-                        label="Question Title"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please enter question title",
-                          },
-                        ]}
-                      >
-                        <Input placeholder="Enter question title" />
-                      </Form.Item>
+      if (!response.error) {
+        toast.success("Quiz deleted successfully!");
+        fetchQuizzes();
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error("Failed to delete quiz");
+    } finally {
+      setLoading(false);
+      setDeleteModalVisible(false);
+      setDeletingQuizId(null);
+      setSelectedQuiz(null);
+    }
+  };
 
-                      <Form.List name={[name, "answers"]}>
-                        {(
-                          answerFields,
-                          { add: addAnswer, remove: removeAnswer }
-                        ) => (
-                          <div>
-                            {answerFields.map(
-                              ({
-                                key: answerKey,
-                                name: answerName,
-                                ...answerRestField
-                              }) => (
-                                <div key={answerKey} className="flex gap-2">
-                                  <Form.Item
-                                    {...answerRestField}
-                                    name={[answerName, "answerText"]}
-                                    label="Answer Text"
-                                    rules={[
-                                      {
-                                        required: true,
-                                        message: "Please enter answer text",
-                                      },
-                                    ]}
-                                  >
-                                    <Input placeholder="Enter answer text" />
-                                  </Form.Item>
-                                  <Form.Item
-                                    {...answerRestField}
-                                    name={[answerName, "skinType"]}
-                                    label="Skin Type"
-                                    rules={[
-                                      {
-                                        required: true,
-                                        message: "Please select skin type",
-                                      },
-                                    ]}
-                                  >
-                                    <Select placeholder="Select skin type">
-                                      {skinTypes.map((type) => (
-                                        <Option key={type} value={type}>
-                                          {type}
-                                        </Option>
-                                      ))}
-                                    </Select>
-                                  </Form.Item>
-                                  <Button
-                                    type="dashed"
-                                    onClick={() => removeAnswer(answerName)}
-                                  >
-                                    Remove Answer
-                                  </Button>
-                                </div>
-                              )
-                            )}
-                            <Button type="dashed" onClick={() => addAnswer()}>
-                              Add Answer
-                            </Button>
-                          </div>
-                        )}
-                      </Form.List>
+  const showViewModal = (quiz) => {
+    setSelectedQuiz(quiz);
+    setViewModalVisible(true);
+  };
 
-                      <Button type="dashed" onClick={() => remove(name)}>
-                        Remove Question
-                      </Button>
-                    </Card>
-                  ))}
-                  <Button type="dashed" onClick={() => add()}>
-                    Add Question
-                  </Button>
-                </div>
+  const handleCloseViewModal = () => {
+    setViewModalVisible(false);
+    setSelectedQuiz(null);
+  };
+
+  const columns = [
+    { title: "ID", dataIndex: "id", key: "id", sorter: (a, b) => a.id - b.id },
+    { title: "Tiêu Đề", dataIndex: "title", key: "title" },
+    {
+      title: "Mô Tả",
+      dataIndex: "description",
+      key: "description",
+      ellipsis: true,
+    },
+    {
+      title: "Trạng Thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status, record) =>
+        !record.isDeleted && (
+          <Switch
+            checked={status === "ACTIVE"}
+            onChange={() => toggleQuizStatus(record)}
+            checkedChildren="Hoạt động"
+            unCheckedChildren="Không hoạt động"
+          />
+        ),
+    },
+    {
+      title: "Hành Động",
+      key: "actions",
+      render: (_, record) => (
+        <Space>
+          {deletingQuizId === record.id ? (
+            <LoadingOutlined style={{ fontSize: 20 }} />
+          ) : (
+            <>
+              {!record.isDeleted ? (
+                <>
+                  <Tooltip title="Xem Chi Tiết">
+                    <Button
+                      icon={<EyeOutlined />}
+                      onClick={() => showViewModal(record)}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Chỉnh Sửa">
+                    <Button
+                      type="primary"
+                      icon={<EditOutlined />}
+                      onClick={() => navigate(`/admin/quiz/edit/${record.id}`)}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Xóa">
+                    <Button
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => showDeleteConfirm(record)}
+                    />
+                  </Tooltip>
+                </>
+              ) : (
+                <Tooltip title="Khôi Phục">
+                  <Button
+                    type="default"
+                    icon={<UndoOutlined />}
+                    onClick={() => handleRestoreQuiz(record)}
+                  />
+                </Tooltip>
               )}
-            </Form.List>
+            </>
+          )}
+        </Space>
+      ),
+    },
+  ];
 
-            <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                Update Quiz
-              </Button>
-            </Form.Item>
-          </Form>
-        </Card>
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold">Quản Lý Quiz</h2>
+      <div className="flex justify-between items-center mb-4">
+        <Switch
+          checked={showDeleted}
+          onChange={() => setShowDeleted((prev) => !prev)}
+          checkedChildren="Hiện Quiz Đã Xóa"
+          unCheckedChildren="Ẩn Quiz Đã Xóa"
+        />
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/admin/quiz/add")}
+        >
+          Thêm Quiz Mới
+        </Button>
       </div>
+
+      <Table
+        columns={columns}
+        dataSource={quizzes}
+        rowKey="id"
+        pagination={pagination}
+        loading={loading}
+        onChange={handleTableChange}
+      />
+
+      {/* Modal Xem Chi Tiết Quiz */}
+      <Modal
+        title="Chi Tiết Quiz"
+        open={viewModalVisible}
+        onCancel={handleCloseViewModal}
+        footer={null}
+        width={800}
+      >
+        {selectedQuiz && (
+          <div>
+            <p>
+              <strong>ID:</strong> {selectedQuiz.id}
+            </p>
+            <p>
+              <strong>Tiêu Đề:</strong> {selectedQuiz.title}
+            </p>
+            <p>
+              <strong>Mô Tả:</strong> {selectedQuiz.description}
+            </p>
+            <p>
+              <strong>Trạng Thái:</strong>{" "}
+              {selectedQuiz.status === "ACTIVE"
+                ? "Hoạt động"
+                : "Không hoạt động"}
+            </p>
+
+            {/* Hiển thị danh sách câu hỏi */}
+            <h3 className="mt-4">Danh Sách Câu Hỏi:</h3>
+            {selectedQuiz.question && selectedQuiz.question.length > 0 ? (
+              selectedQuiz.question.map((q, index) => (
+                <div key={q.questionId} className="border p-3 mt-2">
+                  <p>
+                    <strong>Câu Hỏi {index + 1}:</strong> {q.title}
+                  </p>
+
+                  {/* Hiển thị danh sách câu trả lời */}
+                  <h4>Danh Sách Đáp Án:</h4>
+                  {q.answers && q.answers.length > 0 ? (
+                    <ul>
+                      {q.answers.map((a) => (
+                        <li key={a.answerId}>
+                          <strong>•</strong> {a.answerText}{" "}
+                          {a.skinType && (
+                            <span
+                              style={{ fontStyle: "italic", color: "gray" }}
+                            >
+                              (Loại da: {getSkinTypeLabel(a.skinType)})
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-500">Không có đáp án</p>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500">Không có câu hỏi</p>
+            )}
+          </div>
+        )}
+      </Modal>
+      <Modal
+        title="Xác Nhận Xóa"
+        open={deleteModalVisible}
+        onOk={handleDeleteConfirm}
+        onCancel={() => {
+          setDeleteModalVisible(false);
+          setSelectedQuiz(null);
+        }}
+        okText="Xóa"
+        cancelText="Hủy"
+        okButtonProps={{ danger: true }}
+      >
+        <p>Bạn có chắc chắn muốn xóa blog "{selectedQuiz?.name}"?</p>
+        <p>Hành động này không thể hoàn tác.</p>
+      </Modal>
+      <ToastContainer />
     </div>
   );
 };
 
-export default EditQuiz;
+export default QuizManagement;

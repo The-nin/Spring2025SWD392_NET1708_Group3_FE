@@ -50,7 +50,7 @@ const BlogManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to fetch blogs");
+      toast.error("Không thể tải blog");
     } finally {
       setLoading(false);
     }
@@ -84,12 +84,12 @@ const BlogManagement = () => {
           prevBlogs.filter((blog) => blog.id !== selectedBlog.id)
         );
         setPagination((prev) => ({ ...prev, total: prev.total - 1 }));
-        toast.success("Blog deleted successfully!");
+        toast.success("Đã xóa blog thành công!");
       } else {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to delete blog");
+      toast.error("Không xóa được blog");
     } finally {
       setDeletingBlogId(null);
       setDeleteModalVisible(false);
@@ -104,7 +104,7 @@ const BlogManagement = () => {
       const response = await updateBlogStatus(blog.id, newStatus);
 
       if (!response.error) {
-        toast.success("Blog status updated successfully!");
+        toast.success("Trạng thái blog đã được cập nhật thành công!");
         setBlogs((prevBlogs) =>
           prevBlogs.map((b) =>
             b.id === blog.id ? { ...b, status: newStatus } : b
@@ -114,7 +114,7 @@ const BlogManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to update blog status");
+      toast.error("Không cập nhật được trạng thái blog");
     } finally {
       setLoading(false);
     }
@@ -146,18 +146,18 @@ const BlogManagement = () => {
       ),
     },
     {
-      title: "Blog Name",
-      dataIndex: "name",
+      title: "Tên Blog",
+      dataIndex: "blogName",
       key: "name",
     },
     {
-      title: "Description",
+      title: "Miêu tả",
       dataIndex: "description",
       key: "description",
       ellipsis: true,
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status, record) => (
@@ -170,7 +170,7 @@ const BlogManagement = () => {
       ),
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (_, record) => (
         <Space>
@@ -208,15 +208,16 @@ const BlogManagement = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Blog Management</h2>
+        <h2 className="text-2xl font-bold">Quản Lý Blog</h2>
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => navigate("/admin/blog/add")}
         >
-          Add New Blog
+          Thêm Blog Mới
         </Button>
       </div>
+
       <Table
         columns={columns}
         dataSource={blogs}
@@ -226,9 +227,9 @@ const BlogManagement = () => {
         onChange={handleTableChange}
       />
 
-      {/* View Blog Modal */}
+      {/* Modal Xem Chi Tiết Blog */}
       <Modal
-        title="Blog Details"
+        title="Chi Tiết Blog"
         open={viewModalVisible}
         onCancel={() => setViewModalVisible(false)}
         footer={null}
@@ -246,22 +247,23 @@ const BlogManagement = () => {
         )}
       </Modal>
 
-      {/* Delete Confirmation Modal */}
+      {/* Modal Xác Nhận Xóa */}
       <Modal
-        title="Confirm Delete"
+        title="Xác Nhận Xóa"
         open={deleteModalVisible}
         onOk={handleDeleteConfirm}
         onCancel={() => {
           setDeleteModalVisible(false);
           setSelectedBlog(null);
         }}
-        okText="Delete"
-        cancelText="Cancel"
+        okText="Xóa"
+        cancelText="Hủy"
         okButtonProps={{ danger: true }}
       >
-        <p>Are you sure you want to delete blog "{selectedBlog?.name}"?</p>
-        <p>This action cannot be undone.</p>
+        <p>Bạn có chắc chắn muốn xóa blog "{selectedBlog?.name}"?</p>
+        <p>Hành động này không thể hoàn tác.</p>
       </Modal>
+
       <ToastContainer />
     </div>
   );
