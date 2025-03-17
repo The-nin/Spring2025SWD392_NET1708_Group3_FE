@@ -7,6 +7,7 @@ const handleError = (error, defaultMessage) => {
     message: error?.response?.result?.message || defaultMessage,
   };
 };
+
 export const getAllVouchers = async () => {
   const token = localStorage.getItem("token");
   try {
@@ -18,13 +19,12 @@ export const getAllVouchers = async () => {
     });
     console.log(response);
     return response;
-
   } catch (error) {
-    return handleError(error, "Failed to fetch blogs");
+    return handleError(error, "Không thể lấy danh sách voucher");
   }
 };
 
-// 🔹 Get voucher by ID
+// 🔹 Lấy voucher theo ID
 export const getVoucherById = async (voucherId) => {
   const token = localStorage.getItem("token");
   try {
@@ -40,24 +40,11 @@ export const getVoucherById = async (voucherId) => {
       message: response.data?.message,
     };
   } catch (error) {
-    return handleError(error, "Failed to fetch user vouchers");
+    return handleError(error, "Không thể lấy thông tin voucher");
   }
 };
-export const getVoucherById = async (voucherId) => {
-  const token = localStorage.getItem("token");
-  try {
-    const response = await instance.get(`admin/vouchers/${voucherId}`, {
-      headers: {
-        authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    console.log(response);
-    return response;
-  } catch (error) {
-    return handleError(error, "Failed to fetch blogs");
-  }
-};
+
+// 🔹 Cập nhật voucher
 export const updateVoucher = async (voucherId, voucherData) => {
   const token = localStorage.getItem("token");
   try {
@@ -74,47 +61,37 @@ export const updateVoucher = async (voucherId, voucherData) => {
     console.log(response);
     return response;
   } catch (error) {
-    return handleError(error, "Failed to fetch blogs");
+    return handleError(error, "Không thể cập nhật voucher");
   }
 };
 
-// 🔹 Create voucher
+// 🔹 Tạo voucher mới
 export const createVoucher = async (voucherData) => {
   const token = localStorage.getItem("token");
   try {
-    // Validate discountType
-    if (!["FIXED_AMOUNT", "PERCENTAGE"].includes(voucherData.discountType)) {
-      throw new Error(
-        "Invalid discount type. Must be either FIXED_AMOUNT or PERCENTAGE"
-      );
-    }
+    console.log("Đang tạo voucher:", JSON.stringify(voucherData, null, 2));
 
     const response = await instance.post("admin/vouchers", voucherData, {
-
-      // ✅ Fixed route
       headers: {
-        Authorization: `Bearer ${token}`,
+        authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
 
-    console.log("Request payload:", voucherData); // Debug log
+    console.log("Phản hồi API:", response.data);
 
-    if (response && response.code === 200) {
-      return {
-        error: false,
-        result: response.result,
-        message: response.message,
-      };
-    }
-    throw new Error(response?.message || "Invalid response format");
+    return {
+      error: false,
+      result: response.data?.result,
+      message: response.data?.message || "Tạo voucher thành công",
+    };
   } catch (error) {
-    console.error("Create voucher error:", error.response?.data); // Debug log
-    return handleError(error, "Failed to create voucher");
+    console.error("Lỗi phản hồi:", error.response?.data || error.message);
+    return handleError(error, "Không thể tạo voucher");
   }
 };
 
-// 🔹 Delete a voucher (Admin Access Required)
+// 🔹 Xóa voucher (Yêu cầu quyền Admin)
 export const deleteVoucher = async (voucherId) => {
   const token = localStorage.getItem("token");
   try {
@@ -131,13 +108,13 @@ export const deleteVoucher = async (voucherId) => {
         message: response.message,
       };
     }
-    throw new Error(response?.message || "Invalid response format");
+    throw new Error(response?.message || "Phản hồi không hợp lệ");
   } catch (error) {
-    return handleError(error, "Failed to delete voucher");
+    return handleError(error, "Không thể xóa voucher");
   }
 };
 
-// 🔹 Update voucher status
+// 🔹 Cập nhật trạng thái voucher
 export const updateVoucherStatus = async (voucherId, status) => {
   const token = localStorage.getItem("token");
   try {
@@ -159,12 +136,13 @@ export const updateVoucherStatus = async (voucherId, status) => {
         message: response.message,
       };
     }
-    throw new Error(response?.message || "Invalid response format");
+    throw new Error(response?.message || "Phản hồi không hợp lệ");
   } catch (error) {
-    return handleError(error, "Failed to update voucher status");
+    return handleError(error, "Không thể cập nhật trạng thái voucher");
   }
 };
 
+// 🔹 Lấy danh sách voucher của tôi
 export const getMyVouchers = async (page = 0, size = 10) => {
   try {
     const response = await instance.get(
@@ -175,9 +153,9 @@ export const getMyVouchers = async (page = 0, size = 10) => {
         },
       }
     );
-    return response; // Trả về trực tiếp response giống như getCart()
+    return response;
   } catch (error) {
-    console.error("Cant get vouchers: ", error);
+    console.error("Không thể lấy danh sách voucher: ", error);
     return {
       error: true,
       message: error.response?.message || "Có lỗi xảy ra khi lấy voucher",
@@ -185,7 +163,7 @@ export const getMyVouchers = async (page = 0, size = 10) => {
   }
 };
 
-// Get available vouchers for exchange
+// 🔹 Lấy danh sách voucher có sẵn để đổi
 export const getAvailableVouchers = async (page = 0, size = 10) => {
   try {
     const response = await instance.get(`/vouchers?page=${page}&size=${size}`, {
@@ -195,7 +173,7 @@ export const getAvailableVouchers = async (page = 0, size = 10) => {
     });
     return response;
   } catch (error) {
-    console.error("Can't get available vouchers: ", error);
+    console.error("Không thể lấy danh sách voucher có sẵn: ", error);
     return {
       error: true,
       message:
@@ -204,7 +182,7 @@ export const getAvailableVouchers = async (page = 0, size = 10) => {
   }
 };
 
-// Exchange voucher
+// 🔹 Đổi voucher
 export const exchangeVoucher = async (voucherId) => {
   const response = await instance.post(
     `/vouchers/exchange-voucher/${voucherId}`,

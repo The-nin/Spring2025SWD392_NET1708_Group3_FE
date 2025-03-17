@@ -42,8 +42,8 @@ import OrderDetail from "../page/Admin/OrderManagement/OrderDetail";
 import UserManagement from "../page/Admin/UserManagement/UserManagement";
 import ServiceManagement from "../page/Admin/ServiceManagement/ServiceManagement";
 import AddNewService from "../page/Admin/ServiceManagement/AddNewService";
-import BatchManagement from "../page/Admin/BatchManagement/BatchManagement";
-import AddNewBatch from "../page/Admin/BatchManagement/AddNewBatch";
+// import BatchManagement from "../page/Admin/BatchManagement/BatchManagement";
+// import AddNewBatch from "../page/Admin/BatchManagement/AddNewBatch";
 import ExpertService from "../page/Admin/ExpertService/ExpertService";
 import PaymentSuccess from "../page/PaymentSuccessPage/PaymentSuccess";
 import CategoryDetail from "../page/Admin/CategoryManagement/CategoryDetail";
@@ -52,7 +52,6 @@ import ProductDetailAdmin from "../page/Admin/ProducManagement/ProductDetail";
 import VNPayReturn from "../page/PaymentPage/Paid/VNPayReturn";
 import OrderFailed from "../components/Order/OrderFailed";
 import OrderSuccess from "../components/Order/OrderSuccess";
-
 
 export const router = createBrowserRouter([
   {
