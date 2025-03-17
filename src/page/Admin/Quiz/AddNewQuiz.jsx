@@ -29,7 +29,7 @@ const AddNewQuiz = () => {
       !values.description.trim() ||
       questions.length === 0
     ) {
-      toast.error("Please fill all required fields");
+      toast.error("Vui lòng điền đầy đủ các thông tin bắt buộc");
       return;
     }
 
@@ -45,20 +45,20 @@ const AddNewQuiz = () => {
       const response = await addQuiz(formattedQuiz);
 
       if (response) {
-        toast.success("Quiz added successfully!");
+        toast.success("Đã thêm Quiz thành công!");
         setTimeout(() => navigate("/admin/quiz"), 2000);
       } else {
-        toast.error(response?.message || "Error adding quiz");
+        toast.error(response?.message || "Lỗi khi thêm quiz");
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Failed to add quiz");
+      toast.error("Không thể thêm quiz");
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Add a new question
+  // Add a new question
   const addQuestion = () => {
     setQuestions([
       ...questions,
@@ -72,7 +72,7 @@ const AddNewQuiz = () => {
     ]);
   };
 
-  // ✅ Remove a question
+  // Remove a question
   const removeQuestion = (index) => {
     if (questions.length > 1) {
       const updatedQuestions = [...questions];
@@ -81,14 +81,14 @@ const AddNewQuiz = () => {
     }
   };
 
-  // ✅ Update question title
+  // Update question title
   const handleQuestionChange = (index, value) => {
     const updatedQuestions = [...questions];
     updatedQuestions[index].title = value;
     setQuestions(updatedQuestions);
   };
 
-  // ✅ Add answer to a question
+  // Add answer to a question
   const addAnswer = (questionIndex) => {
     const updatedQuestions = [...questions];
     updatedQuestions[questionIndex].answers.push({
@@ -99,7 +99,7 @@ const AddNewQuiz = () => {
     setQuestions(updatedQuestions);
   };
 
-  // ✅ Remove an answer from a question
+  // Remove an answer from a question
   const removeAnswer = (questionIndex, answerIndex) => {
     const updatedQuestions = [...questions];
     if (updatedQuestions[questionIndex].answers.length > 1) {
@@ -108,14 +108,14 @@ const AddNewQuiz = () => {
     }
   };
 
-  // ✅ Update answer text
+  // Update answer text
   const handleAnswerChange = (questionIndex, answerIndex, value) => {
     const updatedQuestions = [...questions];
     updatedQuestions[questionIndex].answers[answerIndex].answerText = value;
     setQuestions(updatedQuestions);
   };
 
-  // ✅ Update answer skin type
+  // Update answer skin type
   const handleSkinTypeChange = (questionIndex, answerIndex, value) => {
     const updatedQuestions = [...questions];
     updatedQuestions[questionIndex].answers[answerIndex].skinType = value;
