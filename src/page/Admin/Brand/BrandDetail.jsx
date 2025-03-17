@@ -47,10 +47,10 @@ const BrandDetail = () => {
         onClick={() => navigate("/admin/brand")}
         className="mb-4"
       >
-        Back to Brands
+        Quay lại Thương hiệu
       </Button>
 
-      <Card title="Brand Details">
+      <Card title="Chi tiết Thương hiệu">
         {brand && (
           <div className="space-y-8">
             <div className="flex justify-center">
@@ -63,15 +63,13 @@ const BrandDetail = () => {
 
             <div className="border-b pb-4">
               <h3 className="font-bold text-lg mb-2 text-gray-800">
-                Brand Name
+                Tên Thương hiệu
               </h3>
               <p className="text-gray-700 text-lg">{brand.name}</p>
             </div>
 
             <div>
-              <h3 className="font-bold text-lg mb-2 text-gray-800">
-                Description
-              </h3>
+              <h3 className="font-bold text-lg mb-2 text-gray-800">Mô tả</h3>
               <div
                 dangerouslySetInnerHTML={{ __html: brand.description }}
                 className="prose prose-sm md:prose-base lg:prose-lg max-w-none [&>*]:text-center [&_p]:text-center [&_div]:text-center [&_h1]:text-center [&_h2]:text-center [&_h3]:text-center"

@@ -23,3 +23,26 @@ export const getLatestProducts = async (limit = 4) => {
     };
   }
 };
+
+export const createProductFeedback = async (productId, data) => {
+  try {
+    const response = await instance.post(
+      `/feedbacks/${productId}`,
+      {
+        description: data.content,
+        rating: data.rating,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response;
+  } catch (error) {
+    return {
+      error: true,
+      message: error.response?.data?.message || "Có lỗi xảy ra",
+    };
+  }
+};

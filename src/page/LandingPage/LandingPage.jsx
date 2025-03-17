@@ -119,6 +119,7 @@ const LandingPage = () => {
                 thumbnail={product.thumbnail}
                 tag={product.tag}
                 size={product.size}
+                slug={product.slug}
               />
             </motion.div>
           ))}

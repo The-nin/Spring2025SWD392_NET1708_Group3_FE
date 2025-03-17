@@ -31,10 +31,10 @@ const OrderDetail = () => {
       if (response && response.code === 200) {
         setOrderDetail(response.result);
       } else {
-        toast.error("Failed to fetch order details");
+        toast.error("Không thể tải chi tiết đơn hàng");
       }
     } catch (error) {
-      toast.error("Error loading order details");
+      toast.error("Lỗi khi tải chi tiết đơn hàng");
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ const OrderDetail = () => {
         (newStatus === "DONE" || newStatus === "DELIVERY_FAIL")
       ) {
         if (!deliveryImage) {
-          toast.error("Please upload delivery image");
+          toast.error("Vui lòng tải lên hình ảnh giao hàng");
           return;
         }
 
@@ -66,14 +66,14 @@ const OrderDetail = () => {
       }
 
       if (response && response.code === 200) {
-        toast.success("Order status updated successfully!");
+        toast.success("Cập nhật trạng thái đơn hàng thành công!");
         setDeliveryImage(null);
         fetchOrderDetail();
       } else {
-        toast.error("Failed to update order status");
+        toast.error("Không thể cập nhật trạng thái đơn hàng");
       }
     } catch (error) {
-      toast.error("Error updating order status");
+      toast.error("Lỗi khi cập nhật trạng thái đơn hàng");
       console.error(error);
     } finally {
       setLoading(false);
@@ -85,8 +85,8 @@ const OrderDetail = () => {
     if (currentStatus === "DELIVERING") {
       if (userRole === "DELIVERY_STAFF" || userRole === "ADMIN") {
         return [
-          { value: "DONE", label: "Done" },
-          { value: "DELIVERY_FAIL", label: "Delivery Fail" },
+          { value: "DONE", label: "Hoàn thành" },
+          { value: "DELIVERY_FAIL", label: "Giao hàng thất bại" },
         ];
       }
       return []; // Admin không thể thay đổi trạng thái khi đang delivering
@@ -95,11 +95,11 @@ const OrderDetail = () => {
     switch (currentStatus) {
       case "PENDING":
         return [
-          { value: "PROCESSING", label: "Processing" },
-          { value: "CANCELLED", label: "Cancelled" },
+          { value: "PROCESSING", label: "Đang xử lý" },
+          { value: "CANCELLED", label: "Đã hủy" },
         ];
       case "PROCESSING":
-        return [{ value: "DELIVERING", label: "Delivering" }];
+        return [{ value: "DELIVERING", label: "Đang giao hàng" }];
       default:
         return [];
     }
@@ -151,40 +151,40 @@ const OrderDetail = () => {
 
   const columns = [
     {
-      title: "Product Image",
+      title: "Hình ảnh sản phẩm",
       dataIndex: "thumbnailProduct",
       key: "thumbnailProduct",
       render: (thumbnailProduct) =>
         thumbnailProduct ? (
           <img
             src={thumbnailProduct}
-            alt="Product thumbnail"
+            alt="Hình ảnh sản phẩm"
             className="w-16 h-16 object-cover rounded"
           />
         ) : (
           <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
-            No image
+            Không có hình ảnh
           </div>
         ),
     },
     {
-      title: "Product Name",
+      title: "Tên sản phẩm",
       dataIndex: "productName",
       key: "productName",
     },
     {
-      title: "Quantity",
+      title: "Số lượng",
       dataIndex: "quantity",
       key: "quantity",
     },
     {
-      title: "Price",
+      title: "Giá",
       dataIndex: "price",
       key: "price",
       render: (price) => `$${price.toLocaleString()}`,
     },
     {
-      title: "Total Price",
+      title: "Tổng giá",
       dataIndex: "totalPrice",
       key: "totalPrice",
       render: (price) => `$${price.toLocaleString()}`,
@@ -200,7 +200,7 @@ const OrderDetail = () => {
   }
 
   if (!orderDetail) {
-    return <div>No order details found</div>;
+    return <div>Không tìm thấy chi tiết đơn hàng</div>;
   }
 
   return (
@@ -211,60 +211,60 @@ const OrderDetail = () => {
           onClick={() => navigate("/admin/order")}
           className="mr-4"
         >
-          Back to Orders
+          Quay lại Đơn hàng
         </Button>
-        <h2 className="text-2xl font-bold m-0">Order Details</h2>
+        <h2 className="text-2xl font-bold m-0">Chi tiết Đơn hàng</h2>
       </div>
 
       <Card className="mb-6">
-        <Descriptions title="Order Information" bordered>
-          <Descriptions.Item label="Order ID">
+        <Descriptions title="Thông tin Đơn hàng" bordered>
+          <Descriptions.Item label="Mã Đơn hàng">
             {orderDetail.orderId}
           </Descriptions.Item>
-          <Descriptions.Item label="Total Amount">
+          <Descriptions.Item label="Tổng tiền">
             ${orderDetail.totalAmount.toLocaleString()}
           </Descriptions.Item>
-          <Descriptions.Item label="Username">
+          <Descriptions.Item label="Tên người dùng">
             {orderDetail.username}
           </Descriptions.Item>
-          <Descriptions.Item label="Order Date">
+          <Descriptions.Item label="Ngày đặt hàng">
             {new Date(orderDetail.orderDate).toLocaleString()}
           </Descriptions.Item>
-          <Descriptions.Item label="Payment Method">
+          <Descriptions.Item label="Phương thức thanh toán">
             {orderDetail.paymentMethod}
           </Descriptions.Item>
-          <Descriptions.Item label="Payment Status">
+          <Descriptions.Item label="Trạng thái thanh toán">
             <Tag color={orderDetail.paymentStatus === "PAID" ? "green" : "red"}>
               {orderDetail.paymentStatus}
             </Tag>
           </Descriptions.Item>
-          <Descriptions.Item label="Order Status">
+          <Descriptions.Item label="Trạng thái đơn hàng">
             {renderOrderStatus()}
           </Descriptions.Item>
-          <Descriptions.Item label="Order Info" span={3}>
+          <Descriptions.Item label="Thông tin đơn hàng" span={3}>
             {orderDetail.orderInfo}
           </Descriptions.Item>
         </Descriptions>
       </Card>
 
       <Card className="mb-6">
-        <Descriptions title="Shipping Address" bordered>
-          <Descriptions.Item label="Name">
+        <Descriptions title="Địa chỉ giao hàng" bordered>
+          <Descriptions.Item label="Tên">
             {orderDetail.address.name}
           </Descriptions.Item>
-          <Descriptions.Item label="Phone">
+          <Descriptions.Item label="Số điện thoại">
             {orderDetail.address.phone}
           </Descriptions.Item>
-          <Descriptions.Item label="City">
+          <Descriptions.Item label="Thành phố">
             {orderDetail.address.city}
           </Descriptions.Item>
-          <Descriptions.Item label="Address" span={3}>
+          <Descriptions.Item label="Địa chỉ" span={3}>
             {orderDetail.address.addressLine}
           </Descriptions.Item>
         </Descriptions>
       </Card>
 
-      <Card title="Order Items">
+      <Card title="Sản phẩm đặt hàng">
         <Table
           columns={columns}
           dataSource={orderDetail.orderResponseItemList}
@@ -274,10 +274,10 @@ const OrderDetail = () => {
       </Card>
 
       {orderDetail.status === "DONE" && orderDetail.imageOrderSuccess && (
-        <Card title="Delivery Confirmation Image" className="mt-6">
+        <Card title="Hình ảnh xác nhận giao hàng" className="mt-6">
           <img
             src={orderDetail.imageOrderSuccess}
-            alt="Delivery confirmation"
+            alt="Xác nhận giao hàng"
             className="max-w-6xl mx-auto h-96"
           />
         </Card>

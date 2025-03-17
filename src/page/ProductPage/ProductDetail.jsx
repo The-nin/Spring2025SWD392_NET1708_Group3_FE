@@ -1,16 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  Minus,
-  Plus,
-  Heart,
-  ChevronDown,
-  Star,
-  ShoppingBag,
-} from "lucide-react";
-import { getProductDetail } from "../../service/product";
+import { Minus, Plus, Star, ShoppingBag } from "lucide-react";
+import { getProductDetail, createProductFeedback } from "../../service/product";
 import { addItemToCart } from "../../service/cart/cart";
-import imgProduct from "../../assets/Rectangle 3.png";
 import { toast } from "react-toastify";
 
 // Add TabButton component definition
@@ -119,29 +111,22 @@ const ProductDetail = () => {
   const { slug } = useParams();
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState(null);
-  const [mainImage, setMainImage] = useState(imgProduct);
+  const [mainImage, setMainImage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("description");
 
-  // Add these new states for the complete UI
-  const [productSpecs] = useState({
-    parameters: [
-      { name: "Skin Type", value: "All Skin Types" },
-      { name: "Product Type", value: "Serum" },
-      { name: "Texture", value: "Lightweight, Non-greasy" },
-      { name: "Size", value: "30ml" },
-      { name: "Country of Origin", value: "Korea" },
-    ],
+  // Update productSpecs to use data from API
+  const [productSpecs, setProductSpecs] = useState({
+    parameters: [],
     usage: [
-      "Apply 2-3 drops to clean, dry skin",
-      "Gently pat into face and neck",
-      "Allow to absorb before applying moisturizer",
-      "Use morning and evening for best results",
-      "Avoid direct contact with eyes",
+      "Thoa 2-3 giọt lên da sạch, khô",
+      "Nhẹ nhàng vỗ nhẹ lên mặt và cổ",
+      "Để thẩm thấu trước khi thoa kem dưỡng ẩm",
+      "Sử dụng buổi sáng và buổi tối để có kết quả tốt nhất",
+      "Tránh tiếp xúc trực tiếp với mắt",
     ],
-    ingredients:
-      "Water, Butylene Glycol, Glycerin, Niacinamide, Pentylene Glycol, 1,2-Hexanediol, Sodium Hyaluronate, Hydroxyethylcellulose, Tocopherol, Carbomer, Panthenol, Allantoin",
+    ingredients: "",
   });
 
   // Add states for reviews
@@ -178,6 +163,34 @@ const ProductDetail = () => {
         const response = await getProductDetail(slug);
         if (!response.error) {
           setProduct(response.result);
+
+          // Update productSpecs with data from API
+          if (response.result.specification) {
+            const specData = response.result.specification;
+            const parameters = Object.entries(specData).map(([key, value]) => {
+              // Map API keys to Vietnamese labels
+              const nameMap = {
+                origin: "Xuất xứ",
+                brandOrigin: "Nguồn gốc thương hiệu",
+                manufacturingLocation: "Nơi sản xuất",
+                skinType: "Loại da",
+              };
+
+              return {
+                name: nameMap[key] || key,
+                value: value,
+              };
+            });
+
+            setProductSpecs((prev) => ({
+              ...prev,
+              parameters,
+              ingredients: response.result.ingredient || "",
+              usage: response.result.usageInstruction
+                ? [response.result.usageInstruction]
+                : prev.usage,
+            }));
+          }
         } else {
           toast.error(response.message);
         }
@@ -228,20 +241,31 @@ const ProductDetail = () => {
     setReviewForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmitReview = (e) => {
+  const handleSubmitReview = async (e) => {
     e.preventDefault();
-    const newReview = {
-      id: reviews.length + 1,
-      name: reviewForm.name,
-      rating: reviewForm.rating,
-      date: new Date().toISOString().split("T")[0],
-      content: reviewForm.content,
-      helpful: 0,
-    };
-    setReviews([...reviews, newReview]);
-    setReviewForm({ name: "", email: "", content: "", rating: 5 });
-    setShowReviewForm(false);
-    toast.success("Cảm ơn bạn đã đánh giá sản phẩm!");
+    try {
+      const response = await createProductFeedback(product.id, {
+        content: reviewForm.content,
+        rating: reviewForm.rating,
+      });
+
+      if (!response.error) {
+        // Refresh product details to get updated feedback
+        const updatedProduct = await getProductDetail(slug);
+        if (!updatedProduct.error) {
+          setProduct(updatedProduct.result);
+        }
+
+        // Reset form and hide it
+        setReviewForm({ name: "", email: "", content: "", rating: 5 });
+        setShowReviewForm(false);
+        toast.success("Cảm ơn bạn đã đánh giá sản phẩm!");
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi gửi đánh giá");
+    }
   };
 
   const handleHelpful = (id) => {
@@ -297,22 +321,41 @@ const ProductDetail = () => {
               {/* Ratings */}
               <div className="flex items-center">
                 <RatingStars rating={product.rating || 5} />
-                <span className="ml-2 text-sm text-gray-600">0 reviews</span>
+                <span className="ml-2 text-sm text-gray-600">
+                  {product.feedBacks?.length || 0} đánh giá
+                </span>
               </div>
             </div>
 
             {/* Availability */}
             <div className="py-4 border-t border-b border-gray-200">
               <div className="flex items-center space-x-2">
-                <span className="font-medium text-gray-700">Availability:</span>
+                <span className="font-medium text-gray-700">Tình trạng:</span>
                 {product.stock > 0 ? (
                   <span className="text-green-600">
-                    In Stock ({product.stock} items)
+                    Còn hàng ({product.stock} sản phẩm)
                   </span>
                 ) : (
-                  <span className="text-red-600">Out of Stock</span>
+                  <span className="text-red-600">Hết hàng</span>
                 )}
               </div>
+              {/* Add expiration date display */}
+              {product.expirationTime && (
+                <div className="flex items-center space-x-2 mt-2">
+                  <span className="font-medium text-gray-700">
+                    Hạn sử dụng:
+                  </span>
+                  <span className="text-gray-600">
+                    {new Date(product.expirationTime)
+                      .toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
+                      .replace(/\//g, "/")}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Quantity and Cart - Moved up */}
@@ -325,11 +368,29 @@ const ProductDetail = () => {
                   >
                     <Minus size={16} />
                   </button>
-                  <span className="w-10 text-center font-medium">
-                    {quantity}
-                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={quantity}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      if (!isNaN(value) && value > 0) {
+                        setQuantity(value);
+                      } else if (e.target.value === "") {
+                        setQuantity("");
+                      }
+                    }}
+                    onBlur={() => {
+                      if (quantity === "" || quantity < 1) {
+                        setQuantity(1);
+                      }
+                    }}
+                    className="w-12 text-center font-medium border-none focus:ring-0 focus:outline-none"
+                  />
                   <button
-                    onClick={() => setQuantity(quantity + 1)}
+                    onClick={() =>
+                      setQuantity(quantity === "" ? 1 : quantity + 1)
+                    }
                     className="p-2 hover:bg-gray-100 rounded-md"
                   >
                     <Plus size={16} />
@@ -341,7 +402,7 @@ const ProductDetail = () => {
                   className="flex-1 bg-black hover:bg-gray-800 text-white px-6 py-3 rounded-md font-medium flex items-center justify-center space-x-2 transition-colors"
                 >
                   <ShoppingBag size={18} />
-                  <span>ADD TO CART</span>
+                  <span>THÊM VÀO GIỎ HÀNG</span>
                 </button>
               </div>
 
@@ -349,7 +410,7 @@ const ProductDetail = () => {
                 onClick={handleBuyNow}
                 className="w-full bg-black hover:bg-gray-800 text-white py-3 rounded-md font-medium transition-colors"
               >
-                BUY IT NOW
+                MUA NGAY
               </button>
             </div>
 
@@ -361,31 +422,31 @@ const ProductDetail = () => {
                     isActive={activeTab === "description"}
                     onClick={() => setActiveTab("description")}
                   >
-                    Description
+                    Mô tả
                   </TabButton>
                   <TabButton
                     isActive={activeTab === "parameters"}
                     onClick={() => setActiveTab("parameters")}
                   >
-                    Parameters
+                    Thông số
                   </TabButton>
                   <TabButton
                     isActive={activeTab === "usage"}
                     onClick={() => setActiveTab("usage")}
                   >
-                    How to Use
+                    Cách sử dụng
                   </TabButton>
                   <TabButton
                     isActive={activeTab === "ingredients"}
                     onClick={() => setActiveTab("ingredients")}
                   >
-                    Ingredients
+                    Thành phần
                   </TabButton>
                   <TabButton
                     isActive={activeTab === "reviews"}
                     onClick={() => setActiveTab("reviews")}
                   >
-                    Reviews ({reviews.length})
+                    Đánh giá ({product.feedBacks?.length || 0})
                   </TabButton>
                 </nav>
               </div>
@@ -430,20 +491,38 @@ const ProductDetail = () => {
                 {/* Usage Tab */}
                 {activeTab === "usage" && (
                   <div className="space-y-4">
-                    <ol className="list-decimal pl-5 space-y-2">
-                      {productSpecs.usage.map((step, idx) => (
-                        <li key={idx} className="text-gray-600">
-                          {step}
-                        </li>
-                      ))}
-                    </ol>
+                    {product.usageInstruction ? (
+                      <div
+                        dangerouslySetInnerHTML={createMarkup(
+                          product.usageInstruction
+                        )}
+                      />
+                    ) : (
+                      <ol className="list-decimal pl-5 space-y-2">
+                        {productSpecs.usage.map((step, idx) => (
+                          <li key={idx} className="text-gray-600">
+                            {step}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
                   </div>
                 )}
 
                 {/* Ingredients Tab */}
                 {activeTab === "ingredients" && (
                   <div className="space-y-4">
-                    <p className="text-gray-600">{productSpecs.ingredients}</p>
+                    {product.ingredient ? (
+                      <div
+                        dangerouslySetInnerHTML={createMarkup(
+                          product.ingredient
+                        )}
+                      />
+                    ) : (
+                      <p className="text-gray-600">
+                        {productSpecs.ingredients}
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -452,12 +531,14 @@ const ProductDetail = () => {
                   <div className="space-y-6">
                     {/* Review Form Button */}
                     <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-medium">Customer Reviews</h3>
+                      <h3 className="text-lg font-medium">
+                        Đánh giá từ khách hàng
+                      </h3>
                       <button
                         onClick={() => setShowReviewForm(!showReviewForm)}
                         className="text-sm font-medium text-gray-600 hover:text-gray-900"
                       >
-                        {showReviewForm ? "Cancel Review" : "Write a Review"}
+                        {showReviewForm ? "Hủy đánh giá" : "Viết đánh giá"}
                       </button>
                     </div>
 
@@ -467,37 +548,22 @@ const ProductDetail = () => {
                         onSubmit={handleSubmitReview}
                         className="space-y-4 bg-gray-50 p-4 rounded-lg"
                       >
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Name
-                            </label>
-                            <input
-                              type="text"
-                              name="name"
-                              value={reviewForm.name}
-                              onChange={handleReviewChange}
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Email
-                            </label>
-                            <input
-                              type="email"
-                              name="email"
-                              value={reviewForm.email}
-                              onChange={handleReviewChange}
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                              required
-                            />
-                          </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Tên
+                          </label>
+                          <input
+                            type="text"
+                            name="name"
+                            value={reviewForm.name}
+                            onChange={handleReviewChange}
+                            className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-300 focus:ring-gray-300 sm:text-sm py-2"
+                            required
+                          />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            Rating
+                            Đánh giá
                           </label>
                           <div className="flex mt-1">
                             {[1, 2, 3, 4, 5].map((star) => (
@@ -512,7 +578,7 @@ const ProductDetail = () => {
                                 }
                               >
                                 <Star
-                                  size={24}
+                                  size={28}
                                   className={
                                     reviewForm.rating >= star
                                       ? "fill-amber-400 text-amber-400"
@@ -525,35 +591,60 @@ const ProductDetail = () => {
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">
-                            Review
+                            Nội dung
                           </label>
                           <textarea
                             name="content"
-                            rows="4"
+                            rows="5"
                             value={reviewForm.content}
                             onChange={handleReviewChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                            className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-300 focus:ring-gray-300 sm:text-sm py-2"
                             required
                           />
                         </div>
                         <button
                           type="submit"
-                          className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800"
+                          className="w-full bg-black text-white py-3 px-4 rounded-md hover:bg-gray-800 text-base"
                         >
-                          Submit Review
+                          Gửi đánh giá
                         </button>
                       </form>
                     )}
 
-                    {/* Reviews List */}
+                    {/* Reviews List - Use feedBacks from API */}
                     <div className="space-y-6">
-                      {reviews.map((review) => (
-                        <ReviewItem
-                          key={review.id}
-                          review={review}
-                          onHelpful={handleHelpful}
-                        />
-                      ))}
+                      {product.feedBacks && product.feedBacks.length > 0 ? (
+                        product.feedBacks.map((feedback) => (
+                          <div
+                            key={feedback.id}
+                            className="border-b border-gray-200 pb-6"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  {feedback.userResponse.firstName}{" "}
+                                  {feedback.userResponse.lastName}
+                                </p>
+                                <div className="mt-1">
+                                  <RatingStars
+                                    rating={feedback.rating}
+                                    size={14}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mt-3">
+                              <p className="text-sm text-gray-600">
+                                {feedback.description}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-500">
+                          Chưa có đánh giá nào cho sản phẩm này.
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -563,12 +654,12 @@ const ProductDetail = () => {
             {/* Delivery & Returns */}
             <div className="pt-6 space-y-3">
               <h3 className="text-xl font-semibold text-gray-800">
-                Delivery & Returns
+                Giao hàng & Đổi trả
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                sed do eiusmod tempor incididunt ut labore et dolore magna
-                aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-                ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                Giao hàng miễn phí cho đơn hàng từ 500.000đ. Đổi trả miễn phí
+                trong vòng 30 ngày nếu sản phẩm còn nguyên vẹn và có hóa đơn mua
+                hàng.
               </p>
             </div>
           </div>

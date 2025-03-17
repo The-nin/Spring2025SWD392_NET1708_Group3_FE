@@ -7,16 +7,12 @@ import {
   LogoutOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
-import { logout } from "../../service/logout";
+import { logout } from "../../service/auth";
 import { useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
 
-const HeaderAdmin = ({
-  collapsed,
-  toggleCollapsed,
-  adminUser,
-}) => {
+const HeaderAdmin = ({ collapsed, toggleCollapsed, adminUser }) => {
   const navigate = useNavigate();
   const onLogout = async () => {
     try {
@@ -39,13 +35,8 @@ const HeaderAdmin = ({
   const dropdownItems = {
     items: [
       {
-        key: "1",
-        label: "Settings",
-        icon: <SettingOutlined />,
-      },
-      {
         key: "2",
-        label: "Logout",
+        label: "Đăng xuất",
         icon: <LogoutOutlined />,
         onClick: onLogout,
         danger: true,

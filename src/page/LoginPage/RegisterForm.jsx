@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState } from "react";
-import { register, verifyOTP } from "../../service/register/index"; // Import API đăng ký
+import { register, verifyOTP } from "../../service/auth"; // Import API đăng ký
 import NotificationModal from "../../components/Notification/NotificationModal";
 import OTPModal from "./OTPmodal";
 

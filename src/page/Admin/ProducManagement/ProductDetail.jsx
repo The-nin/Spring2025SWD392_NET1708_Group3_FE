@@ -11,19 +11,24 @@ import {
   DatePicker,
   Table,
   Space,
+  Popconfirm,
 } from "antd";
 import {
   ArrowLeftOutlined,
   InboxOutlined,
   PlusCircleOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { getProductById } from "../../../service/productManagement";
 import {
   addNewBatch,
   getBatches,
+  deleteBatch,
 } from "../../../service/productManagement/index";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -34,6 +39,7 @@ const ProductDetail = () => {
   const [viewBatchesModalVisible, setViewBatchesModalVisible] = useState(false);
   const [batches, setBatches] = useState([]);
   const [batchesLoading, setBatchesLoading] = useState(false);
+  const [deletingBatch, setDeletingBatch] = useState(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -47,7 +53,7 @@ const ProductDetail = () => {
           navigate("/admin/product");
         }
       } catch (error) {
-        toast.error("Failed to fetch product details");
+        toast.error("Không thể tải thông tin sản phẩm");
         navigate("/admin/product");
       } finally {
         setLoading(false);
@@ -68,7 +74,7 @@ const ProductDetail = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to fetch batches");
+      toast.error(error.message);
     } finally {
       setBatchesLoading(false);
     }
@@ -84,7 +90,7 @@ const ProductDetail = () => {
 
       const response = await addNewBatch(id, batchData);
       if (!response.error) {
-        toast.success("Batch added successfully");
+        toast.success("Thêm lô hàng thành công");
         setAddBatchModalVisible(false);
         form.resetFields();
         // Refresh batches list if viewing
@@ -95,7 +101,7 @@ const ProductDetail = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to add batch");
+      toast.error("Không thể thêm lô hàng");
     }
   };
 
@@ -104,28 +110,69 @@ const ProductDetail = () => {
     fetchBatches();
   };
 
+  const handleDeleteBatch = async (batchId) => {
+    setDeletingBatch(true);
+    try {
+      const response = await deleteBatch(batchId);
+      if (!response.error) {
+        toast.success(response.message);
+        // Refresh batches list
+        fetchBatches();
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setDeletingBatch(false);
+    }
+  };
+
   const batchColumns = [
     {
-      title: "Batch Code",
+      title: "Mã lô hàng",
       dataIndex: "batchCode",
       key: "batchCode",
     },
     {
-      title: "Quantity",
+      title: "Số lượng",
       dataIndex: "quantity",
       key: "quantity",
     },
     {
-      title: "Manufacture Date",
+      title: "Ngày sản xuất",
       dataIndex: "manufactureDate",
       key: "manufactureDate",
       render: (date) => dayjs(date).format("DD/MM/YYYY"),
     },
     {
-      title: "Expiration Date",
+      title: "Ngày hết hạn",
       dataIndex: "expirationDate",
       key: "expirationDate",
       render: (date) => dayjs(date).format("DD/MM/YYYY"),
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      render: (_, record) => (
+        <Popconfirm
+          title="Xóa lô hàng này?"
+          description="Bạn có chắc chắn muốn xóa lô hàng này? Hành động này không thể hoàn tác."
+          onConfirm={() => handleDeleteBatch(record.id)}
+          okText="Có"
+          cancelText="Không"
+          okButtonProps={{ loading: deletingBatch }}
+        >
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            size="small"
+            loading={deletingBatch}
+          >
+            Xóa
+          </Button>
+        </Popconfirm>
+      ),
     },
   ];
 
@@ -145,7 +192,7 @@ const ProductDetail = () => {
           onClick={() => navigate("/admin/product")}
           className="mb-4 hover:bg-gray-100"
         >
-          Back to Products
+          Quay lại Sản phẩm
         </Button>
 
         <div className="flex justify-end mb-4">
@@ -155,19 +202,19 @@ const ProductDetail = () => {
               icon={<InboxOutlined />}
               onClick={handleViewBatches}
             >
-              View Batches
+              Xem lô hàng
             </Button>
             <Button
               type="primary"
               icon={<PlusCircleOutlined />}
               onClick={() => setAddBatchModalVisible(true)}
             >
-              Add New Batch
+              Thêm lô hàng mới
             </Button>
           </Space>
         </div>
 
-        <Card title="Product Details" className="w-full shadow-md">
+        <Card title="Chi tiết sản phẩm" className="w-full shadow-md">
           {product && (
             <div className="space-y-8">
               {/* Product Image */}
@@ -182,23 +229,23 @@ const ProductDetail = () => {
               {/* Basic Information */}
               <div className="border-b pb-4">
                 <Descriptions
-                  title="Basic Information"
+                  title="Thông tin cơ bản"
                   column={2}
                   className="bg-white p-4 rounded-lg"
                 >
-                  <Descriptions.Item label="Product Name" span={2}>
+                  <Descriptions.Item label="Tên sản phẩm" span={2}>
                     {product.name}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Price">
+                  <Descriptions.Item label="Giá">
                     {product.price?.toLocaleString("vi-VN")}đ
                   </Descriptions.Item>
-                  <Descriptions.Item label="Stock">
+                  <Descriptions.Item label="Tồn kho">
                     {product.stock || 0}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Category">
+                  <Descriptions.Item label="Danh mục">
                     {product.category?.name}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Brand">
+                  <Descriptions.Item label="Thương hiệu">
                     {product.brand?.name}
                   </Descriptions.Item>
                 </Descriptions>
@@ -208,7 +255,7 @@ const ProductDetail = () => {
               {product.description && (
                 <div className="border-b pb-4">
                   <h3 className="font-bold text-lg mb-4 text-gray-800">
-                    Description
+                    Mô tả
                   </h3>
                   <div
                     dangerouslySetInnerHTML={{ __html: product.description }}
@@ -221,7 +268,7 @@ const ProductDetail = () => {
               {product.ingredient && (
                 <div className="border-b pb-4">
                   <h3 className="font-bold text-lg mb-4 text-gray-800">
-                    Ingredient
+                    Thành phần
                   </h3>
                   <div
                     dangerouslySetInnerHTML={{ __html: product.ingredient }}
@@ -234,7 +281,7 @@ const ProductDetail = () => {
               {product.usageInstruction && (
                 <div className="border-b pb-4">
                   <h3 className="font-bold text-lg mb-4 text-gray-800">
-                    Usage Instruction
+                    Hướng dẫn sử dụng
                   </h3>
                   <div
                     dangerouslySetInnerHTML={{
@@ -249,23 +296,23 @@ const ProductDetail = () => {
               {product.specification && (
                 <div>
                   <h3 className="font-bold text-lg mb-4 text-gray-800">
-                    Specification Details
+                    Thông số kỹ thuật
                   </h3>
                   <Descriptions
                     column={2}
                     bordered
                     className="bg-white rounded-lg"
                   >
-                    <Descriptions.Item label="Origin">
+                    <Descriptions.Item label="Xuất xứ">
                       {product.specification.origin}
                     </Descriptions.Item>
-                    <Descriptions.Item label="Brand Origin">
+                    <Descriptions.Item label="Xuất xứ thương hiệu">
                       {product.specification.brandOrigin}
                     </Descriptions.Item>
-                    <Descriptions.Item label="Manufacturing Location">
+                    <Descriptions.Item label="Nơi sản xuất">
                       {product.specification.manufacturingLocation}
                     </Descriptions.Item>
-                    <Descriptions.Item label="Skin Type">
+                    <Descriptions.Item label="Loại da">
                       {product.specification.skinType}
                     </Descriptions.Item>
                   </Descriptions>
@@ -277,7 +324,7 @@ const ProductDetail = () => {
 
         {/* Add Batch Modal */}
         <Modal
-          title="Add New Batch"
+          title="Thêm lô hàng mới"
           open={addBatchModalVisible}
           onCancel={() => {
             setAddBatchModalVisible(false);
@@ -288,24 +335,24 @@ const ProductDetail = () => {
           <Form form={form} layout="vertical" onFinish={handleAddBatch}>
             <Form.Item
               name="quantity"
-              label="Quantity"
+              label="Số lượng"
               rules={[
-                { required: true, message: "Please input quantity" },
+                { required: true, message: "Vui lòng nhập số lượng" },
                 {
                   type: "number",
                   min: 1,
-                  message: "Quantity must be greater than 0",
+                  message: "Số lượng phải lớn hơn 0",
                 },
               ]}
             >
-              <InputNumber className="w-full" placeholder="Enter quantity" />
+              <InputNumber className="w-full" placeholder="Nhập số lượng" />
             </Form.Item>
 
             <Form.Item
               name="manufactureDate"
-              label="Manufacture Date"
+              label="Ngày sản xuất"
               rules={[
-                { required: true, message: "Please select manufacture date" },
+                { required: true, message: "Vui lòng chọn ngày sản xuất" },
               ]}
             >
               <DatePicker className="w-full" />
@@ -313,9 +360,9 @@ const ProductDetail = () => {
 
             <Form.Item
               name="expirationDate"
-              label="Expiration Date"
+              label="Ngày hết hạn"
               rules={[
-                { required: true, message: "Please select expiration date" },
+                { required: true, message: "Vui lòng chọn ngày hết hạn" },
                 ({ getFieldValue }) => ({
                   validator(_, value) {
                     if (!value || !getFieldValue("manufactureDate")) {
@@ -323,7 +370,7 @@ const ProductDetail = () => {
                     }
                     if (value.isBefore(getFieldValue("manufactureDate"))) {
                       return Promise.reject(
-                        "Expiration date must be after manufacture date"
+                        "Ngày hết hạn phải sau ngày sản xuất"
                       );
                     }
                     return Promise.resolve();
@@ -341,10 +388,10 @@ const ProductDetail = () => {
                   form.resetFields();
                 }}
               >
-                Cancel
+                Hủy
               </Button>
               <Button type="primary" htmlType="submit">
-                Add Batch
+                Thêm lô hàng
               </Button>
             </div>
           </Form>
@@ -352,7 +399,7 @@ const ProductDetail = () => {
 
         {/* View Batches Modal */}
         <Modal
-          title="Batch List"
+          title="Danh sách lô hàng"
           open={viewBatchesModalVisible}
           onCancel={() => setViewBatchesModalVisible(false)}
           footer={null}
@@ -371,6 +418,7 @@ const ProductDetail = () => {
           />
         </Modal>
       </div>
+      <ToastContainer />
     </div>
   );
 };

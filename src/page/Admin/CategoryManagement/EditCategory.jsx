@@ -137,11 +137,11 @@ const EditCategory = () => {
             onClick={() => navigate("/admin/category")}
             className="mb-4 hover:bg-gray-100"
           >
-            Back to Categories
+            Quay lại Danh mục
           </Button>
 
           <Card
-            title="Edit Category"
+            title="Chỉnh sửa Danh mục"
             className="w-full shadow-md"
             headStyle={{
               fontSize: "1.5rem",
@@ -157,26 +157,24 @@ const EditCategory = () => {
             >
               <Form.Item
                 name="name"
-                label="Category Name"
+                label="Tên Danh mục"
                 rules={[
-                  { required: true, message: "Please enter category name" },
-                  { min: 3, message: "Name must be at least 3 characters" },
+                  { required: true, message: "Vui lòng nhập tên danh mục" },
+                  { min: 3, message: "Tên phải có ít nhất 3 ký tự" },
                 ]}
               >
-                <Input placeholder="Enter category name" />
+                <Input placeholder="Nhập tên danh mục" />
               </Form.Item>
 
               <Form.Item
                 name="description"
-                label="Description"
+                label="Mô tả"
                 rules={[
-                  { required: true, message: "Please enter description" },
+                  { required: true, message: "Vui lòng nhập mô tả" },
                   {
                     validator: (_, value) => {
                       if (!editorContent || editorContent.trim().length < 10) {
-                        return Promise.reject(
-                          "Description must be at least 10 characters"
-                        );
+                        return Promise.reject("Mô tả phải có ít nhất 10 ký tự");
                       }
                       return Promise.resolve();
                     },
@@ -196,11 +194,11 @@ const EditCategory = () => {
                 />
               </Form.Item>
 
-              <Form.Item label="Current Thumbnail">
+              <Form.Item label="Hình ảnh hiện tại">
                 {currentThumbnail && (
                   <img
                     src={currentThumbnail}
-                    alt="Current thumbnail"
+                    alt="Hình ảnh hiện tại"
                     className="max-w-xs mb-4"
                     style={{ maxHeight: "200px" }}
                   />
@@ -209,7 +207,7 @@ const EditCategory = () => {
 
               <Form.Item
                 name="thumbnail"
-                label="New Thumbnail"
+                label="Hình ảnh mới"
                 valuePropName="fileList"
                 getValueFromEvent={normFile}
               >
@@ -219,13 +217,15 @@ const EditCategory = () => {
                   accept="image/*"
                   listType="picture"
                 >
-                  <Button icon={<UploadOutlined />}>Upload New Image</Button>
+                  <Button icon={<UploadOutlined />}>
+                    Tải lên hình ảnh mới
+                  </Button>
                 </Upload>
               </Form.Item>
 
               <Form.Item>
                 <Button type="primary" htmlType="submit" loading={loading}>
-                  Update Category
+                  Cập nhật Danh mục
                 </Button>
               </Form.Item>
             </Form>
