@@ -215,8 +215,6 @@ const VoucherManagement = () => {
         cancelText="Hủy"
         okButtonProps={{ danger: true, loading: deletingVoucherId !== null }}
       >
-        <p>This action cannot be undone.</p>
-
         <p>Bạn có chắc chắn muốn xóa voucher "{selectedVoucher?.code}"?</p>
         <p>Hành động này không thể hoàn tác.</p>
       </Modal>

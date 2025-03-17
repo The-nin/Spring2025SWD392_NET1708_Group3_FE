@@ -77,7 +77,7 @@ const EditBlog = () => {
         navigate("/admin/blog");
       }
     } catch (error) {
-      toast.error("Failed to fetch blog details");
+      toast.error("Không thể lấy thông tin chi tiết về blog");
       navigate("/admin/blog");
     } finally {
       setInitialLoading(false);
@@ -109,12 +109,12 @@ const EditBlog = () => {
 
       if (!response.error) {
         navigate("/admin/blog");
-        toast.success("Blog updated successfully!");
+        toast.success("Blog được cập nhật thành công!");
       } else {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to update blog");
+      toast.error("Không cập nhật được blog");
     } finally {
       setLoading(false);
     }

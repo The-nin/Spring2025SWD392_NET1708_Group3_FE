@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { Button, Form, Input, DatePicker, Select } from "antd";
+import { Button, Form, Input, Select } from "antd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import dayjs from "dayjs";
 import { createVoucher } from "../../../service/voucher";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
-function AddNewVoucher({ fetchVouchers }) {
+function AddNewVoucher({}) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -15,8 +14,6 @@ function AddNewVoucher({ fetchVouchers }) {
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
-
-
       console.log("📤 Submitted Voucher Data:", values);
 
       const formattedValues = {
@@ -26,27 +23,27 @@ function AddNewVoucher({ fetchVouchers }) {
         minOrderValue: Number(values.minOrderValue),
         description: values.description.trim(),
         point: Number(values.point),
-
       };
 
       const response = await createVoucher(formattedValues);
 
-      if (response.message) {
-        toast.success(response.message);
+      console.log("📩 API Response:", response); // Debugging log
+
+      // ✅ Check for actual errors instead of throwing an error by default
+      if (response?.error) {
+        throw new Error(response.message || "Failed to add voucher");
       }
 
-      if (!response.error) {
+      // ✅ Display success message
+      toast.success(response.message || "Voucher added successfully!");
 
-        toast.success("Voucher added successfully!");
-        form.resetFields();
-        fetchVouchers?.();
-        setTimeout(() => navigate("/admin/voucher"), 2000);
-      } else {
-        toast.error(response.message || "Failed to add voucher");
-      }
+      // ✅ Navigate only after success
+      setTimeout(() => navigate("/admin/voucher"), 2000);
     } catch (error) {
-      toast.error("Failed to save the voucher. Please check the details.");
-
+      console.error("⚠️ Create voucher error:", error);
+      toast.error(
+        error.message || "Failed to save the voucher. Please check the details."
+      );
     } finally {
       setLoading(false);
     }
@@ -70,7 +67,6 @@ function AddNewVoucher({ fetchVouchers }) {
         onFinish={handleSubmit}
         autoComplete="off"
       >
-
         <Form.Item
           name="code"
           label="Mã Voucher"

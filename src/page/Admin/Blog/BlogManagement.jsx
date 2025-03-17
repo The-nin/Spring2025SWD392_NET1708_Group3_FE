@@ -50,7 +50,7 @@ const BlogManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to fetch blogs");
+      toast.error("Không thể tải blog");
     } finally {
       setLoading(false);
     }
@@ -84,12 +84,12 @@ const BlogManagement = () => {
           prevBlogs.filter((blog) => blog.id !== selectedBlog.id)
         );
         setPagination((prev) => ({ ...prev, total: prev.total - 1 }));
-        toast.success("Blog deleted successfully!");
+        toast.success("Đã xóa blog thành công!");
       } else {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to delete blog");
+      toast.error("Không xóa được blog");
     } finally {
       setDeletingBlogId(null);
       setDeleteModalVisible(false);
@@ -104,7 +104,7 @@ const BlogManagement = () => {
       const response = await updateBlogStatus(blog.id, newStatus);
 
       if (!response.error) {
-        toast.success("Blog status updated successfully!");
+        toast.success("Trạng thái blog đã được cập nhật thành công!");
         setBlogs((prevBlogs) =>
           prevBlogs.map((b) =>
             b.id === blog.id ? { ...b, status: newStatus } : b
@@ -114,7 +114,7 @@ const BlogManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to update blog status");
+      toast.error("Không cập nhật được trạng thái blog");
     } finally {
       setLoading(false);
     }

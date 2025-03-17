@@ -38,6 +38,7 @@ function Consultant() {
   const [experts, setExperts] = useState([]);
   const [openModalPayment, setOpenModalPayment] = useState(false);
   const [tempBookingData, setTempBookingData] = useState(null);
+  const [expertName, setExpertName] = useState([]);
 
   const navigate = useNavigate();
 
@@ -83,55 +84,25 @@ function Consultant() {
 
   const handleDateChange = (date, dateString) => {
     setSelectedDate(dateString);
+    // setSelectedTime(null);
   };
 
-  //Call api
-  // const onFinish = async (values) => {
-  //   console.log("Received values of form: ", values);
+  // const isPastTime = (time) => {
+  //   const currentTime = moment();
+  //   const selectedTimeMoment = moment(time.start, "HH:mm");
 
-  //   try {
-  //     setLoading(true);
-
-  //     const imageFiles = values.image.map((fileObj) => fileObj.originFileObj);
-
-  //     const imageURLs = await Promise.all(
-  //       imageFiles.map(async (file) => await uploadToCloudinary(file))
-  //     );
-
-  //     const bookingData = {
-  //       firstName: values.firstName,
-  //       lastName: values.lastName,
-  //       skinType: values.skinType,
-  //       skinCondition: values.skinCondition,
-  //       allergy: values.allergy || "",
-  //       bookDate: values.bookDate.toISOString(),
-  //       expertId: values.expertId || "",
-  //       age: values.age,
-  //       note: values.note || "",
-  //       skincareServiceId: values.skincareServiceId,
-  //       imageSkins: imageURLs.map((url) => ({ image: url })),
-  //     };
-
-  //     const response = await createBooking(bookingData);
-
-  //     if (response) {
-  //       toast.success("Hoàn tất đặt lịch");
-  //       form.resetFields();
-  //       setFileList([]);
-  //     }
-  //   } catch (error) {
-  //     console.error("Failed to create booking:", error);
-  //     toast.error("Thất bại trong việc dặt lịch");
-  //   } finally {
-  //     setLoading(false);
+  //   // Nếu ngày đã chọn trùng với ngày hôm nay thì so sánh thời gian
+  //   if (selectedDate && selectedDate.isSame(currentTime, "day")) {
+  //     return selectedTimeMoment.isBefore(currentTime);
   //   }
+  //   return false;
   // };
 
   const onFinish = async (values) => {
     console.log("Received values of form: ", values);
-    setLoading(true);
 
     try {
+      setLoading(true);
       const imageFiles = values.image.map((fileObj) => fileObj.originFileObj);
       const imageURLs = await Promise.all(
         imageFiles.map(async (file) => await uploadToCloudinary(file))
@@ -149,9 +120,10 @@ function Consultant() {
         note: values.note || "",
         skincareServiceId: values.skincareServiceId,
         imageSkins: imageURLs.map((url) => ({ image: url })),
+        paymentStatus: "NOT_PAID",
+        date: values.bookDate.toISOString(),
       };
 
-      // Lưu tạm dữ liệu để dùng sau
       setTempBookingData(bookingData);
 
       setOpenModalPayment(true);
@@ -449,6 +421,31 @@ function Consultant() {
                   </div>
                 </Form.Item>
               </Col>
+              {/* <Col span={12}>
+                <Form.Item>
+                  <div className="flex space-x-2 w-full rounded-md mt-[29px] ml-4">
+                    {availableTimes.map((time, index) => (
+                      <Button
+                        key={index}
+                        className={`h-12 time-option ${
+                          selectedTime?.start === time.start ? "selected" : ""
+                        } text-gray-700 ${
+                          isPastTime(time) ? "bg-gray-300 text-gray-500" : ""
+                        }`}
+                        type={
+                          selectedTime?.start === time.start
+                            ? "primary"
+                            : "default"
+                        }
+                        onClick={() => handleTimeSelect(time)}
+                        disabled={isPastTime(time)} // Vô hiệu hóa các nút của thời gian đã qua
+                      >
+                        {time.start} - {time.end}
+                      </Button>
+                    ))}
+                  </div>
+                </Form.Item>
+              </Col> */}
             </Row>
 
             <Row>
