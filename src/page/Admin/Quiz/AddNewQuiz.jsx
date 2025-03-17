@@ -211,7 +211,7 @@ const AddNewQuiz = () => {
                       <Option value="SENSITIVE_SKIN">Da Nhạy Cảm</Option>
                       <Option value="OILY_SKIN">Da Dầu</Option>
                       <Option value="DRY_SKIN">Da Khô</Option>
-                      <Option value="COMBINATION_SKIN">Da Hỗn Hợp</Option>
+                      <Option value="NORMAL_SKIN">Da Thường</Option>
                     </Select>
                     <Button
                       type="danger"

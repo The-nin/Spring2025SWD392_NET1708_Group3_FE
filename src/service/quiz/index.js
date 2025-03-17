@@ -24,21 +24,20 @@ export const getAllQuizs = async () => {
 };
 
 // ✅ Fetch quiz details by ID (Admin Access Required)
-export const getQuizById = async (quizId) => {
+
+export const getQuizById = async (id) => {
   const token = localStorage.getItem("token");
   try {
-    const response = await instance.get(`/admin/quizs/${quizId}`, {
+    const response = await instance.get(`/admin/quizs/${id}`, {
       headers: {
         authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
-    return {
-      error: false,
-      result: response.data?.result,
-      message: response.data?.message,
-    };
+    console.log(response);
+    return response;
   } catch (error) {
-    return handleError(error, "Failed to fetch quiz details");
+    return handleError(error, "Failed to fetch blogs");
   }
 };
 
@@ -70,7 +69,10 @@ export const addQuiz = async (quizData) => {
 
 // ✅ Update an existing quiz (Admin Access Required)
 export const updateQuiz = async (quizId, quizData) => {
+  console.log("📤 Quiz Data:", JSON.stringify({ quizData }, null, 2));
+
   const token = localStorage.getItem("token");
+
   try {
     const response = await instance.put(`/admin/quizs/${quizId}`, quizData, {
       headers: {
@@ -80,9 +82,9 @@ export const updateQuiz = async (quizId, quizData) => {
     });
 
     return {
-      error: false,
-      result: response.data?.result,
-      message: response.data?.message,
+      success: response.status === 200 || response.status === 201, // Kiểm tra HTTP Status
+      result: response.data?.result ?? null,
+      message: response.data?.message ?? "Quiz updated successfully!",
     };
   } catch (error) {
     return handleError(error, "Failed to update quiz");
