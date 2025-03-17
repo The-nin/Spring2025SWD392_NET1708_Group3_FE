@@ -15,12 +15,30 @@ import {
   GiftOutlined,
   SolutionOutlined, // 🎁 Icon for Vouchers
 } from "@ant-design/icons";
+import { label } from "framer-motion/client";
 
 const { Sider } = Layout;
 
 const Sidebar = ({ collapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const userRole = localStorage.getItem("role") || "STAFF";
+
+  const permissions = {
+    "/admin": ["ADMIN"],
+    "/admin/product": ["ADMIN", "MANAGER", "STAFF"],
+    "/admin/order": ["ADMIN", "MANAGER", "STAFF", "DELIVERY"],
+    "/admin/category": ["ADMIN", "MANAGER"],
+    "/admin/brand": ["ADMIN", "MANAGER"],
+    "/admin/blog": ["ADMIN", "MANAGER", "EXPERT"],
+    "/admin/quiz": ["ADMIN", "MANAGER", "EXPERT"],
+    "/admin/voucher": ["ADMIN", "MANAGER"],
+    "/admin/service": ["ADMIN", "MANAGER", "STAFF"],
+    "/admin/consultant-booking": ["EXPERT"],
+    "/admin/consultant-all-booking": ["ADMIN", "MANAGER"],
+    "/admin/staff-manage-consultant-order": ["STAFF"],
+  };
 
   const menuItems = [
     {
@@ -69,11 +87,25 @@ const Sidebar = ({ collapsed }) => {
       label: "Service Management",
     },
     {
-      key: "/admin/consultant-booking",
+      key: "/admin/consultant-booking", //Quản lý tư vấn theo từng expert
       icon: <SolutionOutlined />,
-      label: "Quản lý đặt tư vấn"
-    }
+      label: "Quản lý đặt tư vấn",
+    },
+    {
+      key: "/admin/consultant-all-booking", //Quản lý tư vấn role admin
+      icon: <SolutionOutlined />,
+      label: "Quản lý đặt tư vấn",
+    },
+    {
+      key: "/admin/staff-manage-consultant-order",
+      icon: <SolutionOutlined />,
+      label: "Quản lý đặt tư vấn",
+    },
   ];
+
+  const filteredMenuItems = menuItems.filter((item) =>
+    permissions[item.key]?.includes(userRole)
+  );
 
   return (
     <Sider
@@ -113,7 +145,8 @@ const Sidebar = ({ collapsed }) => {
         theme="dark"
         mode="inline"
         defaultSelectedKeys={[location.pathname]}
-        items={menuItems}
+        // items={menuItems}
+        items={filteredMenuItems}
         onClick={({ key }) => navigate(key)}
       />
     </Sider>
