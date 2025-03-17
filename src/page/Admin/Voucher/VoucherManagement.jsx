@@ -31,7 +31,7 @@ const VoucherManagement = () => {
   const [viewModalVisible, setViewModalVisible] = useState(false);
 
   // Fetch vouchers from API
-  
+
   const fetchVouchers = async (params = {}) => {
     try {
       setLoading(true);
@@ -42,7 +42,6 @@ const VoucherManagement = () => {
         const { content, totalElements } = response.result;
         setVouchers(content);
         setPagination({ current, pageSize, total: totalElements });
-
       } else {
         toast.error(response.message || "Failed to fetch vouchers");
       }
@@ -124,15 +123,12 @@ const VoucherManagement = () => {
       sorter: (a, b) => a.id - b.id,
     },
     {
-      
       title: "Mã Voucher",
 
       dataIndex: "code",
       key: "code",
     },
     {
-
-      
       title: "Giảm Giá",
       dataIndex: "discount",
       key: "discount",
@@ -149,7 +145,6 @@ const VoucherManagement = () => {
       dataIndex: "minOrderValue",
       key: "minOrderValue",
       render: (value) => `$${value}`,
-
     },
     {
       title: "Điểm Yêu Cầu",
@@ -220,13 +215,11 @@ const VoucherManagement = () => {
         cancelText="Hủy"
         okButtonProps={{ danger: true, loading: deletingVoucherId !== null }}
       >
+        <p>This action cannot be undone.</p>
 
-        >This action cannot be undone.</p>
-
-<p>Bạn có chắc chắn muốn xóa voucher "{selectedVoucher?.code}"?</p>
+        <p>Bạn có chắc chắn muốn xóa voucher "{selectedVoucher?.code}"?</p>
         <p>Hành động này không thể hoàn tác.</p>
-
-  </Modal>
+      </Modal>
 
       <Modal
         title="Chi Tiết Voucher"
@@ -237,10 +230,8 @@ const VoucherManagement = () => {
         {selectedVoucher && (
           <div>
             <p>
-
-         <strong>Points Required:</strong> {selectedVoucher.point}
-
-         <strong>Mã Voucher:</strong> {selectedVoucher.code}
+              <strong>Points Required:</strong> {selectedVoucher.point}
+              <strong>Mã Voucher:</strong> {selectedVoucher.code}
             </p>
             <p>
               <strong>Giảm Giá:</strong> {selectedVoucher.discount}%
@@ -251,8 +242,7 @@ const VoucherManagement = () => {
             <p>
               <strong>Giá Trị Đơn Hàng Tối Thiểu:</strong> $
               {selectedVoucher.minOrderValue}
-
-</p>
+            </p>
             <p>
               <strong>Điểm Yêu Cầu:</strong> {selectedVoucher.point}
             </p>

@@ -43,21 +43,7 @@ export const getVoucherById = async (voucherId) => {
     return handleError(error, "Failed to fetch user vouchers");
   }
 };
-export const getVoucherById = async (voucherId) => {
-  const token = localStorage.getItem("token");
-  try {
-    const response = await instance.get(`admin/vouchers/${voucherId}`, {
-      headers: {
-        authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    console.log(response);
-    return response;
-  } catch (error) {
-    return handleError(error, "Failed to fetch blogs");
-  }
-};
+
 export const updateVoucher = async (voucherId, voucherData) => {
   const token = localStorage.getItem("token");
   try {
