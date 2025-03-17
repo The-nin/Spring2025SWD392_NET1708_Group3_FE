@@ -7,7 +7,6 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const { Option } = Select;
-const skinTypes = ["SENSITIVE_SKIN", "OILY_SKIN", "DRY_SKIN", "NORMAL_SKIN"];
 
 const EditQuiz = () => {
   const navigate = useNavigate();
@@ -26,20 +25,14 @@ const EditQuiz = () => {
           form.setFieldsValue({
             title: response.result.title,
             description: response.result.description,
-            questions: response.result.questions.map((q) => ({
-              title: q.title,
-              answers: q.answers.map((a) => ({
-                answerText: a.answerText,
-                skinType: a.skinType,
-              })),
-            })),
+            questions: response.result.question || [],
           });
         } else {
-          toast.error("Failed to load quiz");
+          toast.error("Không thể tải Quiz");
         }
       } catch (error) {
-        console.error("Error fetching quiz:", error);
-        toast.error("Error fetching quiz data");
+        console.error("Lỗi khi lấy dữ liệu Quiz:", error);
+        toast.error("Lỗi khi lấy dữ liệu Quiz");
       } finally {
         setLoading(false);
       }
@@ -48,38 +41,83 @@ const EditQuiz = () => {
     fetchQuiz();
   }, [id, form]);
 
+  // Xóa câu hỏi (cập nhật isDeleted)
+  const handleDeleteQuestion = (index) => {
+    const updatedQuestions = form
+      .getFieldValue("questions")
+      .map((q, qIndex) => (qIndex === index ? { ...q, isDeleted: true } : q));
+
+    form.setFieldsValue({ questions: updatedQuestions });
+    setQuiz((prev) => ({
+      ...prev,
+      questions: updatedQuestions,
+    }));
+  };
+
+  // Xóa câu trả lời (cập nhật isDeleted)
+  const handleDeleteAnswer = (qIndex, aIndex) => {
+    const updatedQuestions = form.getFieldValue("questions").map((q, qIdx) => {
+      if (qIdx === qIndex) {
+        return {
+          ...q,
+          answers: q.answers.map((a, aIdx) =>
+            aIdx === aIndex ? { ...a, isDeleted: true } : a
+          ),
+        };
+      }
+      return q;
+    });
+
+    form.setFieldsValue({ questions: updatedQuestions });
+    setQuiz((prev) => ({
+      ...prev,
+      questions: updatedQuestions,
+    }));
+  };
+
+  // Xử lý cập nhật quiz
   const onFinish = async (values) => {
-    if (!values.title || !values.description || !values.questions) {
-      toast.error("Please fill all required fields");
+    if (!values.title || !values.description) {
+      toast.error("Vui lòng nhập đầy đủ thông tin");
       return;
     }
 
     try {
       setLoading(true);
+
       const updatedQuizData = {
         title: values.title,
         description: values.description,
-        questions: values.questions.map((q) => ({
-          title: q.title,
-          answers: q.answers.map((a) => ({
-            answerText: a.answerText,
-            skinType: a.skinType,
-          })),
-        })),
+        questions: values.questions
+          ? values.questions
+              .filter((q) => !q.isDeleted) // Bỏ câu hỏi bị xóa
+              .map((q, index) => ({
+                questionId: q.questionId || index + 1,
+                title: q.title,
+                answers: q.answers
+                  ? q.answers
+                      .filter((a) => !a.isDeleted) // Bỏ câu trả lời bị xóa
+                      .map((a, idx) => ({
+                        answerId: a.answerId || idx + 1,
+                        answerText: a.answerText,
+                        skinType: a.skinType,
+                      }))
+                  : [],
+              }))
+          : [],
       };
 
-      console.log("📤 Updating Quiz Data:", updatedQuizData);
-      const response = await updateQuiz(id, updatedQuizData);
+      console.log("📤 Đang cập nhật Quiz:", updatedQuizData);
 
-      if (response && response.result) {
-        toast.success("Quiz updated successfully!");
+      const response = await updateQuiz(id, updatedQuizData);
+      if (!response.error) {
         setTimeout(() => navigate("/admin/quiz"), 2000);
+        toast.success("Quiz đã được cập nhật thành công!");
       } else {
-        toast.error(response?.message || "Error updating quiz");
+        toast.error(response.message);
       }
     } catch (error) {
-      console.error("Error updating quiz:", error);
-      toast.error("Failed to update quiz");
+      toast.error("Không thể cập nhật Quiz");
     } finally {
       setLoading(false);
     }
@@ -98,137 +136,149 @@ const EditQuiz = () => {
           onClick={() => navigate("/admin/quiz")}
           className="mb-4 hover:bg-gray-100"
         >
-          Back to Quizzes
+          Quay lại danh sách Quiz
         </Button>
 
-        <Card title="Edit Quiz" className="max-w-6xl mx-auto shadow-md">
+        <Card title="Chỉnh sửa Quiz" className="max-w-6xl mx-auto shadow-md">
           <Form
             form={form}
             layout="vertical"
             onFinish={onFinish}
             autoComplete="off"
           >
-            {/* Quiz Title */}
             <Form.Item
               name="title"
-              label="Quiz Title"
-              rules={[{ required: true, message: "Please enter quiz title" }]}
-            >
-              <Input placeholder="Enter quiz title" />
-            </Form.Item>
-
-            {/* Quiz Description */}
-            <Form.Item
-              name="description"
-              label="Quiz Description"
+              label="Tiêu đề Quiz"
               rules={[
-                { required: true, message: "Please enter quiz description" },
+                { required: true, message: "Vui lòng nhập tiêu đề Quiz" },
               ]}
             >
-              <Input.TextArea rows={3} placeholder="Enter quiz description" />
+              <Input placeholder="Nhập tiêu đề Quiz" />
             </Form.Item>
 
-            {/* Questions */}
+            <Form.Item
+              name="description"
+              label="Mô tả Quiz"
+              rules={[{ required: true, message: "Vui lòng nhập mô tả Quiz" }]}
+            >
+              <Input.TextArea rows={3} placeholder="Nhập mô tả Quiz" />
+            </Form.Item>
+
             <Form.List name="questions">
-              {(fields, { add, remove }) => (
+              {(fields, { add }) => (
                 <div>
-                  {fields.map(({ key, name, ...restField }) => (
-                    <Card
-                      key={key}
-                      className="mb-4"
-                      title={`Question ${key + 1}`}
-                    >
-                      <Form.Item
-                        {...restField}
-                        name={[name, "title"]}
-                        label="Question Title"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please enter question title",
-                          },
-                        ]}
+                  {fields.map(({ key, name }) => {
+                    const question = form.getFieldValue(["questions", name]);
+                    if (question?.isDeleted) return null;
+
+                    return (
+                      <Card
+                        key={key}
+                        className="mb-4"
+                        title={`Câu hỏi ${key + 1}`}
                       >
-                        <Input placeholder="Enter question title" />
-                      </Form.Item>
+                        <Form.Item
+                          name={[name, "title"]}
+                          label="Tiêu đề câu hỏi"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Vui lòng nhập tiêu đề câu hỏi",
+                            },
+                          ]}
+                        >
+                          <Input placeholder="Nhập tiêu đề câu hỏi" />
+                        </Form.Item>
 
-                      <Form.List name={[name, "answers"]}>
-                        {(
-                          answerFields,
-                          { add: addAnswer, remove: removeAnswer }
-                        ) => (
-                          <div>
-                            {answerFields.map(
-                              ({
-                                key: answerKey,
-                                name: answerName,
-                                ...answerRestField
-                              }) => (
-                                <div key={answerKey} className="flex gap-2">
-                                  <Form.Item
-                                    {...answerRestField}
-                                    name={[answerName, "answerText"]}
-                                    label="Answer Text"
-                                    rules={[
-                                      {
-                                        required: true,
-                                        message: "Please enter answer text",
-                                      },
-                                    ]}
-                                  >
-                                    <Input placeholder="Enter answer text" />
-                                  </Form.Item>
-                                  <Form.Item
-                                    {...answerRestField}
-                                    name={[answerName, "skinType"]}
-                                    label="Skin Type"
-                                    rules={[
-                                      {
-                                        required: true,
-                                        message: "Please select skin type",
-                                      },
-                                    ]}
-                                  >
-                                    <Select placeholder="Select skin type">
-                                      {skinTypes.map((type) => (
-                                        <Option key={type} value={type}>
-                                          {type}
-                                        </Option>
-                                      ))}
-                                    </Select>
-                                  </Form.Item>
-                                  <Button
-                                    type="dashed"
-                                    onClick={() => removeAnswer(answerName)}
-                                  >
-                                    Remove Answer
-                                  </Button>
-                                </div>
-                              )
-                            )}
-                            <Button type="dashed" onClick={() => addAnswer()}>
-                              Add Answer
-                            </Button>
-                          </div>
-                        )}
-                      </Form.List>
+                        <Form.List name={[name, "answers"]}>
+                          {(answerFields, { add: addAnswer }) => (
+                            <div>
+                              {answerFields.map(
+                                ({ key: answerKey, name: answerName }) => {
+                                  const answer = form.getFieldValue([
+                                    "questions",
+                                    name,
+                                    "answers",
+                                    answerName,
+                                  ]);
+                                  if (answer?.isDeleted) return null;
 
-                      <Button type="dashed" onClick={() => remove(name)}>
-                        Remove Question
-                      </Button>
-                    </Card>
-                  ))}
+                                  return (
+                                    <div
+                                      key={answerKey}
+                                      className="flex gap-4 items-end"
+                                    >
+                                      <Form.Item
+                                        name={[answerName, "answerText"]}
+                                        label="Câu trả lời"
+                                        rules={[
+                                          {
+                                            required: true,
+                                            message:
+                                              "Vui lòng nhập câu trả lời",
+                                          },
+                                        ]}
+                                        className="flex-1"
+                                      >
+                                        <Input placeholder="Nhập câu trả lời" />
+                                      </Form.Item>
+
+                                      <Form.Item
+                                        name={[answerName, "skinType"]}
+                                        label="Loại Skin"
+                                        rules={[
+                                          {
+                                            required: true,
+                                            message: "Vui lòng chọn loại Skin",
+                                          },
+                                        ]}
+                                        className="flex-1"
+                                      >
+                                        <Select placeholder="Chọn loại Skin">
+                                          <Option value="DRY_SKIN">
+                                            Da khô
+                                          </Option>
+                                          <Option value="NORMAL_SKIN">
+                                            Da thường
+                                          </Option>
+                                          <Option value="OILY_SKIN">
+                                            Da dầu
+                                          </Option>
+                                          <Option value="SENSITIVE_SKIN">
+                                            Da nhạy cảm
+                                          </Option>
+                                        </Select>
+                                      </Form.Item>
+                                    </div>
+                                  );
+                                }
+                              )}
+                              <Button type="dashed" onClick={() => addAnswer()}>
+                                Thêm câu trả lời
+                              </Button>
+                            </div>
+                          )}
+                        </Form.List>
+
+                        <Button
+                          type="dashed"
+                          onClick={() => handleDeleteQuestion(name)}
+                        >
+                          Xóa câu hỏi
+                        </Button>
+                      </Card>
+                    );
+                  })}
                   <Button type="dashed" onClick={() => add()}>
-                    Add Question
+                    Thêm câu hỏi
                   </Button>
                 </div>
               )}
             </Form.List>
 
-            {/* Submit Button */}
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Update Quiz
+                Cập nhật Quiz
               </Button>
             </Form.Item>
           </Form>

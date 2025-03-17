@@ -32,7 +32,10 @@ const QuizManagement = () => {
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [deletingQuizId, setDeletingQuizId] = useState(null);
 
-  // ✅ Fetch quizzes (excluding deleted ones unless toggled)
+  useEffect(() => {
+    fetchQuizzes();
+  }, [showDeleted]);
+
   const fetchQuizzes = async (params = {}) => {
     try {
       setLoading(true);
@@ -61,11 +64,16 @@ const QuizManagement = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchQuizzes();
-  }, [showDeleted]);
-
+  const getSkinTypeLabel = (skinType) => {
+    const skinTypeMap = {
+      DRY_SKIN: "Da Khô",
+      SENSITIVE_SKIN: "Da Nhạy Cảm",
+      OILY_SKIN: "Da Dầu",
+      NORMAL_SKIN: "Da Thường",
+      COMBINATION_SKIN: "Da Hỗn Hợp",
+    };
+    return skinTypeMap[skinType] || "Không xác định"; // Trả về "Không xác định" nếu không khớp
+  };
   const handleTableChange = (newPagination) => {
     setPagination(newPagination);
     fetchQuizzes({
@@ -74,17 +82,39 @@ const QuizManagement = () => {
     });
   };
 
+  const toggleQuizStatus = async (quiz) => {
+    try {
+      setLoading(true);
+      const newStatus = quiz.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+      const response = await updateQuizStatus(quiz.id, newStatus);
+
+      if (!response.error) {
+        toast.success("Quiz status updated successfully!");
+        setQuizzes((prevQuiz) =>
+          prevQuiz.map((b) =>
+            b.id === quiz.id ? { ...b, status: newStatus } : b
+          )
+        );
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error("Failed to update quiz status");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const showDeleteConfirm = (quiz) => {
     setSelectedQuiz(quiz);
     setDeleteModalVisible(true);
   };
 
-  // ✅ Soft delete quiz (set isDeleted: true)
   const handleDeleteConfirm = async () => {
     if (!selectedQuiz) return;
 
     try {
-      setDeletingQuizId(selectedQuiz.id);
+      setLoading(true);
       const response = await deleteQuiz(selectedQuiz.id, { isDeleted: true });
 
       if (!response.error) {
@@ -96,53 +126,21 @@ const QuizManagement = () => {
     } catch (error) {
       toast.error("Failed to delete quiz");
     } finally {
-      setDeletingQuizId(null);
+      setLoading(false);
       setDeleteModalVisible(false);
+      setDeletingQuizId(null);
       setSelectedQuiz(null);
-    }
-  };
-
-  // ✅ Restore quiz (set isDeleted: false)
-  const handleRestoreQuiz = async (quiz) => {
-    try {
-      setLoading(true);
-      const response = await deleteQuiz(quiz.id, { isDeleted: false });
-
-      if (!response.error) {
-        toast.success("Quiz restored successfully!");
-        fetchQuizzes();
-      } else {
-        toast.error(response.message);
-      }
-    } catch (error) {
-      toast.error("Failed to restore quiz");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const toggleQuizStatus = async (quiz) => {
-    try {
-      setLoading(true);
-      const newStatus = quiz.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-      const response = await updateQuizStatus(quiz.id, newStatus);
-
-      if (!response.error) {
-        toast.success("Quiz status updated successfully!");
-        fetchQuizzes();
-      } else {
-        toast.error(response.message);
-      }
-    } catch (error) {
-      toast.error("Failed to update quiz status");
-    } finally {
-      setLoading(false);
     }
   };
 
   const showViewModal = (quiz) => {
     setSelectedQuiz(quiz);
     setViewModalVisible(true);
+  };
+
+  const handleCloseViewModal = () => {
+    setViewModalVisible(false);
+    setSelectedQuiz(null);
   };
 
   const columns = [
@@ -179,6 +177,12 @@ const QuizManagement = () => {
             <>
               {!record.isDeleted ? (
                 <>
+                  <Tooltip title="Xem Chi Tiết">
+                    <Button
+                      icon={<EyeOutlined />}
+                      onClick={() => showViewModal(record)}
+                    />
+                  </Tooltip>
                   <Tooltip title="Chỉnh Sửa">
                     <Button
                       type="primary"
@@ -212,25 +216,23 @@ const QuizManagement = () => {
 
   return (
     <div className="p-6">
+      <h2 className="text-2xl font-bold">Quản Lý Quiz</h2>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Quản Lý Quiz</h2>
-        <div>
-          <Switch
-            checked={showDeleted}
-            onChange={() => setShowDeleted((prev) => !prev)}
-            checkedChildren="Hiện Quiz Đã Xóa"
-            unCheckedChildren="Ẩn Quiz Đã Xóa"
-          />
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => navigate("/admin/quiz/add")}
-            className="ml-4"
-          >
-            Thêm Quiz Mới
-          </Button>
-        </div>
+        <Switch
+          checked={showDeleted}
+          onChange={() => setShowDeleted((prev) => !prev)}
+          checkedChildren="Hiện Quiz Đã Xóa"
+          unCheckedChildren="Ẩn Quiz Đã Xóa"
+        />
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/admin/quiz/add")}
+        >
+          Thêm Quiz Mới
+        </Button>
       </div>
+
       <Table
         columns={columns}
         dataSource={quizzes}
@@ -240,16 +242,82 @@ const QuizManagement = () => {
         onChange={handleTableChange}
       />
 
+      {/* Modal Xem Chi Tiết Quiz */}
+      <Modal
+        title="Chi Tiết Quiz"
+        open={viewModalVisible}
+        onCancel={handleCloseViewModal}
+        footer={null}
+        width={800}
+      >
+        {selectedQuiz && (
+          <div>
+            <p>
+              <strong>ID:</strong> {selectedQuiz.id}
+            </p>
+            <p>
+              <strong>Tiêu Đề:</strong> {selectedQuiz.title}
+            </p>
+            <p>
+              <strong>Mô Tả:</strong> {selectedQuiz.description}
+            </p>
+            <p>
+              <strong>Trạng Thái:</strong>{" "}
+              {selectedQuiz.status === "ACTIVE"
+                ? "Hoạt động"
+                : "Không hoạt động"}
+            </p>
+
+            {/* Hiển thị danh sách câu hỏi */}
+            <h3 className="mt-4">Danh Sách Câu Hỏi:</h3>
+            {selectedQuiz.question && selectedQuiz.question.length > 0 ? (
+              selectedQuiz.question.map((q, index) => (
+                <div key={q.questionId} className="border p-3 mt-2">
+                  <p>
+                    <strong>Câu Hỏi {index + 1}:</strong> {q.title}
+                  </p>
+
+                  {/* Hiển thị danh sách câu trả lời */}
+                  <h4>Danh Sách Đáp Án:</h4>
+                  {q.answers && q.answers.length > 0 ? (
+                    <ul>
+                      {q.answers.map((a) => (
+                        <li key={a.answerId}>
+                          <strong>•</strong> {a.answerText}{" "}
+                          {a.skinType && (
+                            <span
+                              style={{ fontStyle: "italic", color: "gray" }}
+                            >
+                              (Loại da: {getSkinTypeLabel(a.skinType)})
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-500">Không có đáp án</p>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500">Không có câu hỏi</p>
+            )}
+          </div>
+        )}
+      </Modal>
       <Modal
         title="Xác Nhận Xóa"
         open={deleteModalVisible}
         onOk={handleDeleteConfirm}
-        onCancel={() => setDeleteModalVisible(false)}
+        onCancel={() => {
+          setDeleteModalVisible(false);
+          setSelectedQuiz(null);
+        }}
         okText="Xóa"
         cancelText="Hủy"
         okButtonProps={{ danger: true }}
       >
-        <p>Bạn có chắc chắn muốn xóa quiz "{selectedQuiz?.title}"?</p>
+        <p>Bạn có chắc chắn muốn xóa blog "{selectedQuiz?.name}"?</p>
         <p>Hành động này không thể hoàn tác.</p>
       </Modal>
       <ToastContainer />
