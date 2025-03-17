@@ -12,9 +12,9 @@ Currently, two official plugins are available:
 
 - Template 3:
   https://docs.google.com/document/d/1N3zBSnzzJLeeS4T6URGZ_en14nDGTG0R/edit?usp=drive_link&ouid=105009393948540346601&rtpof=true&sd=true
-VNPay account information:
-  NCB
-  9704198526191432198
-  NGUYEN VAN A
-  07/15
+- VNPay account information:
+    NCB |
+  9704198526191432198 |
+  NGUYEN VAN A |
+  07/15 |
   123456
