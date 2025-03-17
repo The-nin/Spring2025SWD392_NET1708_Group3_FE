@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import img1 from "../../assets/img/hero-photo.png";
 import RegisterForm from "./RegisterForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
-import { login } from "../../service/login/index"; // Import API login
+import { login, clearExpiredToken } from "../../service/login/index";
 
 const LoginModal = ({ isOpen, onClose }) => {
   const [activeForm, setActiveForm] = useState("login");
@@ -70,6 +70,9 @@ const LoginModal = ({ isOpen, onClose }) => {
     }
 
     try {
+      localStorage.removeItem("admin");
+      localStorage.removeItem("adminUser");
+      localStorage.removeItem("adminTokenExpiration");
       const response = await login(formData.username, formData.password);
       console.log("API Response:", response);
 
@@ -80,6 +83,8 @@ const LoginModal = ({ isOpen, onClose }) => {
 
       localStorage.setItem("token", response.result.token);
       localStorage.setItem("username", formData.username);
+      const expirationTime = new Date().getTime() + 5 * 60 * 60 * 1000;
+      localStorage.setItem("userTokenExpiration", expirationTime.toString());
       onClose();
       navigate("/");
       window.location.reload();

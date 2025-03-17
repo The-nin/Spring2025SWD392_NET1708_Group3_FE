@@ -9,6 +9,7 @@ import ShopDropdown from "./ShopDropdown";
 import { FiUser } from "react-icons/fi";
 import { logout } from "../../service/logout";
 import { getCart } from "../../service/cart/cart";
+import { clearExpiredToken } from "../../service/login/index";
 import ChangePassword from "../../page/Profile/ChangePassword/ChangePassword";
 
 const Header = () => {
@@ -28,6 +29,7 @@ const Header = () => {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   useEffect(() => {
+    clearExpiredToken("user");
     const storedUser = localStorage.getItem("username");
     if (storedUser) {
       setUser(storedUser); // Lưu vào state

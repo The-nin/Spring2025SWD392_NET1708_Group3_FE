@@ -35,8 +35,13 @@ const LoginAdmin = () => {
           setError("Bạn không có quyền truy cập vào trang quản trị");
           return;
         }
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        localStorage.removeItem("userTokenExpiration");
         localStorage.setItem("admin", response.result.roleName);
         localStorage.setItem("token", response.result.token);
+        const expirationTime = new Date().getTime() + 5 * 60 * 60 * 1000;
+        localStorage.setItem("adminTokenExpiration", expirationTime.toString());
         navigate("/admin");
       } else {
         setError("Tên đăng nhập hoặc mật khẩu không đúng");
