@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import Total from "../Total";
 import { useState } from "react";
 import { checkout } from "../../../service/checkout";
-c;
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 

@@ -1,16 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  Minus,
-  Plus,
-  Heart,
-  ChevronDown,
-  Star,
-  ShoppingBag,
-} from "lucide-react";
+import { Minus, Plus, Star, ShoppingBag } from "lucide-react";
 import { getProductDetail, createProductFeedback } from "../../service/product";
 import { addItemToCart } from "../../service/cart/cart";
-import imgProduct from "../../assets/Rectangle 3.png";
 import { toast } from "react-toastify";
 
 // Add TabButton component definition
@@ -119,7 +111,7 @@ const ProductDetail = () => {
   const { slug } = useParams();
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState(null);
-  const [mainImage, setMainImage] = useState(imgProduct);
+  const [mainImage, setMainImage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("description");
