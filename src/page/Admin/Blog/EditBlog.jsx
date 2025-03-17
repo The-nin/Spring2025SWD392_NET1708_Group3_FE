@@ -68,7 +68,6 @@ const EditBlog = () => {
           blogName: response.result.blogName,
           description: response.result.description,
           createdBy: response.result.createdBy,
-          status: response.result.status,
           date: dayjs(response.result.date),
         });
         setCurrentThumbnail(response.result.image);
@@ -130,31 +129,31 @@ const EditBlog = () => {
           onClick={() => navigate("/admin/blog")}
           className="mb-4"
         >
-          Back to Blog
+          Quay lại quản lý Blog
         </Button>
 
-        <Card title="Edit Blog" className="max-w-3xl">
+        <Card title="Điều chỉnh Blog" className="max-w-3xl">
           <Form form={form} layout="vertical" onFinish={onFinish}>
             <Form.Item
               name="blogName"
-              label="Blog Name"
-              rules={[{ required: true, message: "Please enter blog name" }]}
+              label="Tên Blog"
+              rules={[{ required: true, message: "Nhập tên blog" }]}
             >
-              <Input placeholder="Enter blog name" />
+              <Input placeholder="Nhập tên blog" />
             </Form.Item>
 
             <Form.Item
               name="description"
-              label="Description"
-              rules={[{ required: true, message: "Please enter description" }]}
+              label="Miêu tả"
+              rules={[{ required: true, message: "Nhập miêu tả" }]}
             >
-              <Input.TextArea rows={4} placeholder="Enter blog description" />
+              <Input.TextArea rows={4} placeholder="Nhập miêu tả" />
             </Form.Item>
 
             {/* ✅ ReactQuill for Blog Content */}
             <Form.Item
               label="Content"
-              rules={[{ required: true, message: "Please enter content" }]}
+              rules={[{ required: true, message: "Nhập content" }]}
             >
               <ReactQuill
                 theme="snow"
@@ -167,16 +166,16 @@ const EditBlog = () => {
 
             <Form.Item
               name="createdBy"
-              label="Author"
-              rules={[{ required: true, message: "Please enter author name" }]}
+              label="Tác giả"
+              rules={[{ required: true, message: "Nhập tên tác giả" }]}
             >
-              <Input placeholder="Enter author name" />
+              <Input placeholder="Nhập tên tác giả" />
             </Form.Item>
 
             <Form.Item
               name="date"
-              label="Date"
-              rules={[{ required: true, message: "Please select date" }]}
+              label="Ngày xuất bản"
+              rules={[{ required: true, message: "Nhập ngày xuất bản" }]}
             >
               <DatePicker className="w-full" format="YYYY-MM-DD" />
             </Form.Item>
@@ -194,7 +193,7 @@ const EditBlog = () => {
 
             <Form.Item
               name="image"
-              label="New Thumbnail"
+              label="Nhập Thumbnail"
               valuePropName="fileList"
               getValueFromEvent={normFile}
             >
@@ -203,19 +202,8 @@ const EditBlog = () => {
                 maxCount={1}
                 listType="picture"
               >
-                <Button icon={<UploadOutlined />}>Upload New Image</Button>
+                <Button icon={<UploadOutlined />}>Thêm ảnh mới</Button>
               </Upload>
-            </Form.Item>
-
-            <Form.Item
-              name="status"
-              label="Status"
-              rules={[{ required: true, message: "Please select status" }]}
-            >
-              <Select>
-                <Select.Option value="ACTIVE">Active</Select.Option>
-                <Select.Option value="INACTIVE">Inactive</Select.Option>
-              </Select>
             </Form.Item>
 
             <Form.Item>

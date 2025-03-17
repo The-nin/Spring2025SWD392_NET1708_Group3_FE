@@ -30,6 +30,7 @@ import QuizManagement from "../page/Admin/Quiz/QuizManagement";
 import AddNewVoucher from "../page/Admin/Voucher/AddNewVoucher";
 import VoucherManagement from "../page/Admin/Voucher/VoucherManagement";
 import EditVoucher from "../page/Admin/Voucher/EditVoucher";
+import EditQuiz from "../page/Admin/Quiz/EditQuiz";
 import AddNewQuiz from "../page/Admin/Quiz/AddNewquiz";
 import Payment from "../page/PaymentPage/Payment";
 import { ProtectedUserRoute } from "./ProtectedUserRoute";
@@ -39,8 +40,12 @@ import Consultant from "../page/ConsultantPage/Consultant";
 import OrderManagement from "../page/Admin/OrderManagement/OrderManagement";
 import OrderDetail from "../page/Admin/OrderManagement/OrderDetail";
 import UserManagement from "../page/Admin/UserManagement/UserManagement";
-import ServiceManagement from "../page/ServiceManagement/ServiceManagement";
-import AddNewService from "../page/ServiceManagement/AddNewService";
+import ServiceManagement from "../page/Admin/ServiceManagement/ServiceManagement";
+import AddNewService from "../page/Admin/ServiceManagement/AddNewService";
+import BatchManagement from "../page/Admin/BatchManagement/BatchManagement";
+import AddNewBatch from "../page/Admin/BatchManagement/AddNewBatch";
+import ExpertService from "../page/Admin/ExpertService/ExpertService";
+import PaymentSuccess from "../page/PaymentSuccessPage/PaymentSuccess";
 import CategoryDetail from "../page/Admin/CategoryManagement/CategoryDetail";
 import BrandDetail from "../page/Admin/Brand/BrandDetail";
 import ProductDetailAdmin from "../page/Admin/ProducManagement/ProductDetail";
@@ -49,6 +54,7 @@ import OrderFailed from "../components/Order/OrderFailed";
 import OrderSuccess from "../components/Order/OrderSuccess";
 import AddUser from "../page/Admin/UserManagement/AddUser";
 import EditUser from "../page/Admin/UserManagement/EditUser";
+
 
 export const router = createBrowserRouter([
   {
@@ -150,6 +156,10 @@ export const router = createBrowserRouter([
             <Consultant />
           </ProtectedUserRoute>
         ),
+      },
+      {
+        path: "payment-success",
+        element: <PaymentSuccess />,
       },
     ],
   },
@@ -271,6 +281,10 @@ export const router = createBrowserRouter([
             element: <AddNewQuiz />,
           },
           {
+            path: "quiz/edit/:id",
+            element: <EditQuiz />,
+          },
+          {
             path: "voucher",
             element: <VoucherManagement />,
           },
@@ -294,6 +308,10 @@ export const router = createBrowserRouter([
                 element: <AddNewService />,
               },
             ],
+          },
+          {
+            path: "consultant-booking",
+            element: <ExpertService />,
           },
         ],
       },
