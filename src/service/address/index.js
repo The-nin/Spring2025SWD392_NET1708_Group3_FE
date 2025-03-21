@@ -32,7 +32,7 @@ export const addNewAddress = async (addressData) => {
         ward: addressData.ward,
         street: addressData.street,
         addressLine: `${addressData.street}, ${addressData.ward}, ${addressData.district}, ${addressData.city}`,
-        isDefault: addressData.default,
+        isDefault: addressData.isDefault,
       },
       {
         headers: {
