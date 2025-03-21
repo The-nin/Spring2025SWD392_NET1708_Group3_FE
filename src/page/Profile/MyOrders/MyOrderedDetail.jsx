@@ -139,14 +139,6 @@ const MyOrderedDetail = ({ order, onBack }) => {
             {order.totalAmount.toLocaleString()} đ
           </span>
         </div>
-
-        {order.status === "PENDING" && (
-          <div className="flex justify-end">
-            <button className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
-              Hủy đơn hàng
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

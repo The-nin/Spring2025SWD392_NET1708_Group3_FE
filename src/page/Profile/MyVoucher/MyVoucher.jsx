@@ -44,54 +44,60 @@ const ExchangeVoucherModal = ({
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto">
-          <div className="grid gap-4">
-            {availableVouchers.map((voucher) => (
-              <div
-                key={voucher.id}
-                className="border rounded-lg p-4 flex flex-col"
-              >
-                {errorMessages[voucher.id] && (
-                  <p className="text-red-500 text-sm mb-2">
-                    {errorMessages[voucher.id]}
-                  </p>
-                )}
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="font-semibold">{voucher.code}</h4>
-                    <p className="text-sm text-gray-600">
-                      {voucher.description}
+          {availableVouchers.length > 0 ? (
+            <div className="grid gap-4">
+              {availableVouchers.map((voucher) => (
+                <div
+                  key={voucher.id}
+                  className="border rounded-lg p-4 flex flex-col"
+                >
+                  {errorMessages[voucher.id] && (
+                    <p className="text-red-500 text-sm mb-2">
+                      {errorMessages[voucher.id]}
                     </p>
-                    <div className="mt-1">
-                      <span className="text-sm text-gray-600">
-                        Giảm:{" "}
-                        {voucher.discountType === "PERCENTAGE"
-                          ? `${voucher.discount}%`
-                          : `${voucher.discount.toLocaleString("vi-VN")}đ`}
-                      </span>
+                  )}
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h4 className="font-semibold">{voucher.code}</h4>
+                      <p className="text-sm text-gray-600">
+                        {voucher.description}
+                      </p>
+                      <div className="mt-1">
+                        <span className="text-sm text-gray-600">
+                          Giảm:{" "}
+                          {voucher.discountType === "PERCENTAGE"
+                            ? `${voucher.discount}%`
+                            : `${voucher.discount.toLocaleString("vi-VN")}đ`}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-900">
+                        {voucher.point} điểm
+                      </p>
+                      <button
+                        onClick={() => handleExchange(voucher)}
+                        disabled={userPoints < voucher.point}
+                        className={`mt-2 px-4 py-2 rounded-lg text-sm ${
+                          userPoints >= voucher.point
+                            ? "bg-gray-900 text-white hover:bg-gray-700"
+                            : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                        }`}
+                      >
+                        {userPoints >= voucher.point
+                          ? "Đổi ngay"
+                          : "Không đủ điểm"}
+                      </button>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-gray-900">
-                      {voucher.point} điểm
-                    </p>
-                    <button
-                      onClick={() => handleExchange(voucher)}
-                      disabled={userPoints < voucher.point}
-                      className={`mt-2 px-4 py-2 rounded-lg text-sm ${
-                        userPoints >= voucher.point
-                          ? "bg-gray-900 text-white hover:bg-gray-700"
-                          : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                      }`}
-                    >
-                      {userPoints >= voucher.point
-                        ? "Đổi ngay"
-                        : "Không đủ điểm"}
-                    </button>
-                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 bg-gray-50 rounded-lg">
+              <p className="text-gray-600">Không có voucher nào khả dụng</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
