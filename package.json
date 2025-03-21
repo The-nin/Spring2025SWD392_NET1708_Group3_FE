@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ant-design/charts": "^2.2.7",
+    "@antv/g2plot": "^2.4.32",
     "antd": "^5.24.1",
     "axios": "^1.7.9",
     "date-fns": "^4.1.0",
@@ -25,7 +26,8 @@
     "react-quill-new": "^3.3.3",
     "react-router-dom": "^7.1.5",
     "react-toastify": "^11.0.3",
-    "spring2025swd392-net1708-group3": "file:"
+    "spring2025swd392-net1708-group3": "file:",
+    "unique-names-generator": "^4.7.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
