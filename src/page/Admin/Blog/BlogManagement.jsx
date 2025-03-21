@@ -5,7 +5,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   LoadingOutlined,
-  EyeOutlined, // 👁️ Added View Icon
+  EyeOutlined, // 👁️ View Icon
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import {
@@ -29,6 +29,7 @@ const BlogManagement = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [viewModalVisible, setViewModalVisible] = useState(false); // 👁️ View modal state
   const [deletingBlogId, setDeletingBlogId] = useState(null);
+  const [showDeleted, setShowDeleted] = useState(false); // ✅ State để ẩn/hiện blog đã xóa
 
   // Fetch blogs from API
   const fetchBlogs = async () => {
@@ -126,6 +127,11 @@ const BlogManagement = () => {
     setViewModalVisible(true);
   };
 
+  // ✅ Lọc danh sách blogs hiển thị theo trạng thái "isDeleted"
+  const filteredBlogs = showDeleted
+    ? blogs
+    : blogs.filter((blog) => !blog.isDeleted);
+
   const columns = [
     {
       title: "ID",
@@ -160,16 +166,23 @@ const BlogManagement = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status, record) => (
-        <Switch
-          checked={status === "ACTIVE"}
-          onChange={() => toggleBlogStatus(record)}
-          checkedChildren="Active"
-          unCheckedChildren="Inactive"
-        />
-      ),
+      render: (status, record) =>
+        showDeleted ? (
+          <span>{status}</span> // Chỉ hiển thị text nếu là blog đã xóa
+        ) : (
+          <Switch
+            checked={status === "ACTIVE"}
+            onChange={() => toggleBlogStatus(record)}
+            checkedChildren="Active"
+            unCheckedChildren="Inactive"
+          />
+        ),
     },
-    {
+  ];
+
+  // Nếu đang xem blog đã xóa, loại bỏ cột "Hành động"
+  if (!showDeleted) {
+    columns.push({
       title: "Hành động",
       key: "actions",
       render: (_, record) => (
@@ -202,13 +215,19 @@ const BlogManagement = () => {
           )}
         </Space>
       ),
-    },
-  ];
+    });
+  }
 
   return (
     <div className="p-6">
+      <h2 className="text-2xl font-bold">Quản Lý Blog</h2>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Quản Lý Blog</h2>
+        <Switch
+          checked={showDeleted}
+          onChange={() => setShowDeleted((prev) => !prev)}
+          checkedChildren="Hiện Blog Đã Xóa"
+          unCheckedChildren="Ẩn Blog Đã Xóa"
+        />
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -220,49 +239,12 @@ const BlogManagement = () => {
 
       <Table
         columns={columns}
-        dataSource={blogs}
+        dataSource={filteredBlogs}
         rowKey="id"
         pagination={pagination}
         loading={loading}
         onChange={handleTableChange}
       />
-
-      {/* Modal Xem Chi Tiết Blog */}
-      <Modal
-        title="Chi Tiết Blog"
-        open={viewModalVisible}
-        onCancel={() => setViewModalVisible(false)}
-        footer={null}
-      >
-        {selectedBlog && (
-          <div>
-            <img
-              src={selectedBlog.thumbnail}
-              alt="Blog"
-              className="w-full h-60 object-cover mb-4 rounded"
-            />
-            <h3 className="text-xl font-semibold">{selectedBlog.name}</h3>
-            <p className="text-gray-600">{selectedBlog.description}</p>
-          </div>
-        )}
-      </Modal>
-
-      {/* Modal Xác Nhận Xóa */}
-      <Modal
-        title="Xác Nhận Xóa"
-        open={deleteModalVisible}
-        onOk={handleDeleteConfirm}
-        onCancel={() => {
-          setDeleteModalVisible(false);
-          setSelectedBlog(null);
-        }}
-        okText="Xóa"
-        cancelText="Hủy"
-        okButtonProps={{ danger: true }}
-      >
-        <p>Bạn có chắc chắn muốn xóa blog "{selectedBlog?.name}"?</p>
-        <p>Hành động này không thể hoàn tác.</p>
-      </Modal>
 
       <ToastContainer />
     </div>

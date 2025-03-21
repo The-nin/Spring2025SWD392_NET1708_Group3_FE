@@ -101,7 +101,7 @@ export const addBlog = async (formData) => {
       ...requestData,
       image: imageUrl,
     };
-
+    console.log(blogData);
     const response = await instance.post("admin/blog", blogData, {
       headers: {
         Authorization: `Bearer ${token}`,
