@@ -77,7 +77,7 @@ const EditBlog = () => {
         navigate("/admin/blog");
       }
     } catch (error) {
-      toast.error("Không thể lấy thông tin chi tiết về blog");
+      toast.error("Không thể lấy thông tin chi tiết về bài viết");
       navigate("/admin/blog");
     } finally {
       setInitialLoading(false);
@@ -109,12 +109,12 @@ const EditBlog = () => {
 
       if (!response.error) {
         navigate("/admin/blog");
-        toast.success("Blog được cập nhật thành công!");
+        toast.success("Bài viết được cập nhật thành công!");
       } else {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Không cập nhật được blog");
+      toast.error("Không cập nhật được bài viết");
     } finally {
       setLoading(false);
     }
@@ -129,17 +129,17 @@ const EditBlog = () => {
           onClick={() => navigate("/admin/blog")}
           className="mb-4"
         >
-          Quay lại quản lý Blog
+          Quay lại quản lý bài viết
         </Button>
 
         <Card title="Điều chỉnh Blog" className="max-w-3xl">
           <Form form={form} layout="vertical" onFinish={onFinish}>
             <Form.Item
               name="blogName"
-              label="Tên Blog"
-              rules={[{ required: true, message: "Nhập tên blog" }]}
+              label="Tên bài viết"
+              rules={[{ required: true, message: "Nhập tên bài viết" }]}
             >
-              <Input placeholder="Nhập tên blog" />
+              <Input placeholder="Nhập tên bài viết" />
             </Form.Item>
 
             <Form.Item
@@ -162,14 +162,6 @@ const EditBlog = () => {
                 modules={modules}
                 formats={formats}
               />
-            </Form.Item>
-
-            <Form.Item
-              name="createdBy"
-              label="Tác giả"
-              rules={[{ required: true, message: "Nhập tên tác giả" }]}
-            >
-              <Input placeholder="Nhập tên tác giả" />
             </Form.Item>
 
             <Form.Item
@@ -208,7 +200,7 @@ const EditBlog = () => {
 
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Update Blog
+                Update bài viết
               </Button>
             </Form.Item>
           </Form>

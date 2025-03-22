@@ -30,7 +30,6 @@ const AddNewBlog = () => {
     if (
       !values.blogTitle ||
       !values.blogIntroduction ||
-      !values.author ||
       !values.imageUrl ||
       !content.trim()
     ) {
@@ -60,7 +59,6 @@ const AddNewBlog = () => {
         image: imageUrl, // ✅ Store URL instead of Base64
         description: values.blogIntroduction,
         status: "INACTIVE",
-        date: values.publishDate.toISOString(),
         createdBy: values.author,
         content: content,
       };
@@ -69,14 +67,14 @@ const AddNewBlog = () => {
       const response = await addBlog(blogData);
 
       if (response && response.result) {
-        toast.success("Blog added successfully!");
+        toast.success("Bài viết thêm thành công!");
         setTimeout(() => navigate("/admin/blog"), 2000);
       } else {
-        toast.error(response?.message || "Error adding blog");
+        toast.error(response?.message || "Bài viết thêm thất bại");
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Failed to add blog");
+      toast.error("Thêm blog thât bại");
     } finally {
       setLoading(false);
     }
@@ -104,7 +102,7 @@ const AddNewBlog = () => {
           Quay lại quản lý Blog
         </Button>
 
-        <Card title="Thêm Blog mới" className="max-w-6xl mx-auto shadow-md">
+        <Card title="Thêm Bài Viết Mới" className="max-w-6xl mx-auto shadow-md">
           <Form
             form={form}
             layout="vertical"
@@ -126,9 +124,9 @@ const AddNewBlog = () => {
             {/* Blog Introduction */}
             <Form.Item
               name="blogIntroduction"
-              label="Giới thiệu Blog"
+              label="Giới thiệu bài viết"
               rules={[
-                { required: true, message: "Nhập đoạn giới thiệu Blog" },
+                { required: true, message: "Nhập đoạn giới thiệu bài viết" },
                 {
                   min: 50,
                   message: "Giới thiệu có ít nhất 50 chữ cái",
@@ -137,7 +135,7 @@ const AddNewBlog = () => {
             >
               <Input.TextArea
                 rows={3}
-                placeholder="Nhập đoạn giới thiệu Blog"
+                placeholder="Nhập đoạn giới thiệu bài viết"
               />
             </Form.Item>
 
@@ -160,11 +158,13 @@ const AddNewBlog = () => {
             </Form.Item>
 
             {/* Blog Content */}
-            <Form.Item label="Content Blog">
+            <Form.Item label="Content bài viết">
               <Form.Item
                 name="content"
                 noStyle
-                rules={[{ required: true, message: "Hãy nhập blog content" }]}
+                rules={[
+                  { required: true, message: "Hãy nhập bài viết content" },
+                ]}
               >
                 <ReactQuill
                   theme="snow"
@@ -175,7 +175,7 @@ const AddNewBlog = () => {
             </Form.Item>
 
             {/* Publish Date */}
-            <Form.Item
+            {/* <Form.Item
               name="publishDate"
               label="Ngày sản xuất"
               rules={[{ required: true, message: "Hãy nhập ngày tạo" }]}
@@ -185,21 +185,12 @@ const AddNewBlog = () => {
                 format="YYYY-MM-DD"
                 className="w-full"
               />
-            </Form.Item>
-            <Form.Item
-              name="author"
-              label="Tác giả"
-              rules={[
-                { required: true, message: "Hãy nhập tác giả" },
-                { min: 3, message: "Tác giả có ít nhất 3 chữ cái" },
-              ]}
-            >
-              <Input placeholder="Hãy nhập tác giả" />
-            </Form.Item>
+            </Form.Item> */}
+
             {/* Submit Button */}
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Add Blog
+                Thêm bài viết
               </Button>
             </Form.Item>
           </Form>
