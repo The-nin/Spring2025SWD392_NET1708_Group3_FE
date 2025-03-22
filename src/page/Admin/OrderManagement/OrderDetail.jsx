@@ -85,8 +85,8 @@ const OrderDetail = () => {
     if (currentStatus === "DELIVERING") {
       if (userRole === "DELIVERY_STAFF" || userRole === "ADMIN") {
         return [
-          { value: "DONE", label: "Hoàn thành" },
-          { value: "DELIVERY_FAIL", label: "Giao hàng thất bại" },
+          { value: "DONE", label: "Done" },
+          { value: "DELIVERING_FAIL", label: "Delivering fail" },
         ];
       }
       return []; // Admin không thể thay đổi trạng thái khi đang delivering
@@ -95,11 +95,11 @@ const OrderDetail = () => {
     switch (currentStatus) {
       case "PENDING":
         return [
-          { value: "PROCESSING", label: "Đang xử lý" },
-          { value: "CANCELLED", label: "Đã hủy" },
+          { value: "PROCESSING", label: "Processing" },
+          { value: "CANCELLED", label: "Cancelled" },
         ];
       case "PROCESSING":
-        return [{ value: "DELIVERING", label: "Đang giao hàng" }];
+        return [{ value: "DELIVERING", label: "Delivering" }];
       default:
         return [];
     }
