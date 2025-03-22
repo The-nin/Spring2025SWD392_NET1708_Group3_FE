@@ -85,8 +85,8 @@ const OrderDetail = () => {
     if (currentStatus === "DELIVERING") {
       if (userRole === "DELIVERY_STAFF" || userRole === "ADMIN") {
         return [
-          { value: "DONE", label: "Done" },
-          { value: "DELIVERING_FAIL", label: "Delivering fail" },
+          { value: "DONE", label: "Hoàn thành" },
+          { value: "DELIVERING_FAIL", label: "Giao hàng thất bại" },
         ];
       }
       return []; // Admin không thể thay đổi trạng thái khi đang delivering
@@ -95,11 +95,11 @@ const OrderDetail = () => {
     switch (currentStatus) {
       case "PENDING":
         return [
-          { value: "PROCESSING", label: "Processing" },
-          { value: "CANCELLED", label: "Cancelled" },
+          { value: "PROCESSING", label: "Đang xử lý" },
+          { value: "CANCELLED", label: "Đã hủy" },
         ];
       case "PROCESSING":
-        return [{ value: "DELIVERING", label: "Delivering" }];
+        return [{ value: "DELIVERING", label: "Đang giao hàng" }];
       default:
         return [];
     }
@@ -112,6 +112,16 @@ const OrderDetail = () => {
       DELIVERING: "text-purple-500",
       DONE: "text-green-600",
       CANCELLED: "text-red-600",
+      DELIVERING_FAIL: "text-red-600",
+    };
+
+    const statusTranslations = {
+      PENDING: "Chờ xử lý",
+      PROCESSING: "Đang xử lý",
+      DELIVERING: "Đang giao hàng",
+      DONE: "Hoàn thành",
+      CANCELLED: "Đã hủy",
+      DELIVERING_FAIL: "Giao hàng thất bại",
     };
 
     const currentStatus = orderDetail.status || "PENDING";
@@ -119,14 +129,16 @@ const OrderDetail = () => {
 
     return (
       <div className="flex items-center gap-4">
-        <span className={statusColors[currentStatus]}>{currentStatus}</span>
+        <span className={statusColors[currentStatus]}>
+          {statusTranslations[currentStatus] || currentStatus}
+        </span>
         {availableStatuses.length > 0 &&
           currentStatus !== "DONE" &&
           currentStatus !== "CANCELLED" && (
             <>
               <Select
-                placeholder="Change status"
-                style={{ width: 150 }}
+                placeholder="Thay đổi trạng thái"
+                style={{ width: 200 }}
                 onChange={handleStatusChange}
                 options={availableStatuses}
               />
@@ -235,14 +247,13 @@ const OrderDetail = () => {
           </Descriptions.Item>
           <Descriptions.Item label="Trạng thái thanh toán">
             <Tag color={orderDetail.paymentStatus === "PAID" ? "green" : "red"}>
-              {orderDetail.paymentStatus}
+              {orderDetail.paymentStatus === "PAID"
+                ? "Đã thanh toán"
+                : "Chưa thanh toán"}
             </Tag>
           </Descriptions.Item>
           <Descriptions.Item label="Trạng thái đơn hàng">
             {renderOrderStatus()}
-          </Descriptions.Item>
-          <Descriptions.Item label="Thông tin đơn hàng" span={3}>
-            {orderDetail.orderInfo}
           </Descriptions.Item>
         </Descriptions>
       </Card>

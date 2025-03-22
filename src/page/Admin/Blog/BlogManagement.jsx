@@ -162,12 +162,6 @@ const BlogManagement = () => {
       key: "name",
     },
     {
-      title: "Miêu tả",
-      dataIndex: "description",
-      key: "description",
-      ellipsis: true,
-    },
-    {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
@@ -256,16 +250,24 @@ const BlogManagement = () => {
         open={viewModalVisible}
         onCancel={() => setViewModalVisible(false)}
         footer={null}
+        width={700}
       >
         {selectedBlog && (
           <div>
             <img
-              src={selectedBlog.thumbnail}
+              src={selectedBlog.image}
               alt="Blog"
               className="w-full h-60 object-cover mb-4 rounded"
             />
-            <h3 className="text-xl font-semibold">{selectedBlog.name}</h3>
-            <p className="text-gray-600">{selectedBlog.description}</p>
+            <h3 className="text-xl font-semibold mb-3">
+              {selectedBlog.blogName}
+            </h3>
+            <div className="mt-4">
+              <h4 className="text-lg font-medium mb-2">Miêu tả:</h4>
+              <p className="text-gray-600 whitespace-pre-line">
+                {selectedBlog.description}
+              </p>
+            </div>
           </div>
         )}
       </Modal>

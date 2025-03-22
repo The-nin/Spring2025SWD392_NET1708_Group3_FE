@@ -176,9 +176,9 @@ const EditUser = () => {
 
           <Form.Item name="roleName" label="Vai Trò">
             <Select>
-              <Select.Option value="CUSTOMER">Khách Hàng</Select.Option>
-              <Select.Option value="DELIVERY">Người Giao Hàng</Select.Option>
+              <Select.Option value="MANAGER">Quản Lí</Select.Option>
               <Select.Option value="STAFF">Nhân Viên</Select.Option>
+              <Select.Option value="DELIVERY">Người Giao Hàng</Select.Option>
             </Select>
           </Form.Item>
 

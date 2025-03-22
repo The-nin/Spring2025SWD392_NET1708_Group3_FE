@@ -345,7 +345,13 @@ const ProfilePage = () => {
                       </div>
                       <div>
                         <p className="text-gray-500 mb-1">Giới tính</p>
-                        <p className="font-medium">{formData.gender}</p>
+                        <p className="font-medium">
+                          {formData.gender === "MALE"
+                            ? "Nam"
+                            : formData.gender === "FEMALE"
+                            ? "Nữ"
+                            : "Khác"}
+                        </p>
                       </div>
                     </div>
                   )}

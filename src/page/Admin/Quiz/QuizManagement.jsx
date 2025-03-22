@@ -21,7 +21,6 @@ const QuizManagement = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [quizzes, setQuizzes] = useState([]);
-  const [showDeleted, setShowDeleted] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -34,7 +33,7 @@ const QuizManagement = () => {
 
   useEffect(() => {
     fetchQuizzes();
-  }, [showDeleted]);
+  }, []);
 
   const fetchQuizzes = async (params = {}) => {
     try {
@@ -44,9 +43,7 @@ const QuizManagement = () => {
       if (!response.error) {
         let quizList = Array.isArray(response.result) ? response.result : [];
 
-        if (!showDeleted) {
-          quizList = quizList.filter((quiz) => !quiz.isDeleted);
-        }
+        quizList = quizList.filter((quiz) => !quiz.isDeleted);
 
         setQuizzes(quizList);
         setPagination((prev) => ({
@@ -156,15 +153,14 @@ const QuizManagement = () => {
       title: "Trạng Thái",
       dataIndex: "status",
       key: "status",
-      render: (status, record) =>
-        !record.isDeleted && (
-          <Switch
-            checked={status === "ACTIVE"}
-            onChange={() => toggleQuizStatus(record)}
-            checkedChildren="Hoạt động"
-            unCheckedChildren="Không hoạt động"
-          />
-        ),
+      render: (status, record) => (
+        <Switch
+          checked={status === "ACTIVE"}
+          onChange={() => toggleQuizStatus(record)}
+          checkedChildren="Hoạt động"
+          unCheckedChildren="Không hoạt động"
+        />
+      ),
     },
     {
       title: "Hành Động",
@@ -175,38 +171,26 @@ const QuizManagement = () => {
             <LoadingOutlined style={{ fontSize: 20 }} />
           ) : (
             <>
-              {!record.isDeleted ? (
-                <>
-                  <Tooltip title="Xem Chi Tiết">
-                    <Button
-                      icon={<EyeOutlined />}
-                      onClick={() => showViewModal(record)}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Chỉnh Sửa">
-                    <Button
-                      type="primary"
-                      icon={<EditOutlined />}
-                      onClick={() => navigate(`/admin/quiz/edit/${record.id}`)}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Xóa">
-                    <Button
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => showDeleteConfirm(record)}
-                    />
-                  </Tooltip>
-                </>
-              ) : (
-                <Tooltip title="Khôi Phục">
-                  <Button
-                    type="default"
-                    icon={<UndoOutlined />}
-                    onClick={() => handleRestoreQuiz(record)}
-                  />
-                </Tooltip>
-              )}
+              <Tooltip title="Xem Chi Tiết">
+                <Button
+                  icon={<EyeOutlined />}
+                  onClick={() => showViewModal(record)}
+                />
+              </Tooltip>
+              <Tooltip title="Chỉnh Sửa">
+                <Button
+                  type="primary"
+                  icon={<EditOutlined />}
+                  onClick={() => navigate(`/admin/quiz/edit/${record.id}`)}
+                />
+              </Tooltip>
+              <Tooltip title="Xóa">
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => showDeleteConfirm(record)}
+                />
+              </Tooltip>
             </>
           )}
         </Space>
@@ -218,12 +202,7 @@ const QuizManagement = () => {
     <div className="p-6">
       <h2 className="text-2xl font-bold">Quản Lý Bộ Trắc Nghiệm</h2>
       <div className="flex justify-between items-center mb-4">
-        <Switch
-          checked={showDeleted}
-          onChange={() => setShowDeleted((prev) => !prev)}
-          checkedChildren="Hiện Bộ trắc nghiệm Đã Xóa"
-          unCheckedChildren="Ẩn Bộ trắc nghiệm Đã Xóa"
-        />
+        <div></div>
         <Button
           type="primary"
           icon={<PlusOutlined />}
