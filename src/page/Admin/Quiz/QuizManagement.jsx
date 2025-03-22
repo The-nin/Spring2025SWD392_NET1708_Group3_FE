@@ -59,7 +59,7 @@ const QuizManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Không hiện Quiz");
+      toast.error("Không hiện Bộ trắc nghiệm");
     } finally {
       setLoading(false);
     }
@@ -99,7 +99,7 @@ const QuizManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Update quiz không thành công");
+      toast.error("Update bộ trắc nghiệm không thành công");
     } finally {
       setLoading(false);
     }
@@ -118,13 +118,13 @@ const QuizManagement = () => {
       const response = await deleteQuiz(selectedQuiz.id, { isDeleted: true });
 
       if (!response.error) {
-        toast.success("Xóa Quiz thành công");
+        toast.success("Xóa bộ trắc nghiệm thành công");
         fetchQuizzes();
       } else {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("xÓA Quiz thất bại");
+      toast.error("Xóa bộ trắc nghiệm thất bại");
     } finally {
       setLoading(false);
       setDeleteModalVisible(false);
@@ -216,20 +216,20 @@ const QuizManagement = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold">Quản Lý Quiz</h2>
+      <h2 className="text-2xl font-bold">Quản Lý Bộ Trắc Nghiệm</h2>
       <div className="flex justify-between items-center mb-4">
         <Switch
           checked={showDeleted}
           onChange={() => setShowDeleted((prev) => !prev)}
-          checkedChildren="Hiện Quiz Đã Xóa"
-          unCheckedChildren="Ẩn Quiz Đã Xóa"
+          checkedChildren="Hiện Bộ trắc nghiệm Đã Xóa"
+          unCheckedChildren="Ẩn Bộ trắc nghiệm Đã Xóa"
         />
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => navigate("/admin/quiz/add")}
         >
-          Thêm Quiz Mới
+          Thêm Bộ Trắc Nghiệm Mới
         </Button>
       </div>
 
@@ -244,7 +244,7 @@ const QuizManagement = () => {
 
       {/* Modal Xem Chi Tiết Quiz */}
       <Modal
-        title="Chi Tiết Quiz"
+        title="Chi Tiết Bộ trắc nghiệm"
         open={viewModalVisible}
         onCancel={handleCloseViewModal}
         footer={null}
@@ -317,7 +317,7 @@ const QuizManagement = () => {
         cancelText="Hủy"
         okButtonProps={{ danger: true }}
       >
-        <p>Bạn có chắc chắn muốn xóa blog "{selectedQuiz?.name}"?</p>
+        <p>Bạn có chắc chắn muốn xóa bộ trắc nghiệm "{selectedQuiz?.name}"?</p>
         <p>Hành động này không thể hoàn tác.</p>
       </Modal>
       <ToastContainer />

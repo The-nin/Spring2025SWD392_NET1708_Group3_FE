@@ -20,7 +20,7 @@ export const getAllBlogs = async () => {
     console.log(response);
     return response;
   } catch (error) {
-    return handleError(error, "Failed to fetch blogs");
+    return handleError(error, "Thêm bài viết thất bại");
   }
 };
 export const getUserBlogs = async () => {
@@ -35,7 +35,7 @@ export const getUserBlogs = async () => {
     console.log(response);
     return response;
   } catch (error) {
-    return handleError(error, "Failed to fetch blogs");
+    return handleError(error, "Hiện bài viết thất bại");
   }
 };
 export const getBlogById = async (id) => {
@@ -50,7 +50,7 @@ export const getBlogById = async (id) => {
     console.log(response);
     return response;
   } catch (error) {
-    return handleError(error, "Failed to fetch blogs");
+    return handleError(error, "Hiện bài viết thất bạis");
   }
 };
 export const uploadToCloudinary = async (file) => {
@@ -115,10 +115,10 @@ export const addBlog = async (formData) => {
       message: response.message,
     };
   } catch (error) {
-    console.error("Add blog error:", error);
+    console.error("Thêm blog lỗi:", error);
     return {
       error: true,
-      message: error.response?.message || "Failed to add blog",
+      message: error.response?.message || "Thêm bài viết thất bại",
     };
   }
 };
@@ -133,12 +133,12 @@ export const updateBlog = async (blogId, blogData, imageFile) => {
     if (imageFile && imageFile instanceof File) {
       try {
         imageUrl = await uploadToCloudinary(imageFile);
-        console.log("Image uploaded successfully:", imageUrl);
+        console.log("Thêm ảnh thành công:", imageUrl);
       } catch (uploadError) {
-        console.error("Failed to upload image:", uploadError);
+        console.error("Thêm ảnh thất bại:", uploadError);
         return {
           error: true,
-          message: "Failed to upload image to Cloudinary",
+          message: "Thêm ảnh thất bại từ Cloudinary",
         };
       }
     }
@@ -178,7 +178,7 @@ export const updateBlog = async (blogId, blogData, imageFile) => {
     };
   } catch (error) {
     // Enhanced error logging
-    console.error("Update blog error details:", {
+    console.error("Cập nhật bài viết thất bại:", {
       status: error.response?.status,
       statusText: error.response?.statusText,
       serverMessage: error.response?.data?.message,
@@ -189,7 +189,7 @@ export const updateBlog = async (blogId, blogData, imageFile) => {
 
     return {
       error: true,
-      message: error.response?.message || "Failed to update blog",
+      message: error.response?.message || "Cập nhật bài viết thất bại",
     };
   }
 };
@@ -209,7 +209,7 @@ export const deleteBlog = async (id) => {
       message: response.data?.message,
     };
   } catch (error) {
-    return handleError(error, "Failed to delete blog");
+    return handleError(error, "Xóa bài viết thất bại");
   }
 };
 
@@ -232,10 +232,10 @@ export const updateBlogStatus = async (blogId, status) => {
       message: response.data?.message,
     };
   } catch (error) {
-    console.error("Update blog status error:", error);
+    console.error("Cập nhật trạng thái thất bại:", error);
     return {
       error: true,
-      message: error.response?.data?.message || "Failed to update blog status",
+      message: error.response?.data?.message || "Cập nhật trạng thái thất bại",
     };
   }
 };

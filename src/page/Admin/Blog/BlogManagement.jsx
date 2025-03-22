@@ -51,7 +51,7 @@ const BlogManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Không thể tải blog");
+      toast.error("Không thể tải bài viết");
     } finally {
       setLoading(false);
     }
@@ -85,12 +85,12 @@ const BlogManagement = () => {
           prevBlogs.filter((blog) => blog.id !== selectedBlog.id)
         );
         setPagination((prev) => ({ ...prev, total: prev.total - 1 }));
-        toast.success("Đã xóa blog thành công!");
+        toast.success("Đã xóa bài viết thành công!");
       } else {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Không xóa được blog");
+      toast.error("Không xóa được bài viết");
     } finally {
       setDeletingBlogId(null);
       setDeleteModalVisible(false);
@@ -105,7 +105,7 @@ const BlogManagement = () => {
       const response = await updateBlogStatus(blog.id, newStatus);
 
       if (!response.error) {
-        toast.success("Trạng thái blog đã được cập nhật thành công!");
+        toast.success("Trạng thái bài viết đã được cập nhật thành công!");
         setBlogs((prevBlogs) =>
           prevBlogs.map((b) =>
             b.id === blog.id ? { ...b, status: newStatus } : b
@@ -115,7 +115,7 @@ const BlogManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Không cập nhật được trạng thái blog");
+      toast.error("Không cập nhật được trạng thái bài viết");
     } finally {
       setLoading(false);
     }
@@ -152,7 +152,7 @@ const BlogManagement = () => {
       ),
     },
     {
-      title: "Tên Blog",
+      title: "Tên bài viết",
       dataIndex: "blogName",
       key: "name",
     },
@@ -173,8 +173,8 @@ const BlogManagement = () => {
           <Switch
             checked={status === "ACTIVE"}
             onChange={() => toggleBlogStatus(record)}
-            checkedChildren="Active"
-            unCheckedChildren="Inactive"
+            checkedChildren="Hoạt động"
+            unCheckedChildren="Không hoạt động"
           />
         ),
     },
@@ -220,20 +220,20 @@ const BlogManagement = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold">Quản Lý Blog</h2>
+      <h2 className="text-2xl font-bold">Quản Lý bài viết</h2>
       <div className="flex justify-between items-center mb-4">
         <Switch
           checked={showDeleted}
           onChange={() => setShowDeleted((prev) => !prev)}
-          checkedChildren="Hiện Blog Đã Xóa"
-          unCheckedChildren="Ẩn Blog Đã Xóa"
+          checkedChildren="Hiện Bài Viết Đã Xóa"
+          unCheckedChildren="Ẩn Bài Viết Đã Xóa"
         />
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => navigate("/admin/blog/add")}
         >
-          Thêm Blog Mới
+          Thêm Bài Viết Mới
         </Button>
       </div>
 
@@ -245,7 +245,42 @@ const BlogManagement = () => {
         loading={loading}
         onChange={handleTableChange}
       />
+      {/* Modal Xem Chi Tiết Blog */}
+      <Modal
+        title="Chi Tiết bài viết"
+        open={viewModalVisible}
+        onCancel={() => setViewModalVisible(false)}
+        footer={null}
+      >
+        {selectedBlog && (
+          <div>
+            <img
+              src={selectedBlog.thumbnail}
+              alt="Blog"
+              className="w-full h-60 object-cover mb-4 rounded"
+            />
+            <h3 className="text-xl font-semibold">{selectedBlog.name}</h3>
+            <p className="text-gray-600">{selectedBlog.description}</p>
+          </div>
+        )}
+      </Modal>
 
+      {/* Modal Xác Nhận Xóa */}
+      <Modal
+        title="Xác Nhận Xóa"
+        open={deleteModalVisible}
+        onOk={handleDeleteConfirm}
+        onCancel={() => {
+          setDeleteModalVisible(false);
+          setSelectedBlog(null);
+        }}
+        okText="Xóa"
+        cancelText="Hủy"
+        okButtonProps={{ danger: true }}
+      >
+        <p>Bạn có chắc chắn muốn xóa bài viết "{selectedBlog?.name}"?</p>
+        <p>Hành động này không thể hoàn tác.</p>
+      </Modal>
       <ToastContainer />
     </div>
   );

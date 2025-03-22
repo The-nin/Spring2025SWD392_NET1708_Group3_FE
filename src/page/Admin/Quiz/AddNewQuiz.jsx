@@ -138,7 +138,10 @@ const AddNewQuiz = () => {
           Quay lại danh sách Bộ trắc nghiệm
         </Button>
 
-        <Card title="Thêm Quiz Mới" className="max-w-4xl mx-auto shadow-md">
+        <Card
+          title="Thêm Bộ Trắc Nghiệm Mới"
+          className="max-w-4xl mx-auto shadow-md"
+        >
           <Form
             form={form}
             layout="vertical"

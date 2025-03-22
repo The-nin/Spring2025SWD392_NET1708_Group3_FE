@@ -31,11 +31,11 @@ function EditVoucher({ fetchVouchers }) {
             quantity: response.result.quantity,
           });
         } else {
-          toast.error("Failed to load voucher details");
+          toast.error("Hiện khuyến mãi thất bại");
           navigate("/admin/voucher");
         }
       } catch (error) {
-        toast.error("Error fetching voucher details");
+        toast.error("Hiện thông tin khuyến mãi thất bại");
         navigate("/admin/voucher");
       } finally {
         setLoading(false);
@@ -62,20 +62,20 @@ function EditVoucher({ fetchVouchers }) {
       const response = await updateVoucher(id, formattedValues);
 
       if (!response.error) {
-        toast.success("Voucher updated successfully!");
+        toast.success("Cập nhật khuyến mãi thành công!");
         fetchVouchers?.();
         setTimeout(() => navigate("/admin/voucher"), 2000);
       } else {
-        toast.error(response.message || "Failed to update voucher");
+        toast.error(response.message || "Cập nhật khuyến mãi thất bại");
       }
     } catch (error) {
-      toast.error("Error updating voucher");
+      toast.error("Cập nhật khuyến mãi thất bại");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!voucher) return <p>Loading voucher details...</p>;
+  if (!voucher) return <p>Loading khuyến mãi details...</p>;
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -84,10 +84,10 @@ function EditVoucher({ fetchVouchers }) {
         onClick={() => navigate("/admin/voucher")}
         className="mb-4"
       >
-        Quay lại danh sách Voucher
+        Quay lại danh sách khuyến mãi
       </Button>
 
-      <h2 className="text-2xl font-bold mb-4">Chỉnh Sửa Voucher</h2>
+      <h2 className="text-2xl font-bold mb-4">Chỉnh Sửa Khuyến Mãi</h2>
 
       <Form
         form={form}
@@ -97,10 +97,10 @@ function EditVoucher({ fetchVouchers }) {
       >
         <Form.Item
           name="code"
-          label="Mã Voucher"
-          rules={[{ required: true, message: "Vui lòng nhập mã voucher" }]}
+          label="Mã Khuyến Mãi"
+          rules={[{ required: true, message: "Vui lòng nhập mã khuyến mãi" }]}
         >
-          <Input placeholder="Nhập mã voucher" />
+          <Input placeholder="Nhập mã khuyến mãi" />
         </Form.Item>
 
         <Form.Item
@@ -152,7 +152,7 @@ function EditVoucher({ fetchVouchers }) {
 
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading}>
-            Cập Nhật Voucher
+            Cập Nhật Khuyễn Mãi
           </Button>
         </Form.Item>
       </Form>

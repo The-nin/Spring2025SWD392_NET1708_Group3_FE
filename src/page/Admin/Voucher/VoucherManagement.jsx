@@ -55,10 +55,10 @@ const VoucherManagement = () => {
         setVouchers(content);
         setPagination({ current, pageSize, total: totalElements });
       } else {
-        toast.error(response.message || "Lỗi khi lấy danh sách voucher");
+        toast.error(response.message || "Lỗi khi lấy danh sách khuyến mãi");
       }
     } catch (error) {
-      toast.error("Lỗi khi lấy danh sách voucher");
+      toast.error("Lỗi khi lấy danh sách khuyến mãi");
     } finally {
       setLoading(false);
     }
@@ -90,12 +90,12 @@ const VoucherManagement = () => {
           prev.filter((voucher) => voucher.id !== selectedVoucher.id)
         );
         setPagination((prev) => ({ ...prev, total: prev.total - 1 }));
-        toast.success("Voucher đã được xóa thành công!");
+        toast.success("Khuyến mãi đã được xóa thành công!");
       } else {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Lỗi khi xóa voucher");
+      toast.error("Lỗi khi xóa khuyến mãi");
     } finally {
       setDeletingVoucherId(null);
       setDeleteModalVisible(false);
@@ -111,7 +111,7 @@ const VoucherManagement = () => {
       sorter: (a, b) => a.id - b.id,
     },
     {
-      title: "Mã Voucher",
+      title: "Mã Khuyến Mãi",
       dataIndex: "code",
       key: "code",
     },
@@ -175,7 +175,7 @@ const VoucherManagement = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Quản Lý Voucher</h2>
+        <h2 className="text-2xl font-bold">Quản Lý Khuyến Mãi</h2>
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -213,7 +213,7 @@ const VoucherManagement = () => {
 
       {/* View Modal */}
       <Modal
-        title="Chi Tiết Voucher"
+        title="Chi Tiết Khuyến Mãi"
         open={viewModalVisible}
         onCancel={() => setViewModalVisible(false)}
         footer={null}

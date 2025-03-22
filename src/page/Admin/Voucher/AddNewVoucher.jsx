@@ -31,19 +31,17 @@ function AddNewVoucher({}) {
 
       // ✅ Check for actual errors instead of throwing an error by default
       if (response?.error) {
-        throw new Error(response.message || "Failed to add voucher");
+        throw new Error(response.message || "Thêm khuyến mại thất bại");
       }
 
       // ✅ Display success message
-      toast.success(response.message || "Voucher added successfully!");
+      toast.success(response.message || "VThêm khuyến mại thành công");
 
       // ✅ Navigate only after success
       setTimeout(() => navigate("/admin/voucher"), 2000);
     } catch (error) {
       console.error("⚠️ Create voucher error:", error);
-      toast.error(
-        error.message || "Failed to save the voucher. Please check the details."
-      );
+      toast.error(error.message || "Lưu khuyến mãi thất bại");
     } finally {
       setLoading(false);
     }
@@ -56,10 +54,10 @@ function AddNewVoucher({}) {
         onClick={() => navigate("/admin/voucher")}
         className="mb-4"
       >
-        Quay lại danh sách Voucher
+        Quay lại danh sách khuyến mại
       </Button>
 
-      <h2 className="text-2xl font-bold mb-4">Thêm Voucher Mới</h2>
+      <h2 className="text-2xl font-bold mb-4">Thêm Khuyến Mãi Mới</h2>
 
       <Form
         form={form}
@@ -69,10 +67,10 @@ function AddNewVoucher({}) {
       >
         <Form.Item
           name="code"
-          label="Mã Voucher"
-          rules={[{ required: true, message: "Vui lòng nhập mã voucher" }]}
+          label="Mã Khuyến Mãi"
+          rules={[{ required: true, message: "Vui lòng nhập mã khuyến mãi" }]}
         >
-          <Input placeholder="Nhập mã voucher" />
+          <Input placeholder="Nhập mã khuyến mãi" />
         </Form.Item>
 
         <Form.Item
@@ -127,7 +125,7 @@ function AddNewVoucher({}) {
 
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading}>
-            Thêm Voucher
+            Thêm Khuyến Mãi
           </Button>
         </Form.Item>
       </Form>
