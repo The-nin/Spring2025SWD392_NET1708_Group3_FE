@@ -28,11 +28,11 @@ const EditQuiz = () => {
             questions: response.result.question || [],
           });
         } else {
-          toast.error("Không thể tải Quiz");
+          toast.error("Không thể tải Bộ trắc nghiệm");
         }
       } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu Quiz:", error);
-        toast.error("Lỗi khi lấy dữ liệu Quiz");
+        console.error("Lỗi khi lấy dữ liệu Bộ trắc nghiệm:", error);
+        toast.error("Lỗi khi lấy dữ liệu Bộ trắc nghiệm");
       } finally {
         setLoading(false);
       }
@@ -107,17 +107,17 @@ const EditQuiz = () => {
           : [],
       };
 
-      console.log("📤 Đang cập nhật Quiz:", updatedQuizData);
+      console.log("📤 Đang cập nhật Bộ trắc nghiệm:", updatedQuizData);
 
       const response = await updateQuiz(id, updatedQuizData);
       if (!response.error) {
         setTimeout(() => navigate("/admin/quiz"), 2000);
-        toast.success("Quiz đã được cập nhật thành công!");
+        toast.success("Bộ trắc nghiệm đã được cập nhật thành công!");
       } else {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Không thể cập nhật Quiz");
+      toast.error("Không thể cập nhật Bộ trắc nghiệm");
     } finally {
       setLoading(false);
     }
@@ -136,10 +136,13 @@ const EditQuiz = () => {
           onClick={() => navigate("/admin/quiz")}
           className="mb-4 hover:bg-gray-100"
         >
-          Quay lại danh sách Quiz
+          Quay lại danh sách Bộ trắc nghiệm
         </Button>
 
-        <Card title="Chỉnh sửa Quiz" className="max-w-6xl mx-auto shadow-md">
+        <Card
+          title="Chỉnh sửa Bộ trắc nghiệm"
+          className="max-w-6xl mx-auto shadow-md"
+        >
           <Form
             form={form}
             layout="vertical"
@@ -148,20 +151,31 @@ const EditQuiz = () => {
           >
             <Form.Item
               name="title"
-              label="Tiêu đề Quiz"
+              label="Tiêu đề Bộ trắc nghiệm"
               rules={[
-                { required: true, message: "Vui lòng nhập tiêu đề Quiz" },
+                {
+                  required: true,
+                  message: "Vui lòng nhập tiêu đề Bộ trắc nghiệm",
+                },
               ]}
             >
-              <Input placeholder="Nhập tiêu đề Quiz" />
+              <Input placeholder="Nhập tiêu đề Bộ trắc nghiệm" />
             </Form.Item>
 
             <Form.Item
               name="description"
-              label="Mô tả Quiz"
-              rules={[{ required: true, message: "Vui lòng nhập mô tả Quiz" }]}
+              label="Mô tả Bộ trắc nghiệm"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng nhập mô tả Bộ trắc nghiệm",
+                },
+              ]}
             >
-              <Input.TextArea rows={3} placeholder="Nhập mô tả Quiz" />
+              <Input.TextArea
+                rows={3}
+                placeholder="Nhập mô tả Bộ trắc nghiệm"
+              />
             </Form.Item>
 
             <Form.List name="questions">
@@ -275,7 +289,7 @@ const EditQuiz = () => {
 
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Cập nhật Quiz
+                Cập nhật Bộ trắc nghiệm
               </Button>
             </Form.Item>
           </Form>
