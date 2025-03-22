@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Tooltip, Modal, Switch } from "antd";
+import { Table, Button, Space, Tooltip, Modal } from "antd";
 import {
   PlusOutlined,
-  EditOutlined,
+  EyeOutlined,
   DeleteOutlined,
   LoadingOutlined,
-  EyeOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import {
@@ -15,6 +14,17 @@ import {
 } from "../../../service/voucher/index";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+// Helper function to format numbers
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat("vi-VN").format(value) + "đ";
+};
+
+const formatDiscountType = (type) => {
+  return type === "PERCENTAGE"
+    ? "Giảm giá theo %"
+    : "Giảm giá theo tổng số tiền";
+};
 
 const VoucherManagement = () => {
   const navigate = useNavigate();
@@ -30,7 +40,9 @@ const VoucherManagement = () => {
   const [deletingVoucherId, setDeletingVoucherId] = useState(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
 
-  // Fetch vouchers from API
+  useEffect(() => {
+    fetchVouchers();
+  }, []);
 
   const fetchVouchers = async (params = {}) => {
     try {
@@ -43,21 +55,16 @@ const VoucherManagement = () => {
         setVouchers(content);
         setPagination({ current, pageSize, total: totalElements });
       } else {
-        toast.error(response.message || "Failed to fetch vouchers");
+        toast.error(response.message || "Lỗi khi lấy danh sách voucher");
       }
     } catch (error) {
-      toast.error("Failed to fetch vouchers");
+      toast.error("Lỗi khi lấy danh sách voucher");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchVouchers();
-  }, []);
-
   const handleTableChange = (newPagination) => {
-    // Convert from 1-based to 0-based page number for API
     fetchVouchers(newPagination.current - 1, newPagination.pageSize);
   };
 
@@ -83,35 +90,16 @@ const VoucherManagement = () => {
           prev.filter((voucher) => voucher.id !== selectedVoucher.id)
         );
         setPagination((prev) => ({ ...prev, total: prev.total - 1 }));
-        toast.success("Voucher deleted successfully!");
+        toast.success("Voucher đã được xóa thành công!");
       } else {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error(error.message || "Failed to delete voucher");
+      toast.error("Lỗi khi xóa voucher");
     } finally {
       setDeletingVoucherId(null);
       setDeleteModalVisible(false);
       setSelectedVoucher(null);
-    }
-  };
-
-  const toggleVoucherStatus = async (voucher) => {
-    const newStatus = voucher.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-    setVouchers((prev) =>
-      prev.map((v) => (v.id === voucher.id ? { ...v, status: newStatus } : v))
-    );
-
-    try {
-      await updateVoucherStatus(voucher.id, newStatus);
-      toast.success("Voucher status updated successfully!");
-    } catch (error) {
-      toast.error("Failed to update voucher status");
-      setVouchers((prev) =>
-        prev.map((v) =>
-          v.id === voucher.id ? { ...v, status: voucher.status } : v
-        )
-      );
     }
   };
 
@@ -124,7 +112,6 @@ const VoucherManagement = () => {
     },
     {
       title: "Mã Voucher",
-
       dataIndex: "code",
       key: "code",
     },
@@ -133,23 +120,27 @@ const VoucherManagement = () => {
       dataIndex: "discount",
       key: "discount",
       render: (discount, record) =>
-        record.discountType === "PERCENTAGE" ? `${discount}%` : `$${discount}`,
+        record.discountType === "PERCENTAGE"
+          ? `${discount}%`
+          : formatCurrency(discount),
     },
     {
       title: "Loại Giảm Giá",
       dataIndex: "discountType",
       key: "discountType",
+      render: (type) => formatDiscountType(type),
     },
     {
       title: "Giá Trị Đơn Hàng Tối Thiểu",
       dataIndex: "minOrderValue",
       key: "minOrderValue",
-      render: (value) => `$${value}`,
+      render: (value) => formatCurrency(value),
     },
     {
       title: "Điểm Yêu Cầu",
       dataIndex: "point",
       key: "point",
+      render: (value) => value.toLocaleString("vi-VN"),
     },
     {
       title: "Hành Động",
@@ -203,6 +194,7 @@ const VoucherManagement = () => {
         locale={{ emptyText: "Không có voucher nào" }}
       />
 
+      {/* Delete Modal */}
       <Modal
         title="Xác Nhận Xóa"
         open={deleteModalVisible}
@@ -219,6 +211,7 @@ const VoucherManagement = () => {
         <p>Hành động này không thể hoàn tác.</p>
       </Modal>
 
+      {/* View Modal */}
       <Modal
         title="Chi Tiết Voucher"
         open={viewModalVisible}
@@ -228,25 +221,30 @@ const VoucherManagement = () => {
         {selectedVoucher && (
           <div>
             <p>
-              <strong>Points Required:</strong> {selectedVoucher.point}
               <strong>Mã Voucher:</strong> {selectedVoucher.code}
             </p>
             <p>
-              <strong>Giảm Giá:</strong> {selectedVoucher.discount}%
+              <strong>Giảm Giá:</strong>{" "}
+              {selectedVoucher.discountType === "PERCENTAGE"
+                ? `${selectedVoucher.discount}%`
+                : formatCurrency(selectedVoucher.discount)}
             </p>
             <p>
-              <strong>Loại Giảm Giá:</strong> {selectedVoucher.discountType}
+              <strong>Loại Giảm Giá:</strong>{" "}
+              {formatDiscountType(selectedVoucher.discountType)}
             </p>
             <p>
-              <strong>Giá Trị Đơn Hàng Tối Thiểu:</strong> $
-              {selectedVoucher.minOrderValue}
+              <strong>Giá Trị Đơn Hàng Tối Thiểu:</strong>{" "}
+              {formatCurrency(selectedVoucher.minOrderValue)}
             </p>
             <p>
-              <strong>Điểm Yêu Cầu:</strong> {selectedVoucher.point}
+              <strong>Điểm Yêu Cầu:</strong>{" "}
+              {selectedVoucher.point.toLocaleString("vi-VN")}
             </p>
             {selectedVoucher.quantity && (
               <p>
-                <strong>Quantity:</strong> {selectedVoucher.quantity}
+                <strong>Số Lượng:</strong>{" "}
+                {selectedVoucher.quantity.toLocaleString("vi-VN")}
               </p>
             )}
           </div>

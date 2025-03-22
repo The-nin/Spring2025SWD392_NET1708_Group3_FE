@@ -59,7 +59,7 @@ const QuizManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to fetch quizzes");
+      toast.error("Không hiện Quiz");
     } finally {
       setLoading(false);
     }
@@ -89,7 +89,7 @@ const QuizManagement = () => {
       const response = await updateQuizStatus(quiz.id, newStatus);
 
       if (!response.error) {
-        toast.success("Quiz status updated successfully!");
+        toast.success("Update Status thành công");
         setQuizzes((prevQuiz) =>
           prevQuiz.map((b) =>
             b.id === quiz.id ? { ...b, status: newStatus } : b
@@ -99,7 +99,7 @@ const QuizManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to update quiz status");
+      toast.error("Update quiz không thành công");
     } finally {
       setLoading(false);
     }
@@ -118,13 +118,13 @@ const QuizManagement = () => {
       const response = await deleteQuiz(selectedQuiz.id, { isDeleted: true });
 
       if (!response.error) {
-        toast.success("Quiz deleted successfully!");
+        toast.success("Xóa Quiz thành công");
         fetchQuizzes();
       } else {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Failed to delete quiz");
+      toast.error("xÓA Quiz thất bại");
     } finally {
       setLoading(false);
       setDeleteModalVisible(false);

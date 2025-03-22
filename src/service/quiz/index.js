@@ -19,7 +19,7 @@ export const getAllQuizs = async () => {
     });
     return response;
   } catch (error) {
-    return handleError(error, "Không thể lấy danh sách Quiz");
+    return handleError(error, "Không thể lấy danh sách Bộ trắc nghiệm");
   }
 };
 
@@ -37,14 +37,14 @@ export const getQuizById = async (id) => {
     console.log(response);
     return response;
   } catch (error) {
-    return handleError(error, "Không thể lấy chi tiết Quiz");
+    return handleError(error, "Không thể lấy chi tiết Bộ trắc nghiệm");
   }
 };
 
 export const addQuiz = async (quizData) => {
   const token = localStorage.getItem("token");
   try {
-    console.log("Đang tạo Quiz:", JSON.stringify(quizData, null, 2));
+    console.log("Đang tạo Bộ trắc nghiệm:", JSON.stringify(quizData, null, 2));
 
     const response = await instance.post("admin/quizs", quizData, {
       headers: {
@@ -58,11 +58,11 @@ export const addQuiz = async (quizData) => {
     return {
       error: false,
       result: response.data?.result,
-      message: response.data?.message || "Tạo Quiz thành công",
+      message: response.data?.message || "Tạo Bộ trắc nghiệm thành công",
     };
   } catch (error) {
     console.error("Lỗi phản hồi:", error.response?.data || error.message);
-    return handleError(error, "Không thể tạo Quiz");
+    return handleError(error, "Không thể tạo Bộ trắc nghiệm");
   }
 };
 
@@ -83,10 +83,10 @@ export const updateQuiz = async (quizId, quizData) => {
     return {
       success: response.status === 200 || response.status === 201,
       result: response.data?.result ?? null,
-      message: response.data?.message ?? "Cập nhật Quiz thành công!",
+      message: response.data?.message ?? "Cập nhật Bộ trắc nghiệm thành công!",
     };
   } catch (error) {
-    return handleError(error, "Không thể cập nhật Quiz");
+    return handleError(error, "Không thể cập nhật Bộ trắc nghiệm");
   }
 };
 
@@ -102,10 +102,10 @@ export const deleteQuiz = async (quizId) => {
     return {
       error: false,
       result: response.data?.result,
-      message: response.data?.message || "Xóa Quiz thành công",
+      message: response.data?.message || "Xóa Bộ trắc nghiệm thành công",
     };
   } catch (error) {
-    return handleError(error, "Không thể xóa Quiz");
+    return handleError(error, "Không thể xóa Bộ trắc nghiệm");
   }
 };
 
@@ -125,14 +125,17 @@ export const updateQuizStatus = async (quizId, status) => {
     return {
       error: false,
       result: response.data?.result,
-      message: response.data?.message || "Cập nhật trạng thái Quiz thành công",
+      message:
+        response.data?.message ||
+        "Cập nhật trạng thái Bộ trắc nghiệm thành công",
     };
   } catch (error) {
-    console.error("Lỗi cập nhật trạng thái Quiz:", error);
+    console.error("Lỗi cập nhật trạng thái Bộ trắc nghiệm:", error);
     return {
       error: true,
       message:
-        error.response?.data?.message || "Không thể cập nhật trạng thái Quiz",
+        error.response?.data?.message ||
+        "Không thể cập nhật trạng thái Bộ trắc nghiệm",
     };
   }
 };
