@@ -140,17 +140,22 @@ const BlogManagement = () => {
       sorter: (a, b) => a.id - b.id,
     },
     {
-      title: "Image",
-      dataIndex: "thumbnail",
+      title: "Hình ảnh",
+      dataIndex: "image",
       key: "image",
-      render: (image) => (
-        <img
-          src={image}
-          alt="blog"
-          className="w-16 h-16 object-cover rounded"
-        />
-      ),
+      render: (image) =>
+        image ? (
+          <img
+            src={image}
+            alt="Blog"
+            className="w-16 h-16 object-cover rounded"
+            onError={(e) => (e.target.src = "/fallback-image.jpg")} // Ảnh mặc định nếu bị lỗi
+          />
+        ) : (
+          <span>Không có ảnh</span>
+        ),
     },
+
     {
       title: "Tên bài viết",
       dataIndex: "blogName",
