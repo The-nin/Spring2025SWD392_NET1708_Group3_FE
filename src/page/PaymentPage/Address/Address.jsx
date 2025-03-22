@@ -98,7 +98,7 @@ const Address = ({
         {/* Phần Address List */}
         <div className="lg:col-span-2 space-y-4">
           {loading ? (
-            <div>Loading addresses...</div>
+            <div>Đang tải địa chỉ...</div>
           ) : addresses.length > 0 ? (
             addresses.map((address) => (
               <div
@@ -133,20 +133,20 @@ const Address = ({
                             openEditModal(address);
                           }}
                         >
-                          Edit
+                          Sửa
                         </button>
                         <button className="text-gray-900 font-semibold">
-                          Remove
+                          Xóa
                         </button>
                       </div>
                     </div>
                     <p className="text-gray-600 mt-1">{address.addressLine}</p>
                     <p className="text-gray-600 mt-1">
-                      Contact - {address.phone}
+                      Liên hệ - {address.phone}
                     </p>
                     {address.isDefault && (
                       <span className="inline-block mt-2 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
-                        DEFAULT
+                        MẶC ĐỊNH
                       </span>
                     )}
                   </div>
@@ -154,7 +154,7 @@ const Address = ({
               </div>
             ))
           ) : (
-            <div>No addresses found</div>
+            <div>Không tìm thấy địa chỉ nào</div>
           )}
 
           {/* Add New Address Button */}
@@ -166,7 +166,7 @@ const Address = ({
             }}
           >
             <span className="text-xl mr-2">+</span>
-            Add New Address
+            Thêm địa chỉ mới
           </button>
         </div>
 

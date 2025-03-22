@@ -60,18 +60,35 @@ const Orders = () => {
                     <div className="flex gap-2">
                       <span
                         className={`px-2 py-1 text-white rounded ${
+                          order.status === "DONE" ||
                           order.status === "COMPLETED"
                             ? "bg-green-600"
                             : order.status === "DELIVERING"
                             ? "bg-blue-500"
+                            : order.status === "PROCESSING"
+                            ? "bg-orange-500"
+                            : order.status === "PENDING"
+                            ? "bg-yellow-500"
+                            : order.status === "DELIVERING_FAIL"
+                            ? "bg-red-500"
+                            : order.status === "CANCELLED"
+                            ? "bg-gray-500"
                             : "bg-yellow-500"
                         }`}
                       >
-                        {order.status === "COMPLETED"
+                        {order.status === "DONE" || order.status === "COMPLETED"
                           ? "Hoàn thành"
                           : order.status === "DELIVERING"
                           ? "Đang giao hàng"
-                          : "Đang xử lý"}
+                          : order.status === "PROCESSING"
+                          ? "Đang xử lý"
+                          : order.status === "PENDING"
+                          ? "Chờ xử lý"
+                          : order.status === "DELIVERING_FAIL"
+                          ? "Giao hàng thất bại"
+                          : order.status === "CANCELLED"
+                          ? "Đã hủy"
+                          : "Không xác định"}
                       </span>
                       <span
                         className={`px-2 py-1 text-white rounded ${
