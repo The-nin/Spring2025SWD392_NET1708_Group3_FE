@@ -45,14 +45,14 @@ const AddNewQuiz = () => {
       const response = await addQuiz(formattedQuiz);
 
       if (response) {
-        toast.success("Đã thêm Quiz thành công!");
+        toast.success("Đã thêm Bộ trắc nghiệm thành công!");
         setTimeout(() => navigate("/admin/quiz"), 2000);
       } else {
-        toast.error(response?.message || "Lỗi khi thêm quiz");
+        toast.error(response?.message || "Lỗi khi thêm bộ trắc nghiệm");
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Không thể thêm quiz");
+      toast.error("Không thể thêm Bộ trắc nghiệm");
     } finally {
       setLoading(false);
     }
@@ -135,7 +135,7 @@ const AddNewQuiz = () => {
           onClick={() => navigate("/admin/quiz")}
           className="mb-4 hover:bg-gray-100"
         >
-          Quay lại danh sách Quiz
+          Quay lại danh sách Bộ trắc nghiệm
         </Button>
 
         <Card title="Thêm Quiz Mới" className="max-w-4xl mx-auto shadow-md">
@@ -148,21 +148,32 @@ const AddNewQuiz = () => {
             {/* Tiêu đề Quiz */}
             <Form.Item
               name="title"
-              label="Tiêu Đề Quiz"
+              label="Tiêu Đề Bộ trắc nghiệm"
               rules={[
-                { required: true, message: "Vui lòng nhập tiêu đề quiz" },
+                {
+                  required: true,
+                  message: "Vui lòng nhập tiêu đề Bộ trắc nghiệm",
+                },
               ]}
             >
-              <Input placeholder="Nhập tiêu đề quiz" />
+              <Input placeholder="Nhập tiêu đề Bộ trắc nghiệm" />
             </Form.Item>
 
             {/* Mô tả Quiz */}
             <Form.Item
               name="description"
-              label="Mô Tả Quiz"
-              rules={[{ required: true, message: "Vui lòng nhập mô tả quiz" }]}
+              label="Mô Tả Bộ trắc nghiệm"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng nhập mô tả Bộ trắc nghiệm",
+                },
+              ]}
             >
-              <Input.TextArea rows={3} placeholder="Nhập mô tả quiz" />
+              <Input.TextArea
+                rows={3}
+                placeholder="Nhập mô tả Bộ trắc nghiệm"
+              />
             </Form.Item>
 
             {/* Câu hỏi động */}
@@ -245,7 +256,7 @@ const AddNewQuiz = () => {
             {/* Nút gửi */}
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Thêm Quiz
+                Thêm Bộ trắc nghiệm
               </Button>
             </Form.Item>
           </Form>
