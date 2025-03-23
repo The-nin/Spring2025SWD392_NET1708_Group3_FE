@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { instance } from "../../../service/instance";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { useParams } from "react-router-dom";
 
 const getAuthToken = () => localStorage.getItem("token");
 
@@ -11,6 +12,8 @@ export default function RoutineCustomer() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [expandedDailyRoutines, setExpandedDailyRoutines] = useState({});
+
+  const { id } = useParams();
 
   useEffect(() => {
     const fetchRoutines = async () => {
@@ -24,20 +27,16 @@ export default function RoutineCustomer() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = response.result;
-        console.log("Fetched routines:", JSON.stringify(data, null, 2));
+        console.log("Raw data from API:", JSON.stringify(data, null, 2));
 
         const updatedData = data.map((routine) => {
           if (routine.dailyRoutines && routine.dailyRoutines.length > 0) {
             const allDailyRoutinesDone = routine.dailyRoutines.every((dr) => {
               const status =
                 dr.routineStatus || dr.routineStatusEnum || "PENDING";
-              console.log(`Checking dailyRoutine ${dr.id} status: ${status}`);
               return status === "DONE";
             });
             if (allDailyRoutinesDone && routine.routineStatus !== "DONE") {
-              console.log(
-                `Routine ${routine.id} should be DONE, updating to DONE`
-              );
               return { ...routine, routineStatus: "DONE" };
             }
           }
@@ -63,10 +62,6 @@ export default function RoutineCustomer() {
     fetchRoutines();
   }, []);
 
-  useEffect(() => {
-    console.log("Current routines state:", JSON.stringify(routines, null, 2));
-  }, [routines]);
-
   const fetchBookingOrder = async (routineId) => {
     try {
       const token = getAuthToken();
@@ -78,7 +73,6 @@ export default function RoutineCustomer() {
           ...prev,
           [routineId]: response.data,
         }));
-        console.log(`BookingOrder for routine ${routineId}:`, response.data);
       }
     } catch (err) {
       console.error(
@@ -95,17 +89,12 @@ export default function RoutineCustomer() {
       !routine.dailyRoutines ||
       routine.dailyRoutines.length === 0
     ) {
-      console.log(`Routine ${routineId} not found or has no dailyRoutines`);
       return false;
     }
-    const allDone = routine.dailyRoutines.every((dr) => {
+    return routine.dailyRoutines.every((dr) => {
       const status = dr.routineStatus || dr.routineStatusEnum || "PENDING";
-      console.log(`DailyRoutine ${dr.id} status: ${status}`);
       return status === "DONE";
     });
-    console.log(`All dailyRoutines in routine ${routineId} done: ${allDone}`);
-    console.log();
-    return allDone;
   };
 
   const markStepAsCompleted = async (stepId, dailyRoutineId) => {
@@ -120,52 +109,23 @@ export default function RoutineCustomer() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log(routines);
+
       const data = await response.json();
       if (!response.ok)
-        throw new Error(data.message || "Failed to mark step as completed");
+        throw new Error(
+          data.message || "Thất bại trong việc đánh dấu hoàn thành các bước"
+        );
 
-      setSuccess("Step marked as completed!");
-      setRoutines((prev) =>
-        prev.map((routine) => ({
-          ...routine,
-          dailyRoutines: (routine.dailyRoutines || []).map((dr) => {
-            if (dr.id === dailyRoutineId) {
-              const updatedSteps = (dr.steps || []).map((step) =>
-                step.id === stepId
-                  ? {
-                      ...step,
-                      routineStatus: "DONE",
-                      lastCompletedDate: new Date().toISOString().split("T")[0],
-                    }
-                  : step
-              );
-              const allStepsDone = updatedSteps.every(
-                (step) =>
-                  (step.routineStatus || step.routineStatusEnum) === "DONE"
-              );
-              if (allStepsDone) {
-                console.log(
-                  `All steps done for dailyRoutine ${dr.id}, marking as completed...`
-                );
-                setTimeout(
-                  () => markDailyRoutineAsCompleted(dr.id, routine.id),
-                  0
-                );
-              }
-              return {
-                ...dr,
-                steps: sortByStatus(updatedSteps),
-                routineStatus: allStepsDone ? "DONE" : dr.routineStatus,
-              };
-            }
-            return dr;
-          }),
-        }))
-      );
+      setSuccess("Đánh dấu thành công!");
+      const refreshedResponse = await instance.get("/routine/customer", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRoutines(refreshedResponse.result);
     } catch (err) {
       console.error("Error marking step:", err);
-      setError(err.message || "Failed to mark step as completed");
+      setError(
+        err.message || "Thất bại trong việc đánh dấu hoàn thành các bước"
+      );
     }
   };
 
@@ -177,74 +137,38 @@ export default function RoutineCustomer() {
       const dailyRoutine = routines
         .flatMap((r) => r.dailyRoutines || [])
         .find((dr) => dr.id === dailyRoutineId);
-
-      if (!dailyRoutine) throw new Error("Daily routine not found");
+      if (!dailyRoutine) throw new Error("Thói quen hằng ngày  không tìm thấy");
 
       const allStepsDone = (dailyRoutine.steps || []).every(
         (step) => (step.routineStatus || step.routineStatusEnum) === "DONE"
       );
-
       if (!allStepsDone) {
-        setError("Cannot complete daily routine: Not all steps are done yet.");
+        setError(
+          "Không thể hoàn thành thói quen hằng ngày vì chưa hoàn thành các bước nhỏ."
+        );
         return;
       }
 
       if (dailyRoutine.routineStatus !== "DONE") {
-        console.log(`Marking dailyRoutine ${dailyRoutineId} as DONE`);
-        const response = await instance.put(
+        await instance.put(
           `/daily-routine/${dailyRoutineId}`,
           { routineStatus: "DONE" },
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-
-        if (response.status !== 200) {
-          throw new Error("Failed to mark daily routine as completed");
-        }
-      } else {
-        console.log(
-          `DailyRoutine ${dailyRoutineId} already DONE, skipping API call`
-        );
       }
 
-      setSuccess("Daily routine marked as completed!");
-      setRoutines((prev) => {
-        const updatedRoutines = prev.map((routine) => {
-          if (routine.id === routineId) {
-            const updatedDailyRoutines = (routine.dailyRoutines || []).map(
-              (dr) =>
-                dr.id === dailyRoutineId ? { ...dr, routineStatus: "DONE" } : dr
-            );
-            const allDailyRoutinesDone = checkAllDailyRoutinesDone(routineId);
-
-            if (allDailyRoutinesDone && routine.routineStatus !== "DONE") {
-              console.log(
-                `All dailyRoutines in routine ${routineId} are DONE, updating routine to DONE`
-              );
-              return {
-                ...routine,
-                dailyRoutines: updatedDailyRoutines,
-                routineStatus: "DONE",
-              };
-            }
-            return {
-              ...routine,
-              dailyRoutines: updatedDailyRoutines,
-            };
-          }
-          return routine;
-        });
-
-        console.log(
-          "Updated routines before return:",
-          JSON.stringify(updatedRoutines, null, 2)
-        );
-        return updatedRoutines;
+      setSuccess("Thói quen hằng ngày hoàn thành!");
+      const refreshedResponse = await instance.get("/routine/customer", {
+        headers: { Authorization: `Bearer ${token}` },
       });
+      setRoutines(refreshedResponse.result);
     } catch (err) {
       console.error("Error marking daily routine:", err);
-      setError(err.message || "Failed to mark daily routine as completed");
+      setError(
+        err.message || "Thất bại trong việc đánh dấu thói quen hằng ngày"
+      );
     }
   };
 
@@ -254,9 +178,8 @@ export default function RoutineCustomer() {
       if (!token) throw new Error("No authentication token found");
 
       const routine = routines.find((r) => r.id === routineId);
-      if (!routine) throw new Error("Routine not found");
+      if (!routine) throw new Error("Chu trình không thấy");
 
-      console.log(`Calling API to mark routine ${routineId} as DONE`);
       const response = await fetch(
         `http://localhost:8080/api/v1/swd392-skincare-products-sales-system/routine/${routineId}`,
         {
@@ -265,41 +188,24 @@ export default function RoutineCustomer() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            bookingOrderId: routine.bookingOrderId,
-          }),
+          body: JSON.stringify(Number(id)),
         }
       );
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("API error for markRoutineAsCompleted:", errorData);
+
+      if (!response.ok)
         throw new Error(
-          `Failed to mark routine as completed: ${
-            errorData.message || response.statusText
-          }`
+          (await response.json().message) ||
+            "Thất bại trong việc đánh dấu chu trình"
         );
-      }
 
-      console.log(`Routine ${routineId} marked as completed successfully`);
-      setSuccess("Routine marked as completed!");
-
-      setBookingOrders((prev) => ({
-        ...prev,
-        [routineId]: {
-          ...prev[routineId],
-          status: "FINISHED_ROUTINE",
-        },
-      }));
-
+      setSuccess("Đánh dấu chu trình hoàn tất!");
       const refreshedResponse = await instance.get("/routine/customer", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const updatedData = refreshedResponse.result;
-      console.log("Refreshed routines:", JSON.stringify(updatedData, null, 2));
-      setRoutines(updatedData);
+      setRoutines(refreshedResponse.result);
     } catch (err) {
       console.error("Error marking routine as completed:", err);
-      setError(err.message || "Failed to mark routine as completed");
+      setError(err.message || "Thất bại trong việc đánh dấu chu trình");
     }
   };
 
@@ -327,14 +233,14 @@ export default function RoutineCustomer() {
     });
 
   return (
-    <div className="max-w-5xl mx-auto mt-12 p-8 bg-amber-50 rounded-2xl shadow-xl">
+    <div className="max-w-5xl mx-auto mt-12 p-8 mb-12 bg-amber-50 rounded-2xl shadow-xl">
       <h1 className="text-3xl font-bold text-amber-900 mb-8 text-center tracking-wide">
-        My Routines
+        Chu trình chăm sóc da
       </h1>
 
       {loading && (
         <div className="text-center text-amber-700 animate-pulse">
-          Loading your routines...
+          Đang tải ...
         </div>
       )}
       {error && (
@@ -350,7 +256,7 @@ export default function RoutineCustomer() {
 
       {routines.length === 0 && !loading && (
         <div className="text-center text-gray-600 italic">
-          No routines found.
+          Không tìm thấy chu trình nào
         </div>
       )}
 
@@ -362,39 +268,38 @@ export default function RoutineCustomer() {
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-semibold text-amber-800 mb-4">
-                {routine.routineName || "Unnamed Routine"}
+                {routine.routineName || "N/A"}
               </h2>
               <p className="text-gray-700 mb-2">
-                {routine.description || "No description"}
+                {routine.description || "không thấy mô tả"}
               </p>
               <p className="text-gray-600 text-sm">
-                <span className="font-medium">Status:</span>{" "}
-                {routine.routineStatus || "Unknown"} |{" "}
-                <span className="font-medium">Start:</span>{" "}
+                <span className="font-medium">Trạng thái:</span>{" "}
+                {routine.routineStatus || "N/A"} |{" "}
+                <span className="font-medium">Bắt đầu:</span>{" "}
                 {routine.startDate
                   ? new Date(routine.startDate).toLocaleDateString()
                   : "N/A"}{" "}
-                | <span className="font-medium">End:</span>{" "}
+                | <span className="font-medium">Kết thúc:</span>{" "}
                 {routine.endDate
                   ? new Date(routine.endDate).toLocaleDateString()
                   : "N/A"}
               </p>
             </div>
-            {/* Nút Update Routine Status */}
             {checkAllDailyRoutinesDone(routine.id) &&
               routine.routineStatus !== "DONE" && (
                 <button
                   onClick={() => markRoutineAsCompleted(routine.id)}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 text-sm font-medium"
                 >
-                  Update Routine Status
+                  Cập nhật trạng thái chu trình
                 </button>
               )}
           </div>
 
           <div className="mt-4">
             <h3 className="text-xl font-medium text-amber-700 mb-3">
-              Daily Routines
+              Chu trình thói quen hằng ngày
             </h3>
             {(routine.dailyRoutines || []).map((dailyRoutine) => (
               <div
@@ -406,11 +311,11 @@ export default function RoutineCustomer() {
                     onClick={() => toggleDailyRoutine(dailyRoutine.id)}
                     className="flex-1 text-left"
                   >
-                    Date:{" "}
+                    Ngày thực hiện:{" "}
                     {dailyRoutine.date
                       ? new Date(dailyRoutine.date).toLocaleDateString()
                       : "N/A"}{" "}
-                    | Status: {dailyRoutine.routineStatus || "Unknown"}
+                    | Trạng thái: {dailyRoutine.routineStatus || "Unknown"}
                   </button>
                   <div className="flex items-center gap-2">
                     {isToday(dailyRoutine.date) &&
@@ -424,7 +329,7 @@ export default function RoutineCustomer() {
                           }
                           className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition duration-200 text-sm font-medium"
                         >
-                          Complete Routine
+                          Hoàn thành
                         </button>
                       )}
                     <span
@@ -443,10 +348,12 @@ export default function RoutineCustomer() {
                 {expandedDailyRoutines[dailyRoutine.id] && (
                   <div className="p-4 bg-amber-50">
                     <h4 className="text-lg font-medium text-gray-700 mb-2">
-                      Steps
+                      Các bước:
                     </h4>
                     {!dailyRoutine.steps || dailyRoutine.steps.length === 0 ? (
-                      <p className="text-gray-600 italic">No steps defined.</p>
+                      <p className="text-gray-600 italic">
+                        Không tìm thấy các bước
+                      </p>
                     ) : (
                       <ul className="space-y-3">
                         {sortByStatus(dailyRoutine.steps).map((step) => (
@@ -457,16 +364,15 @@ export default function RoutineCustomer() {
                             <div>
                               <p className="text-gray-800">
                                 <span className="font-medium">
-                                  Step {step.stepNumber || "N/A"}:
+                                  Bước {step.stepNumber || "N/A"}:
                                 </span>{" "}
-                                {step.action || "No action"}
+                                {step.action || "N/A"}
                               </p>
                               <p className="text-gray-600 text-sm">
-                                {step.description || "No description"}
+                                {step.description || "N/A"}
                               </p>
                               <p className="text-gray-500 text-sm">
-                                Time: {step.timeOfDay || "Not specified"} |
-                                Status:{" "}
+                                Buổi: {step.timeOfDay || "N/A"} | Trạng thái:{" "}
                                 <span
                                   className={
                                     (step.routineStatus ||
@@ -477,30 +383,26 @@ export default function RoutineCustomer() {
                                 >
                                   {step.routineStatus ||
                                     step.routineStatusEnum ||
-                                    "Chưa diễn ra"}
+                                    "PENDING"}
                                 </span>
                               </p>
                               {step.product && (
                                 <p className="text-gray-500 text-sm">
-                                  Product: {step.product.name || "N/A"}
+                                  Sản phẩm: {step.product.name || "N/A"}
                                 </p>
                               )}
                             </div>
-                            {isToday(dailyRoutine.date) &&
-                              (step.routineStatus || step.routineStatusEnum) !==
-                                "DONE" && (
-                                <button
-                                  onClick={() =>
-                                    markStepAsCompleted(
-                                      step.id,
-                                      dailyRoutine.id
-                                    )
-                                  }
-                                  className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition duration-200 text-sm font-medium"
-                                >
-                                  + Check Out
-                                </button>
-                              )}
+                            {(step.routineStatus || step.routineStatusEnum) !==
+                              "DONE" && (
+                              <button
+                                onClick={() =>
+                                  markStepAsCompleted(step.id, dailyRoutine.id)
+                                }
+                                className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition duration-200 text-sm font-medium"
+                              >
+                                Hoàn thành
+                              </button>
+                            )}
                           </li>
                         ))}
                       </ul>

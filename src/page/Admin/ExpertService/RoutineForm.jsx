@@ -1,18 +1,23 @@
 import { useState, useEffect } from "react";
 import { instance } from "../../../service/instance";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button } from "antd";
+import { Button, DatePicker, Input, Select } from "antd";
 import { LeftOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
+
+const { TextArea } = Input;
+const { Option } = Select;
 
 const getAuthToken = () => localStorage.getItem("token");
 
 export default function RoutineForm() {
   const [formData, setFormData] = useState({
+    bookingOrderId: "",
     description: "",
     routineName: "",
+    routineStatus: "DONE",
     startDate: "",
     endDate: "",
-    bookingOrderId: "",
     dailyRoutines: [],
   });
   const [submitting, setSubmitting] = useState(false);
@@ -22,31 +27,28 @@ export default function RoutineForm() {
   const [loadingProducts, setLoadingProducts] = useState(false);
 
   const { id } = useParams();
-
   const navigate = useNavigate();
 
   useEffect(() => {
+    setFormData((prev) => ({ ...prev, bookingOrderId: id }));
     const fetchProducts = async () => {
       setLoadingProducts(true);
       try {
         const token = getAuthToken();
         if (!token)
-          throw new Error("No authentication token found. Please log in.");
+          throw new Error("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
         const response = await instance.get("/routine/get-product", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = response.result;
-        console.log("Product response:", data);
         const productData = Array.isArray(data.result)
           ? data.result
           : data.data || data || [];
         setProducts(productData);
       } catch (err) {
-        console.error("Error fetching products:", err);
+        console.error("Lỗi khi tải sản phẩm:", err);
         setError(
-          err.response?.data?.message ||
-            err.message ||
-            "Failed to load products"
+          err.response?.data?.message || err.message || "Không thể tải sản phẩm"
         );
         setProducts([]);
       } finally {
@@ -54,11 +56,18 @@ export default function RoutineForm() {
       }
     };
     fetchProducts();
-  }, []);
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleDateChange = (name, date) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: date ? date.format("YYYY-MM-DD") : "",
+    }));
   };
 
   const addDailyRoutine = () => {
@@ -84,7 +93,7 @@ export default function RoutineForm() {
   };
 
   const removeDailyRoutine = (dailyIndex) => {
-    if (window.confirm("Are you sure you want to remove this daily routine?")) {
+    if (window.confirm("Bạn có chắc muốn xóa thói quen hàng ngày này không?")) {
       setFormData((prev) => ({
         ...prev,
         dailyRoutines: prev.dailyRoutines.filter((_, i) => i !== dailyIndex),
@@ -95,7 +104,10 @@ export default function RoutineForm() {
   const handleDailyRoutineChange = (index, field, value) => {
     setFormData((prev) => {
       const newDailyRoutines = [...prev.dailyRoutines];
-      newDailyRoutines[index] = { ...newDailyRoutines[index], [field]: value };
+      newDailyRoutines[index] = {
+        ...newDailyRoutines[index],
+        [field]: field === "date" && value ? value.format("YYYY-MM-DD") : value,
+      };
       return { ...prev, dailyRoutines: newDailyRoutines };
     });
   };
@@ -116,7 +128,7 @@ export default function RoutineForm() {
   };
 
   const removeStep = (dailyRoutineIndex, stepIndex) => {
-    if (window.confirm("Are you sure you want to remove this step?")) {
+    if (window.confirm("Bạn có chắc muốn xóa bước này không?")) {
       setFormData((prev) => {
         const newDailyRoutines = [...prev.dailyRoutines];
         newDailyRoutines[dailyRoutineIndex].steps = newDailyRoutines[
@@ -140,21 +152,21 @@ export default function RoutineForm() {
 
   const validateForm = () => {
     if (
+      !formData.bookingOrderId ||
       !formData.routineName ||
       !formData.description ||
       !formData.startDate ||
       !formData.endDate
     ) {
-      setError("Please fill in all required fields");
-
+      setError("Vui lòng điền đầy đủ các trường bắt buộc");
       return false;
     }
     if (new Date(formData.startDate) > new Date(formData.endDate)) {
-      setError("End date must be after start date");
+      setError("Ngày kết thúc phải sau ngày bắt đầu");
       return false;
     }
     if (formData.dailyRoutines.length === 0) {
-      setError("Please add at least one daily routine");
+      setError("Vui lòng thêm ít nhất một thói quen hàng ngày");
       return false;
     }
     if (
@@ -168,18 +180,12 @@ export default function RoutineForm() {
       )
     ) {
       setError(
-        "All daily routines must have a date and at least one step with required fields completed"
+        "Tất cả thói quen hàng ngày phải có ngày và ít nhất một bước với các trường bắt buộc được điền đầy đủ"
       );
       return false;
     }
     return true;
   };
-
-  // const [bookingOrderId, setBookingOrderId] = useState(id);
-
-  // useEffect(() => {
-  //   setBookingOrderId(id);
-  // }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -189,13 +195,19 @@ export default function RoutineForm() {
     setError(null);
     setSuccess(null);
 
+    const toISODate = (dateString) => {
+      return dayjs(dateString).toISOString();
+    };
+
     const requestData = {
+      bookingOrderId: parseInt(formData.bookingOrderId),
       description: formData.description,
       routineName: formData.routineName,
-      startDate: new Date(formData.startDate).toISOString(),
-      endDate: new Date(formData.endDate).toISOString(),
+      routineStatus: formData.routineStatus,
+      startDate: toISODate(formData.startDate),
+      endDate: toISODate(formData.endDate),
       dailyRoutines: formData.dailyRoutines.map((daily) => ({
-        date: new Date(daily.date).toISOString().split("T")[0],
+        date: daily.date,
         steps: daily.steps.map((step) => ({
           stepNumber: step.stepNumber,
           timeOfDay: step.timeOfDay || null,
@@ -208,10 +220,10 @@ export default function RoutineForm() {
     };
 
     try {
-      console.log("Submitting routine:", JSON.stringify(requestData, null, 2));
+      console.log("Đang gửi thói quen:", JSON.stringify(requestData, null, 2));
       const token = getAuthToken();
       if (!token)
-        throw new Error("No authentication token found. Please log in.");
+        throw new Error("Không tìm thấy mã xác thực. Vui lòng đăng nhập.");
 
       const response = await fetch(
         `http://localhost:8080/api/v1/swd392-skincare-products-sales-system/routine/${id}`,
@@ -226,33 +238,40 @@ export default function RoutineForm() {
       );
 
       const data = await response.json();
-      console.log("Submit response:", JSON.stringify(data, null, 2));
+      console.log("Kết quả gửi:", JSON.stringify(data, null, 2));
 
       if (!response.ok)
-        throw new Error(data.message || "Failed to create routine");
+        throw new Error(data.message || "Không thể tạo thói quen");
 
-      setSuccess(data.message || "Routine created successfully!");
+      setSuccess(data.message || "Thói quen đã được tạo thành công!");
       setFormData({
+        bookingOrderId: id,
         description: "",
         routineName: "",
+        routineStatus: "DONE",
         startDate: "",
         endDate: "",
-        // bookingOrderId: "",
         dailyRoutines: [],
       });
+      navigate(`/admin/consultant-booking/order-detail/${id}`);
     } catch (err) {
-      console.error("Submit error:", err);
+      console.error("Lỗi khi gửi:", err);
       const errorMessages = {
-        UNAUTHENTICATED: "Please login to create a routine",
-        BOOKING_NOT_EXIST: "Booking order not found",
-        PRODUCT_NOT_EXISTED: "One or more products not found",
+        UNAUTHENTICATED: "Vui lòng đăng nhập để tạo thói quen",
+        BOOKING_NOT_EXIST: "Đơn đặt hàng không tồn tại",
+        PRODUCT_NOT_EXISTED: "Một hoặc nhiều sản phẩm không tồn tại",
       };
       setError(
-        errorMessages[err.message] || err.message || "Failed to create routine"
+        errorMessages[err.message] || err.message || "Không thể tạo thói quen"
       );
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Hàm để vô hiệu hóa ngày trước ngày hiện tại
+  const disabledDate = (current) => {
+    return current && current < dayjs().startOf("day");
   };
 
   return (
@@ -266,7 +285,7 @@ export default function RoutineForm() {
       </Button>
       <div className="max-w-4xl mx-auto mt-2 p-8 bg-white rounded-2xl shadow-xl">
         <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-          Create a New Routine
+          Tạo Thói Quen Mới
         </h1>
 
         {success && (
@@ -284,28 +303,18 @@ export default function RoutineForm() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Booking Order ID: {id}
+                Mã Đơn Đặt Hàng: {id}
               </label>
-              {/* <input
-              type="number"
-              name="bookingOrderId"
-              value={formData.bookingOrderId}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-              required
-              disabled={submitting}
-            /> */}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Routine Name <span className="text-red-500">*</span>
+                Tên Thói Quen <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
+              <Input
                 name="routineName"
                 value={formData.routineName}
                 onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                className="w-full"
                 required
                 disabled={submitting}
               />
@@ -314,14 +323,14 @@ export default function RoutineForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description <span className="text-red-500">*</span>
+              Mô Tả <span className="text-red-500">*</span>
             </label>
-            <textarea
+            <TextArea
               name="description"
               value={formData.description}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-              rows="4"
+              rows={4}
+              className="w-full"
               required
               disabled={submitting}
             />
@@ -330,30 +339,36 @@ export default function RoutineForm() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Start Date <span className="text-red-500">*</span>
+                Ngày Bắt Đầu <span className="text-red-500">*</span>
               </label>
-              <input
-                type="datetime-local"
-                name="startDate"
-                value={formData.startDate}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                required
+              <DatePicker
+                format="YYYY-MM-DD"
+                value={
+                  formData.startDate
+                    ? dayjs(formData.startDate, "YYYY-MM-DD")
+                    : null
+                }
+                onChange={(date) => handleDateChange("startDate", date)}
+                className="w-full"
                 disabled={submitting}
+                disabledDate={disabledDate} // Thêm kiểm tra ngày
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                End Date <span className="text-red-500">*</span>
+                Ngày Kết Thúc <span className="text-red-500">*</span>
               </label>
-              <input
-                type="datetime-local"
-                name="endDate"
-                value={formData.endDate}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                required
+              <DatePicker
+                format="YYYY-MM-DD"
+                value={
+                  formData.endDate
+                    ? dayjs(formData.endDate, "YYYY-MM-DD")
+                    : null
+                }
+                onChange={(date) => handleDateChange("endDate", date)}
+                className="w-full"
                 disabled={submitting}
+                disabledDate={disabledDate} // Thêm kiểm tra ngày
               />
             </div>
           </div>
@@ -361,16 +376,16 @@ export default function RoutineForm() {
           <div className="pt-6 border-t border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-800">
-                Daily Routines
+                Thói Quen Hàng Ngày
               </h2>
-              <button
-                type="button"
+              <Button
+                type="primary"
                 onClick={addDailyRoutine}
                 disabled={submitting}
-                className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="bg-amber-600 hover:bg-amber-700"
               >
-                + Add Daily Routine
-              </button>
+                + Thêm Thói Quen Hàng Ngày
+              </Button>
             </div>
 
             {formData.dailyRoutines.map((dailyRoutine, dailyIndex) => (
@@ -381,36 +396,38 @@ export default function RoutineForm() {
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Date <span className="text-red-500">*</span>
+                      Ngày <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="date"
-                      value={dailyRoutine.date}
-                      onChange={(e) =>
-                        handleDailyRoutineChange(
-                          dailyIndex,
-                          "date",
-                          e.target.value
-                        )
+                    <DatePicker
+                      format="YYYY-MM-DD"
+                      value={
+                        dailyRoutine.date
+                          ? dayjs(dailyRoutine.date, "YYYY-MM-DD")
+                          : null
                       }
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                      required
+                      onChange={(date) =>
+                        handleDailyRoutineChange(dailyIndex, "date", date)
+                      }
+                      className="w-full"
                       disabled={submitting}
+                      disabledDate={disabledDate} // Thêm kiểm tra ngày
                     />
                   </div>
                 </div>
 
                 <div className="mt-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-medium text-gray-700">Steps</h3>
-                    <button
-                      type="button"
+                    <h3 className="text-lg font-medium text-gray-700">
+                      Các Bước
+                    </h3>
+                    <Button
+                      type="primary"
                       onClick={() => addStep(dailyIndex)}
                       disabled={submitting}
-                      className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      className="bg-green-600 hover:bg-green-700"
                     >
-                      + Add Step
-                    </button>
+                      + Thêm Bước
+                    </Button>
                   </div>
 
                   {dailyRoutine.steps.map((step, stepIndex) => (
@@ -421,9 +438,10 @@ export default function RoutineForm() {
                       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Step Number <span className="text-red-500">*</span>
+                            Số Thứ Tự Bước{" "}
+                            <span className="text-red-500">*</span>
                           </label>
-                          <input
+                          <Input
                             type="number"
                             value={step.stepNumber}
                             onChange={(e) =>
@@ -434,40 +452,39 @@ export default function RoutineForm() {
                                 e.target.value
                               )
                             }
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                            className="w-full"
                             required
                             disabled={submitting}
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Time of Day
+                            Thời Gian Trong Ngày
                           </label>
-                          <select
+                          <Select
                             value={step.timeOfDay}
-                            onChange={(e) =>
+                            onChange={(value) =>
                               handleStepChange(
                                 dailyIndex,
                                 stepIndex,
                                 "timeOfDay",
-                                e.target.value
+                                value
                               )
                             }
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                            className="w-full"
                             disabled={submitting}
                           >
-                            <option value="">Select Time</option>
-                            <option value="MORNING">Morning</option>
-                            <option value="AFTERNOON">Afternoon</option>
-                            <option value="EVENING">Evening</option>
-                          </select>
+                            <Option value="">Chọn Thời Gian</Option>
+                            <Option value="MORNING">Sáng</Option>
+                            <Option value="AFTERNOON">Chiều</Option>
+                            <Option value="EVENING">Tối</Option>
+                          </Select>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Action <span className="text-red-500">*</span>
+                            Hành Động <span className="text-red-500">*</span>
                           </label>
-                          <input
-                            type="text"
+                          <Input
                             value={step.action}
                             onChange={(e) =>
                               handleStepChange(
@@ -477,17 +494,16 @@ export default function RoutineForm() {
                                 e.target.value
                               )
                             }
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                            className="w-full"
                             required
                             disabled={submitting}
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Description <span className="text-red-500">*</span>
+                            Mô Tả <span className="text-red-500">*</span>
                           </label>
-                          <input
-                            type="text"
+                          <Input
                             value={step.description}
                             onChange={(e) =>
                               handleStepChange(
@@ -497,17 +513,16 @@ export default function RoutineForm() {
                                 e.target.value
                               )
                             }
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                            className="w-full"
                             required
                             disabled={submitting}
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Note
+                            Ghi Chú
                           </label>
-                          <input
-                            type="text"
+                          <Input
                             value={step.note}
                             onChange={(e) =>
                               handleStepChange(
@@ -517,84 +532,85 @@ export default function RoutineForm() {
                                 e.target.value
                               )
                             }
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                            className="w-full"
                             disabled={submitting}
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Product
+                            Sản Phẩm
                           </label>
                           {loadingProducts ? (
                             <div className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-500">
-                              Loading products...
+                              Đang tải sản phẩm...
                             </div>
                           ) : (
-                            <select
+                            <Select
                               value={step.productId}
-                              onChange={(e) =>
+                              onChange={(value) =>
                                 handleStepChange(
                                   dailyIndex,
                                   stepIndex,
                                   "productId",
-                                  e.target.value
+                                  value
                                 )
                               }
-                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                              className="w-full"
                               disabled={submitting}
                             >
-                              <option value="">Select Product</option>
+                              <Option value="">Chọn Sản Phẩm</Option>
                               {products.length > 0 ? (
                                 products.map((product) => (
-                                  <option key={product.id} value={product.id}>
-                                    {product.name || `Product ${product.id}`}
-                                  </option>
+                                  <Option key={product.id} value={product.id}>
+                                    {product.name || `Sản phẩm ${product.id}`}
+                                  </Option>
                                 ))
                               ) : (
-                                <option value="" disabled>
-                                  No products available
-                                </option>
+                                <Option value="" disabled>
+                                  Không có sản phẩm nào
+                                </Option>
                               )}
-                            </select>
+                            </Select>
                           )}
                         </div>
                       </div>
-                      <button
-                        type="button"
+                      <Button
+                        type="danger"
                         onClick={() => removeStep(dailyIndex, stepIndex)}
                         disabled={submitting}
-                        className="mt-4 px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="mt-4 bg-red-600 hover:bg-red-700"
                       >
-                        Remove Step
-                      </button>
+                        Xóa Bước
+                      </Button>
                     </div>
                   ))}
                 </div>
 
-                <button
-                  type="button"
+                <Button
+                  type="danger"
                   onClick={() => removeDailyRoutine(dailyIndex)}
                   disabled={submitting}
-                  className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="mt-4 bg-red-600 hover:bg-red-700"
                 >
-                  Remove Daily Routine
-                </button>
+                  Xóa Thói Quen Hàng Ngày
+                </Button>
               </div>
             ))}
           </div>
 
           <div className="pt-6 border-t border-gray-200">
-            <button
-              type="submit"
+            <Button
+              type="primary"
+              htmlType="submit"
               disabled={submitting || loadingProducts}
-              className={`w-full py-3 rounded-lg text-white font-semibold transition duration-200 ${
+              className={`w-full ${
                 submitting || loadingProducts
-                  ? "bg-gray-400 cursor-not-allowed"
+                  ? "bg-gray-400"
                   : "bg-amber-600 hover:bg-amber-700"
               }`}
             >
-              {submitting ? "Submitting..." : "Create Routine"}
-            </button>
+              {submitting ? "Đang Gửi..." : "Tạo Thói Quen"}
+            </Button>
           </div>
         </form>
       </div>

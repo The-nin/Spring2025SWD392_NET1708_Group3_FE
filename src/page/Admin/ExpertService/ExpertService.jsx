@@ -4,7 +4,6 @@ import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Button, Space, Table, Tooltip } from "antd";
 import { toast } from "react-toastify";
 import { getAllConsultantBookingByExpert } from "../../../service/booking";
-import { getUsersAdmin } from "../../../service/userManagement";
 
 function ExpertService() {
   const [orders, setOrders] = useState([]);
@@ -17,10 +16,20 @@ function ExpertService() {
       setLoading(true);
       const response = await getAllConsultantBookingByExpert();
 
+      const formattedOrders = response.map((item) => ({
+        ...item.bookingOrder,
+        imageSkin: item.imageSkin,
+      }));
+
       if (!response) {
         throw new Error("Có lỗi trong việc tải dữ liệu đơn hàng");
       }
-      setOrders(response);
+
+      const sortedOrders = formattedOrders.sort((a, b) => {
+        return new Date(b.orderDate) - new Date(a.orderDate);
+      });
+
+      setOrders(sortedOrders);
     } catch (error) {
       console.error("Error:", error);
       toast.error("Thất bại trong việc lấy dữ liệu đơn hàng");
@@ -31,7 +40,6 @@ function ExpertService() {
 
   useEffect(() => {
     fetchBookOrder();
-    // fetchUser();
   }, []);
 
   const formatDate = (orderDate) => {
@@ -90,30 +98,9 @@ function ExpertService() {
       title: "Trạng thái thanh toán",
       dataIndex: "paymentStatus",
       key: "paymentStatus",
-      render: (paymentStatus) => (paymentStatus ? "Thanh toán" : "Chưa thanh toán"),
+      render: (paymentStatus) =>
+        paymentStatus ? "Thanh toán" : "Chưa thanh toán",
     },
-    // {
-    //   title: "",
-    //   key: "action",
-    //   render: (_, record) => (
-    //     <Space>
-    //       <Tooltip title="Edit">
-    //         <Button
-    //           type="primary"
-    //           icon={<EditOutlined />}
-    //           // onClick={() => navigate(`/admin/product/edit/${record.id}`)}
-    //         />
-    //       </Tooltip>
-    //       <Tooltip title="Delete">
-    //         <Button
-    //           danger
-    //           icon={<DeleteOutlined />}
-    //           //   onClick={() => showDeleteConfirm(record)}
-    //         />
-    //       </Tooltip>
-    //     </Space>
-    //   ),
-    // },
   ];
 
   return (

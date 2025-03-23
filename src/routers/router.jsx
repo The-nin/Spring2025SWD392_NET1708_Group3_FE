@@ -56,7 +56,9 @@ import RoutineForm from "../page/Admin/ExpertService/RoutineForm";
 import ConsultantOrderDetail from "../page/Admin/ExpertService/ConsultantOrderDetail";
 import ConsultantBookingAdmin from "../page/Admin/AdminConsultantMng/ConsultantBookingAdmin";
 import StaffMngConsultant from "../page/Admin/StaffConsultantMng/StaffMngConsultant";
-import MyRoutine from "../page/Profile/ConsultantHistory/MyRoutine";
+import PaymentSuccessBooking from "../page/PaymentSuccessPage/PaymentSuccess";
+import StaffMngConsultantDetail from "../page/Admin/StaffConsultantMng/StaffMngConsultantDetail";
+import RoutineCustomer from "../page/Profile/ConsultantHistory/MyRoutine";
 
 export const router = createBrowserRouter([
   {
@@ -108,8 +110,8 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/my-routine",
-        element: <MyRoutine />,
+        path: "/my-routine/:id",
+        element: <RoutineCustomer />,
       },
       {
         path: "/shop",
@@ -160,8 +162,8 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/payment-success",
-        element: <PaymentSuccess />,
+        path: "/payment-success-booking",
+        element: <PaymentSuccessBooking />,
       },
     ],
   },
@@ -334,7 +336,16 @@ export const router = createBrowserRouter([
           },
           {
             path: "staff-manage-consultant-order",
-            element: <StaffMngConsultant />,
+            children: [
+              {
+                path: "",
+                element: <StaffMngConsultant />,
+              },
+              {
+                path: "detail/:id",
+                element: <StaffMngConsultantDetail />,
+              },
+            ],
           },
         ],
       },

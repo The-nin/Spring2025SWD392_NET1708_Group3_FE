@@ -1,28 +1,20 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Tag,
-  Button,
-  Spin,
-  message,
-  Modal,
-  Descriptions,
-  Select,
-} from "antd";
-
+import { Table, Tag, Spin, Select } from "antd";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 import { instance } from "../../../service/instance";
 
 const { Option } = Select;
+
 export default function StaffMngConsultant() {
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
   const [paymentFilter, setPaymentFilter] = useState("ALL");
-  const [experts, setExperts] = useState([]);
-  const [selectedExpert, setSelectedExpert] = useState(null);
+  const [sortInfo, setSortInfo] = useState({
+    columnKey: "orderDate",
+    order: "descend",
+  }); // default sorting by orderDate descending
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,7 +25,7 @@ export default function StaffMngConsultant() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        message.error("Bạn chưa đăng nhập! Vui lòng đăng nhập lại.");
+        toast.error("Bạn chưa đăng nhập! Vui lòng đăng nhập lại.");
         navigate("/login");
         setLoading(false);
         return;
@@ -46,8 +38,6 @@ export default function StaffMngConsultant() {
         }
       );
 
-      console.log("Booking Orders:", response);
-
       const result = response?.data?.result ?? response?.result ?? [];
 
       if (Array.isArray(result)) {
@@ -55,51 +45,48 @@ export default function StaffMngConsultant() {
           (order) =>
             order && typeof order === "object" && order.id !== undefined
         );
-        setOrders(validOrders);
-        filterOrders(validOrders, paymentFilter);
+        const sortedOrders = validOrders.sort(
+          (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
+        ); // Sort by latest orderDate by default
+        setOrders(sortedOrders);
+        filterOrders(sortedOrders, paymentFilter);
         if (validOrders.length === 0) {
-          message.warning("Không có đơn hàng hợp lệ.");
+          toast.warning("Không có đơn hàng hợp lệ.");
         }
       } else {
         setOrders([]);
         setFilteredOrders([]);
-        message.warning("Không có đơn hàng nào hoặc dữ liệu không hợp lệ.");
+        toast.warning("Không có đơn hàng nào hoặc dữ liệu không hợp lệ.");
       }
     } catch (error) {
       console.error("Lỗi khi lấy danh sách đơn hàng:", error);
       if (error.response?.status === 401) {
-        message.error("Phiên đăng nhập hết hạn!");
+        toast.error("Phiên đăng nhập hết hạn!");
         navigate("/login");
       } else {
-        message.error("Không thể tải danh sách đơn hàng!");
+        toast.error("Không thể tải danh sách đơn hàng!");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchExperts = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await instance.get("/booking-order/filter-expert", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const expertList = response?.data?.result ?? response?.result ?? [];
-      setExperts(Array.isArray(expertList) ? expertList : []);
-    } catch (error) {
-      console.error("Lỗi khi lấy danh sách chuyên gia:", error);
-      message.error("Không thể tải danh sách chuyên gia!");
-    }
-  };
-
   const filterOrders = (orderList, filter) => {
-    if (filter === "ALL") {
-      setFilteredOrders(orderList);
-    } else {
-      setFilteredOrders(
-        orderList.filter((order) => order.paymentStatus === filter)
+    let filteredList = orderList;
+    if (filter !== "ALL") {
+      filteredList = orderList.filter(
+        (order) => order.paymentStatus === filter
       );
     }
+
+    // Reapply the sorting to the filtered orders
+    const sortedFilteredList = [...filteredList].sort((a, b) =>
+      sortInfo.order === "ascend"
+        ? new Date(a[sortInfo.columnKey]) - new Date(b[sortInfo.columnKey])
+        : new Date(b[sortInfo.columnKey]) - new Date(a[sortInfo.columnKey])
+    );
+
+    setFilteredOrders(sortedFilteredList);
   };
 
   const handlePaymentFilterChange = (value) => {
@@ -107,43 +94,9 @@ export default function StaffMngConsultant() {
     filterOrders(orders, value);
   };
 
-  const showModal = (order) => {
-    setSelectedOrder(order);
-    setSelectedExpert(order?.expertName || null); // Pré-remplir si déjà assigné
-    fetchExperts(); // Charger les experts quand le modal s'ouvre
-    setIsModalVisible(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    setSelectedOrder(null);
-    setSelectedExpert(null);
-    setExperts([]);
-  };
-
-  const handleAssignTask = async () => {
-    if (!selectedExpert) {
-      message.error("Vui lòng chọn một chuyên gia!");
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("token");
-      await instance.post(
-        `/admin/booking-order/${selectedOrder.id}`,
-        { expertId: selectedExpert },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      message.success(`Đã giao nhiệm vụ cho đơn hàng #${selectedOrder.id}`);
-      fetchOrders(); // Rafraîchir la liste après assignation
-      handleCancel();
-    } catch (error) {
-      console.log(selectedExpert);
-      console.error("Lỗi khi giao nhiệm vụ:", error);
-      message.error("Không thể giao nhiệm vụ!");
-    }
+  const handleTableChange = (pagination, filters, sorter) => {
+    setSortInfo(sorter);
+    filterOrders(orders, paymentFilter);
   };
 
   const columns = [
@@ -156,12 +109,9 @@ export default function StaffMngConsultant() {
     {
       title: "Tên Khách Hàng",
       key: "customerName",
-      render: (_, record) => {
-        const fullName = `${record?.firstName || "Không có"} ${
-          record?.lastName || ""
-        }`.trim();
-        return fullName || "Không xác định";
-      },
+      render: (_, record) =>
+        `${record?.firstName || "Không có"} ${record?.lastName || ""}`.trim() ||
+        "Không xác định",
     },
     {
       title: "Tổng Tiền",
@@ -178,11 +128,7 @@ export default function StaffMngConsultant() {
       key: "paymentStatus",
       render: (status) => (
         <Tag color={status === "PAID" ? "green" : "red"}>
-          {status === "PAID"
-            ? "Đã Thanh Toán"
-            : status
-            ? "Chưa Thanh Toán"
-            : "Không xác định"}
+          {status === "PAID" ? "Đã Thanh Toán" : "Chưa Thanh Toán"}
         </Tag>
       ),
     },
@@ -201,26 +147,9 @@ export default function StaffMngConsultant() {
       dataIndex: "orderDate",
       key: "orderDate",
       render: (date) =>
-        date
-          ? new Date(date).toLocaleDateString("vi-VN", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            })
-          : "Không có",
-    },
-    {
-      title: "Hành động",
-      key: "action",
-      render: (_, record) => (
-        <Button
-          type="primary"
-          onClick={() => showModal(record)}
-          disabled={!record?.id}
-        >
-          Xem Chi Tiết
-        </Button>
-      ),
+        date ? new Date(date).toLocaleString("vi-VN") : "Không có",
+      sorter: true,
+      sortOrder: sortInfo.columnKey === "orderDate" ? sortInfo.order : null,
     },
   ];
 
@@ -239,128 +168,64 @@ export default function StaffMngConsultant() {
     }
   };
 
-  return (
-    <div style={{ padding: 20 }}>
-      <h2>Danh Sách Đơn Hàng</h2>
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spin size="large" />
+      </div>
+    );
+  }
 
-      <div style={{ marginBottom: 16 }}>
-        <span style={{ marginRight: 8 }}>Lọc theo trạng thái thanh toán: </span>
-        <Select
-          value={paymentFilter}
-          onChange={handlePaymentFilterChange}
-          style={{ width: 200 }}
-        >
-          <Option value="ALL">Tất cả</Option>
-          <Option value="PAID">Đã Thanh Toán</Option>
-          <Option value="UNPAID">Chưa Thanh Toán</Option>
-        </Select>
+  return (
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold">Danh Sách Đơn Tư Vấn</h2>
+        <div>
+          <span className="mr-2">Lọc theo trạng thái thanh toán:</span>
+          <Select
+            value={paymentFilter}
+            onChange={handlePaymentFilterChange}
+            style={{ width: 200 }}
+          >
+            <Option value="ALL">Tất cả</Option>
+            <Option value="PAID">Đã Thanh Toán</Option>
+            <Option value="UNPAID">Chưa Thanh Toán</Option>
+          </Select>
+        </div>
       </div>
 
-      {loading ? (
-        <Spin size="large" style={{ display: "block", margin: "20px auto" }} />
-      ) : filteredOrders.length > 0 ? (
-        <Table
-          columns={columns}
-          dataSource={filteredOrders}
-          rowKey={(record) => record?.id ?? Math.random().toString()}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50"],
-          }}
-        />
-      ) : (
-        <p>Không có đơn hàng nào.</p>
-      )}
+      <Table
+        dataSource={filteredOrders}
+        columns={columns}
+        rowKey={(record) => record?.id ?? Math.random().toString()}
+        loading={loading}
+        onChange={handleTableChange}
+        onRow={(record) => ({
+          onClick: () =>
+            navigate(
+              `/admin/staff-manage-consultant-order/detail/${record.id}`
+            ),
+          style: { cursor: "pointer" },
+        })}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          pageSizeOptions: ["10", "20", "50"],
+        }}
+      />
 
-      <Modal
-        title={`Chi Tiết Đơn Hàng #${selectedOrder?.id || "Không xác định"}`}
-        visible={isModalVisible}
-        onCancel={handleCancel}
-        footer={[
-          <Button
-            key="assign"
-            type="primary"
-            onClick={handleAssignTask}
-            disabled={!selectedExpert}
-          >
-            Giao Nhiệm Vụ
-          </Button>,
-          <Button key="close" onClick={handleCancel}>
-            Đóng
-          </Button>,
-        ]}
-        width={600}
-      >
-        {selectedOrder && (
-          <Descriptions column={1} bordered>
-            <Descriptions.Item label="Mã Đơn">
-              {selectedOrder.id ?? "Không xác định"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Tên Khách Hàng">
-              {`${selectedOrder.firstName || "Không có"} ${
-                selectedOrder.lastName || ""
-              }`.trim() || "Không xác định"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Tổng Tiền">
-              {selectedOrder.price !== undefined && selectedOrder.price !== null
-                ? `${Number(selectedOrder.price).toLocaleString("vi-VN")} VND`
-                : "Chưa cập nhật"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Trạng Thái Thanh Toán">
-              <Tag
-                color={selectedOrder.paymentStatus === "PAID" ? "green" : "red"}
-              >
-                {selectedOrder.paymentStatus === "PAID"
-                  ? "Đã Thanh Toán"
-                  : "Chưa Thanh Toán"}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Trạng Thái Booking">
-              <Tag color={getBookingStatusColor(selectedOrder.status)}>
-                {selectedOrder.status || "Không xác định"}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày Đặt">
-              {selectedOrder.orderDate
-                ? new Date(selectedOrder.orderDate).toLocaleDateString("vi-VN")
-                : "Không có"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ghi Chú">
-              {selectedOrder.note || "Không có"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Loại Da">
-              {selectedOrder.skinType || "Không có"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Dị Ứng">
-              {selectedOrder.allergy || "Không có"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Tình Trạng Da">
-              {selectedOrder.skinCondition || "Không có"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Tên Chuyên Gia">
-              <Select
-                style={{ width: "100%" }}
-                value={selectedExpert}
-                onChange={setSelectedExpert}
-                placeholder="Chọn chuyên gia"
-              >
-                {experts.map((expert) => (
-                  <Select.Option key={expert.id} value={expert.id}>
-                    {`${expert.firstName || ""} ${
-                      expert.lastName || ""
-                    }`.trim()}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Descriptions.Item>
-
-            <Descriptions.Item label="Tuổi">
-              {selectedOrder.age ?? "Không xác định"}
-            </Descriptions.Item>
-          </Descriptions>
-        )}
-      </Modal>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 }
