@@ -44,7 +44,17 @@ const BlogDetail = () => {
     <div className="bg-gray-100 min-h-screen p-6">
       <div className="max-w-3xl mx-auto bg-white p-6 shadow-lg rounded-lg">
         <h1 className="text-3xl font-bold text-black">{blog.blogName}</h1>
-
+        <p className="text-gray-500 italic mb-3">
+          Tác giả: <span className="font-medium">{blog.author}</span>
+        </p>
+        <p className="  mb-3">
+          <p className="text-gray-500 italic mb-3">
+            Ngày đăng:{" "}
+            <span className="font-medium">
+              {new Date(blog.date).toLocaleDateString("vi-VN")}
+            </span>
+          </p>
+        </p>
         {/* ✅ Properly Render Quill HTML */}
         <div
           className="ql-editor mt-4 text-gray-800"
