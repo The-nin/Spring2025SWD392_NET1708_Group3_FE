@@ -68,7 +68,7 @@ const MyOrderedDetail = ({ order, onBack }) => {
     setFeedbackData({
       ...feedbackData,
       productId: productId,
-      orderItemId: index,
+      orderItemId: item.id,
       productName: item.productName,
     });
     setShowFeedbackForm(true);

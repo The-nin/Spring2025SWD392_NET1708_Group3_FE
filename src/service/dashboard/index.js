@@ -1,24 +1,28 @@
 import { instance } from "../instance";
 
-const handleError = (error, defaultMessage) => {
-  console.error(defaultMessage, error);
-  return {
-    error: true,
-    message: error?.response?.data?.message || defaultMessage,
-  };
-};
-export const getDashboardData = async () => {
-  const token = localStorage.getItem("token");
+export const getDashboardData = async (startDate, endDate) => {
   try {
-    const response = await instance.get("/admin/vouchers", {
+    // Lấy token từ localStorage
+    const token = localStorage.getItem("token");
+
+    // Build URL with query parameters if dates are provided
+    let url = "/admin/dashboard";
+    if (startDate && endDate) {
+      url += `?startDate=${encodeURIComponent(
+        startDate
+      )}&endDate=${encodeURIComponent(endDate)}`;
+    }
+
+    const response = await instance.get(url, {
       headers: {
-        authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     });
-    console.log(response);
     return response;
   } catch (error) {
-    return handleError(error, "Lỗi khi gọi API");
+    return {
+      error: true,
+      message: error.response?.message || "Failed to fetch dashboard data",
+    };
   }
 };
