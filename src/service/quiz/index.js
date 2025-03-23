@@ -9,14 +9,8 @@ const handleError = (error, defaultMessage) => {
 };
 
 export const getAllQuizs = async () => {
-  const token = localStorage.getItem("token");
   try {
-    const response = await instance.get("/quizs/all", {
-      headers: {
-        authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await instance.get("/quizs/all", {});
     return response;
   } catch (error) {
     return handleError(error, "Không thể lấy danh sách Bộ trắc nghiệm");

@@ -161,7 +161,6 @@ const AddNewQuiz = () => {
             >
               <Input placeholder="Nhập tiêu đề Bộ trắc nghiệm" />
             </Form.Item>
-
             {/* Mô tả Quiz */}
             <Form.Item
               name="description"
@@ -178,7 +177,6 @@ const AddNewQuiz = () => {
                 placeholder="Nhập mô tả Bộ trắc nghiệm"
               />
             </Form.Item>
-
             {/* Câu hỏi động */}
             {questions.map((question, qIndex) => (
               <Card key={question.questionId} className="mb-4">
@@ -252,10 +250,11 @@ const AddNewQuiz = () => {
               </Card>
             ))}
             <p></p>
-            <Button type="dashed" onClick={addQuestion}>
-              + Thêm Câu Hỏi
-            </Button>
-
+            <div className="mb-2">
+              <Button type="dashed" onClick={addQuestion}>
+                + Thêm Câu Hỏi
+              </Button>
+            </div>
             {/* Nút gửi */}
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading}>

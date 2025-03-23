@@ -24,14 +24,8 @@ export const getAllBlogs = async () => {
   }
 };
 export const getUserBlogs = async () => {
-  const token = localStorage.getItem("token");
   try {
-    const response = await instance.get("/blog", {
-      headers: {
-        authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await instance.get("/blog", {});
     console.log(response);
     return response;
   } catch (error) {
@@ -39,14 +33,8 @@ export const getUserBlogs = async () => {
   }
 };
 export const getBlogById = async (id) => {
-  const token = localStorage.getItem("token");
   try {
-    const response = await instance.get(`/blog/${id}`, {
-      headers: {
-        authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await instance.get(`/blog/${id}`, {});
     console.log(response);
     return response;
   } catch (error) {

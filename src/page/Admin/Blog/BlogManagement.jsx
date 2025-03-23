@@ -220,13 +220,7 @@ const BlogManagement = () => {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold">Quản Lý bài viết</h2>
-      <div className="flex justify-between items-center mb-4">
-        <Switch
-          checked={showDeleted}
-          onChange={() => setShowDeleted((prev) => !prev)}
-          checkedChildren="Hiện Bài Viết Đã Xóa"
-          unCheckedChildren="Ẩn Bài Viết Đã Xóa"
-        />
+      <div className="flex justify-end items-end mb-4">
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -262,6 +256,18 @@ const BlogManagement = () => {
             <h3 className="text-xl font-semibold mb-3">
               {selectedBlog.blogName}
             </h3>
+            <p className="text-gray-500 italic mb-3">
+              Tác giả:{" "}
+              <span className="font-medium">{selectedBlog.author}</span>
+            </p>
+            <p className="  mb-3">
+              <p className="text-gray-500 italic mb-3">
+                Ngày đăng:{" "}
+                <span className="font-medium">
+                  {new Date(selectedBlog.date).toLocaleDateString("vi-VN")}
+                </span>
+              </p>
+            </p>
             <div className="mt-4">
               <h4 className="text-lg font-medium mb-2">Miêu tả:</h4>
               <p className="text-gray-600 whitespace-pre-line">

@@ -89,11 +89,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/skinquiz",
-        element: (
-          <ProtectedUserRoute>
-            <SkinQuiz />,
-          </ProtectedUserRoute>
-        ),
+        element: <SkinQuiz />,
       },
       {
         path: "/payment",

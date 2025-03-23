@@ -40,16 +40,21 @@ function SkinQuiz() {
     setSelectedAnswer(answerText);
 
     setTimeout(() => {
-      const newAnswers = [...answers];
-      newAnswers[currentQuestion] = answerText;
+      setAnswers((prevAnswers) => {
+        const newAnswers = [...prevAnswers];
+        newAnswers[currentQuestion] = answerText;
 
-      setAnswers(newAnswers);
+        // Nếu đây là câu hỏi cuối cùng, gọi `calculateResult`
+        if (currentQuestion + 1 === selectedQuiz.question.length) {
+          setTimeout(() => calculateResult(newAnswers), 300);
+        }
+
+        return newAnswers;
+      });
 
       if (currentQuestion + 1 < selectedQuiz.question.length) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedAnswer(answers[currentQuestion + 1] || null);
-      } else {
-        calculateResult(newAnswers);
+        setCurrentQuestion((prev) => prev + 1);
+        setSelectedAnswer(null);
       }
     }, 300);
   };
@@ -67,8 +72,8 @@ function SkinQuiz() {
     NORMAL_SKIN: "Da Thường",
     COMBINATION_SKIN: "Da Hỗn Hợp",
   };
-  const calculateResult = (answers) => {
-    const skinTypeCounts = answers.reduce((acc, answerText) => {
+  const calculateResult = (finalAnswers) => {
+    const skinTypeCounts = finalAnswers.reduce((acc, answerText) => {
       const answer = selectedQuiz.question
         .flatMap((q) => q.answers)
         .find((a) => a.answerText === answerText);
@@ -79,19 +84,24 @@ function SkinQuiz() {
       return acc;
     }, {});
 
-    // Tìm số lần xuất hiện cao nhất
     const maxCount = Math.max(...Object.values(skinTypeCounts));
 
-    // Lấy danh sách các loại da có số lần xuất hiện cao nhất
+    // Lọc ra tất cả loại da có số lần xuất hiện bằng maxCount
     const mostCommonSkinTypes = Object.keys(skinTypeCounts).filter(
       (key) => skinTypeCounts[key] === maxCount
     );
 
-    // Nếu có nhiều hơn 1 loại da xuất hiện nhiều nhất -> "Da Hỗn Hợp"
-    const finalResult =
-      mostCommonSkinTypes.length > 1
-        ? "Da Hỗn Hợp"
-        : skinTypeMap[mostCommonSkinTypes[0]] || "Không xác định";
+    let finalResult;
+
+    if (mostCommonSkinTypes.length === 1) {
+      // Nếu chỉ có một loại da chiếm ưu thế
+      finalResult = skinTypeMap[mostCommonSkinTypes[0]] || "Không xác định";
+    } else if (mostCommonSkinTypes.length > 1) {
+      // Nếu có nhiều loại da có cùng số lần xuất hiện
+      finalResult = "Da Hỗn Hợp";
+    } else {
+      finalResult = "Không xác định";
+    }
 
     setResult(finalResult);
   };

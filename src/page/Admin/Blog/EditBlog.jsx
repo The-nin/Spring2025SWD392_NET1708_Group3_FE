@@ -164,14 +164,6 @@ const EditBlog = () => {
               />
             </Form.Item>
 
-            <Form.Item
-              name="date"
-              label="Ngày xuất bản"
-              rules={[{ required: true, message: "Nhập ngày xuất bản" }]}
-            >
-              <DatePicker className="w-full" format="YYYY-MM-DD" />
-            </Form.Item>
-
             <Form.Item label="Current Thumbnail">
               {currentThumbnail && (
                 <img
