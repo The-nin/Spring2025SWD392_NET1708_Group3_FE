@@ -125,10 +125,6 @@ const AddUser = () => {
           <Input.Password />
         </Form.Item>
 
-        <Form.Item name="phone" label="Số điện thoại">
-          <Input />
-        </Form.Item>
-
         <Form.Item
           name="roleName"
           label="Vai trò"
@@ -137,7 +133,7 @@ const AddUser = () => {
           <Select>
             <Select.Option value="STAFF">Nhân viên</Select.Option>
             <Select.Option value="DELIVERY">Giao hàng</Select.Option>
-            <Select.Option value="CUSTOMER">Khách hàng</Select.Option>
+            <Select.Option value="MANAGER">Quản lí</Select.Option>
           </Select>
         </Form.Item>
 

@@ -151,7 +151,7 @@ import { Card, Typography, Spin, Alert, Button, message } from "antd";
 
 const { Text, Title } = Typography;
 
-export default function PaymentSuccess() {
+export default function PaymentSuccessBooking() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);

@@ -73,9 +73,7 @@ const HeaderAdmin = ({ collapsed, toggleCollapsed, adminUser }) => {
               icon={<UserOutlined />}
               style={{ backgroundColor: "#1890ff" }}
             />
-            <span style={{ color: "#000" }}>
-              {adminUser?.username || "Admin"}
-            </span>
+            <span style={{ color: "#000" }}>{adminUser || "Admin"}</span>
           </Space>
         </Dropdown>
       </div>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Layout, Menu } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -113,6 +113,18 @@ const Sidebar = ({ collapsed }) => {
     permissions[item.key]?.includes(userRole)
   );
 
+  useEffect(() => {
+    const currentPath = location.pathname;
+
+    const isPathAllowed = filteredMenuItems.some((item) =>
+      currentPath.startsWith(item.key)
+    );
+
+    if (!isPathAllowed && filteredMenuItems.length > 0) {
+      navigate(filteredMenuItems[0].key);
+    }
+  }, [location.pathname, filteredMenuItems, navigate]);
+
   return (
     <Sider
       collapsed={collapsed}
@@ -150,8 +162,7 @@ const Sidebar = ({ collapsed }) => {
       <Menu
         theme="dark"
         mode="inline"
-        defaultSelectedKeys={[location.pathname]}
-        // items={menuItems}
+        selectedKeys={[location.pathname]}
         items={filteredMenuItems}
         onClick={({ key }) => navigate(key)}
       />

@@ -29,6 +29,7 @@ const ProductManagement = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -44,9 +45,11 @@ const ProductManagement = () => {
     originSlug: "",
     sortBy: "",
     order: "",
+    priceRange: "",
   });
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
 
   const extractFilters = (products) => {
     const categoriesMap = new Map();
@@ -71,30 +74,32 @@ const ProductManagement = () => {
     setBrands(Array.from(brandsMap.values()));
   };
 
-  const fetchProducts = async (params = {}) => {
+  const getPriceRangeValues = (priceRange) => {
+    switch (priceRange) {
+      case "0-500000":
+        return { minPrice: 0, maxPrice: 500000 };
+      case "500000-1000000":
+        return { minPrice: 500000, maxPrice: 1000000 };
+      case "1000000-5000000":
+        return { minPrice: 1000000, maxPrice: 5000000 };
+      case "5000000-10000000":
+        return { minPrice: 5000000, maxPrice: 10000000 };
+      case "10000000+":
+        return { minPrice: 10000000, maxPrice: null };
+      default:
+        return { minPrice: null, maxPrice: null };
+    }
+  };
+
+  const fetchProducts = async () => {
     try {
       setLoading(true);
-      const queryParams = {
-        page: params.page !== undefined ? params.page - 1 : 0,
-        size: params.pageSize || 10,
-        ...params,
-      };
+      const response = await getAllProducts({ page: 0, size: 1000 }); // Fetch all products at once
 
-      Object.keys(queryParams).forEach(
-        (key) =>
-          (queryParams[key] === undefined || queryParams[key] === "") &&
-          delete queryParams[key]
-      );
-
-      const response = await getAllProducts(queryParams);
       if (!response.error) {
-        setProducts(response.result.productResponses);
-        setPagination({
-          current: response.result.pageNumber + 1,
-          pageSize: response.result.pageSize,
-          total: response.result.totalElements,
-        });
+        setAllProducts(response.result.productResponses);
         extractFilters(response.result.productResponses);
+        applyFilters(response.result.productResponses, filters);
       } else {
         message.error(response.message);
       }
@@ -105,24 +110,119 @@ const ProductManagement = () => {
     }
   };
 
+  const applyFilters = (productsToFilter, currentFilters) => {
+    let result = [...productsToFilter];
+
+    // Apply keyword filter
+    if (currentFilters.keyword) {
+      const keyword = currentFilters.keyword.toLowerCase();
+      result = result.filter(
+        (product) =>
+          product.name.toLowerCase().includes(keyword) ||
+          (product.description &&
+            product.description.toLowerCase().includes(keyword))
+      );
+    }
+
+    // Apply category filter
+    if (currentFilters.categorySlug) {
+      result = result.filter(
+        (product) =>
+          product.category &&
+          product.category.slug === currentFilters.categorySlug
+      );
+    }
+
+    // Apply brand filter
+    if (currentFilters.brandSlug) {
+      result = result.filter(
+        (product) =>
+          product.brand && product.brand.slug === currentFilters.brandSlug
+      );
+    }
+
+    // Apply price range filter
+    if (currentFilters.priceRange) {
+      const { minPrice, maxPrice } = getPriceRangeValues(
+        currentFilters.priceRange
+      );
+      result = result.filter((product) => {
+        if (minPrice !== null && maxPrice !== null) {
+          return product.price >= minPrice && product.price <= maxPrice;
+        } else if (minPrice !== null) {
+          return product.price >= minPrice;
+        } else if (maxPrice !== null) {
+          return product.price <= maxPrice;
+        }
+        return true;
+      });
+    }
+
+    // Apply sorting
+    if (currentFilters.sortBy) {
+      result.sort((a, b) => {
+        let aValue = a[currentFilters.sortBy];
+        let bValue = b[currentFilters.sortBy];
+
+        // Handle nested properties like category.name
+        if (currentFilters.sortBy.includes(".")) {
+          const parts = currentFilters.sortBy.split(".");
+          aValue = parts.reduce((obj, key) => obj && obj[key], a);
+          bValue = parts.reduce((obj, key) => obj && obj[key], b);
+        }
+
+        if (aValue === undefined) return 1;
+        if (bValue === undefined) return -1;
+
+        if (typeof aValue === "string") {
+          const comparison = aValue.localeCompare(bValue);
+          return currentFilters.order === "asc" ? comparison : -comparison;
+        } else {
+          return currentFilters.order === "asc"
+            ? aValue - bValue
+            : bValue - aValue;
+        }
+      });
+    }
+
+    // Update filtered products and pagination
+    setFilteredProducts(result);
+    setProducts(result.slice(0, pagination.pageSize));
+    setPagination({
+      ...pagination,
+      current: 1,
+      total: result.length,
+    });
+  };
+
   useEffect(() => {
     fetchProducts();
   }, []);
 
   const handleTableChange = (newPagination, tableFilters, sorter) => {
-    const params = {
-      ...filters,
-      page: newPagination.current,
-      pageSize: newPagination.pageSize,
-      keyword: filters.keyword,
-    };
+    const newFilters = { ...filters };
 
     if (sorter.field) {
-      params.sortBy = sorter.field;
-      params.order = sorter.order ? sorter.order.replace("end", "") : undefined;
+      newFilters.sortBy = sorter.field;
+      newFilters.order = sorter.order === "ascend" ? "asc" : "desc";
     }
 
-    fetchProducts(params);
+    setFilters(newFilters);
+
+    // Apply pagination
+    const startIndex = (newPagination.current - 1) * newPagination.pageSize;
+    const endIndex = startIndex + newPagination.pageSize;
+
+    setProducts(filteredProducts.slice(startIndex, endIndex));
+    setPagination({
+      ...newPagination,
+      total: filteredProducts.length,
+    });
+
+    // If sorting changed, reapply filters
+    if (sorter.field) {
+      applyFilters(allProducts, newFilters);
+    }
   };
 
   const showDeleteConfirm = (product) => {
@@ -138,10 +238,15 @@ const ProductManagement = () => {
       const response = await deleteProduct(selectedProduct.id);
 
       if (!response.error) {
-        await fetchProducts({
-          page: pagination.current,
-          pageSize: pagination.pageSize,
-        });
+        // Update local data after successful deletion
+        const updatedAllProducts = allProducts.filter(
+          (p) => p.id !== selectedProduct.id
+        );
+        setAllProducts(updatedAllProducts);
+
+        // Reapply filters to update the view
+        applyFilters(updatedAllProducts, filters);
+
         toast.success("Xóa sản phẩm thành công!");
       } else {
         toast.error(response.message);
@@ -158,11 +263,7 @@ const ProductManagement = () => {
   const handleFilterChange = (type, value) => {
     const newFilters = { ...filters, [type]: value };
     setFilters(newFilters);
-    fetchProducts({
-      ...newFilters,
-      page: 1,
-      pageSize: pagination.pageSize,
-    });
+    applyFilters(allProducts, newFilters);
   };
 
   const handleStatusChange = async (checked, record) => {
@@ -173,11 +274,15 @@ const ProductManagement = () => {
 
       if (!response.error) {
         toast.success("Cập nhật trạng thái sản phẩm thành công!");
-        // Refresh the current page
-        fetchProducts({
-          page: pagination.current,
-          pageSize: pagination.pageSize,
-        });
+
+        // Update the product in allProducts and filteredProducts
+        const updatedAllProducts = allProducts.map((p) =>
+          p.id === record.id ? { ...p, status: newStatus } : p
+        );
+        setAllProducts(updatedAllProducts);
+
+        // Reapply filters to update the view
+        applyFilters(updatedAllProducts, filters);
       } else {
         toast.error(response.message);
         // Revert the switch if there's an error
@@ -325,6 +430,24 @@ const ProductManagement = () => {
             ))}
           </Select>
         )}
+        <Select
+          placeholder="Lọc theo khoảng giá"
+          style={{ width: 200 }}
+          allowClear
+          onChange={(value) => handleFilterChange("priceRange", value)}
+        >
+          <Select.Option value="0-500000">Dưới 500.000đ</Select.Option>
+          <Select.Option value="500000-1000000">
+            500.000đ - 1.000.000đ
+          </Select.Option>
+          <Select.Option value="1000000-5000000">
+            1.000.000đ - 5.000.000đ
+          </Select.Option>
+          <Select.Option value="5000000-10000000">
+            5.000.000đ - 10.000.000đ
+          </Select.Option>
+          <Select.Option value="10000000+">Trên 10.000.000đ</Select.Option>
+        </Select>
       </div>
       <Table
         columns={columns}

@@ -22,7 +22,7 @@ function ConsultantOrderDetail() {
 
   const navigate = useNavigate();
 
-  const { id } = useParams(); //Lấy id trên url
+  const { id } = useParams();
 
   const statusVisibleRoutine = ["PENDING", "PAYMENT", "ASSIGNED_EXPERT"];
 
@@ -73,6 +73,8 @@ function ConsultantOrderDetail() {
 
       if (result) {
         toast.success("Hoàn tất gửi nhận xét");
+        await fetchOrderDetail();
+        form.resetFields();
       }
     } catch (error) {
       toast.error("có lỗi trong việc gửi nhận xét", error);
@@ -157,7 +159,13 @@ function ConsultantOrderDetail() {
           <div className="overflow-hidden whitespace-nowrap text-ellipsis flex-auto text-black text-opacity-88 font-semibold text-md leading-6 my-5">
             HÌnh ảnh da, sản phẩm của khách hàng
           </div>
-          {image && <Image src={image} alt="image" width={100} height={100} />}
+          {image &&
+            image.length > 0 &&
+            image.map((item, index) => (
+              <div key={index} className="inline-block mr-3">
+                <Image src={item} alt="image" width={100} height={100} />
+              </div>
+            ))}
         </div>
       </Card>
 
@@ -166,48 +174,84 @@ function ConsultantOrderDetail() {
           Nhận xét/ Tư vấn
         </div>
 
-        <Form
-          form={form}
-          onFinish={handleChangeStatus}
-          autoComplete="off"
-          className="space-y-6"
-        >
-          {orderDetail.paymentStatus === "PAID" ? (
-            <>
-              <Form.Item>
-                <Input.TextArea
-                  rows={4}
-                  placeholder="Nhập nhận xét"
-                  name="response"
-                />
-              </Form.Item>
-              <Form.Item className="mt-6">
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={loading}
-                  className="w-full md:w-auto px-8 h-12 rounded-md bg-blue-600 hover:bg-blue-700"
-                >
-                  Gửi
-                </Button>
-              </Form.Item>
-            </>
-          ) : (
-            <div className="mt-6 text-red-500">
-              Khách hàng chưa thanh toán chưa thể đưa nhận xét
-            </div>
-          )}
-        </Form>
+        {orderDetail.response ? (
+          <>
+            <Descriptions>
+              <Descriptions.Item label="Họ tên khách Phản hòi khách hàng">
+                {orderDetail.response}
+              </Descriptions.Item>
+            </Descriptions>
+          </>
+        ) : (
+          <>
+            <Form
+              form={form}
+              onFinish={handleChangeStatus}
+              autoComplete="off"
+              className="space-y-6"
+            >
+              {orderDetail.paymentStatus === "PAID" ? (
+                <>
+                  <Form.Item name="response">
+                    <Input.TextArea rows={4} placeholder="Nhập nhận xét" />
+                  </Form.Item>
+                  <Form.Item className="mt-6">
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      loading={loading}
+                      className="w-full md:w-auto px-8 h-12 rounded-md bg-blue-600 hover:bg-blue-700"
+                    >
+                      Gửi
+                    </Button>
+                  </Form.Item>
+                </>
+              ) : (
+                <div className="mt-6 text-red-500">
+                  Khách hàng chưa thanh toán chưa thể đưa nhận xét
+                </div>
+              )}
+            </Form>
+          </>
+        )}
       </Card>
 
-      {!statusVisibleRoutine.includes(orderDetail.status) && (
-        <Button
-          onClick={() =>
-            navigate(`/admin/consultant-booking/order-detail/${id}/new-routine`)
-          }
-        >
-          Lên lịch trình chăm da
-        </Button>
+      {orderDetail.routine ? (
+        <>
+          <Card className="mb-6">
+            <Descriptions title="Thông tin khách hàng" bordered>
+              <Descriptions.Item label="Họ tên khách hàng">
+                {orderDetail.lastName} {orderDetail.firstName}
+              </Descriptions.Item>
+              <Descriptions.Item label="Độ tuổi">
+                {orderDetail.age || "N/A"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Loại da">
+                {transSkintype(orderDetail.skinType) || "N/A"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Dị ứng">
+                {orderDetail.allergy || "N/A"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Mô tả">
+                {orderDetail.skinCondition}
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
+        </>
+      ) : (
+        <>
+          {!statusVisibleRoutine.includes(orderDetail.status) && (
+            <Button
+              onClick={() =>
+                navigate(
+                  `/admin/consultant-booking/order-detail/${id}/new-routine`
+                )
+              }
+            >
+              Lên lịch trình chăm da
+            </Button>
+          )}
+        </>
       )}
 
       <ToastContainer

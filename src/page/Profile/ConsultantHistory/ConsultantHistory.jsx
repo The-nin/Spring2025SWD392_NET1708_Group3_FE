@@ -145,17 +145,18 @@ export default function History() {
                     Tổng giá: {book.price.toLocaleString()} VNĐ
                   </p>
 
-                  {book.paymentStatus !== "PAID" && (
-                    <div>
-                      <Button
-                        type="dashed"
-                        danger
-                        onClick={() => handlePayment(book.id)}
-                      >
-                        Thanh toán
-                      </Button>
-                    </div>
-                  )}
+                  {book.status !== "CANCELED" &&
+                    book.paymentStatus !== "PAID" && (
+                      <div>
+                        <Button
+                          type="dashed"
+                          danger
+                          onClick={() => handlePayment(book.id)}
+                        >
+                          Thanh toán
+                        </Button>
+                      </div>
+                    )}
                 </div>
               ))
           )}
@@ -169,10 +170,9 @@ export default function History() {
               disabled={currentPage === 1 || data.length === 0}
               className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
             >
-              ← Previous
+              ← Trước
             </button>
             <span>
-              {/* Hiển thị phân trang */}
               Page {data.length === 0 ? 0 : currentPage} /{" "}
               {data.length === 0 ? 0 : totalPages}
             </span>
@@ -184,7 +184,7 @@ export default function History() {
               disabled={currentPage === totalPages || data.length === 0}
               className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
             >
-              Next →
+              Sau →
             </button>
           </div>
         </div>

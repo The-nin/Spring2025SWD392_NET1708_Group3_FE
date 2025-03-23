@@ -5,7 +5,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   LoadingOutlined,
-  EyeOutlined, // 👁️ Added View Icon
+  EyeOutlined, // 👁️ View Icon
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import {
@@ -29,6 +29,7 @@ const BlogManagement = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [viewModalVisible, setViewModalVisible] = useState(false); // 👁️ View modal state
   const [deletingBlogId, setDeletingBlogId] = useState(null);
+  const [showDeleted, setShowDeleted] = useState(false); // ✅ State để ẩn/hiện blog đã xóa
 
   // Fetch blogs from API
   const fetchBlogs = async () => {
@@ -50,7 +51,7 @@ const BlogManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Không thể tải blog");
+      toast.error("Không thể tải bài viết");
     } finally {
       setLoading(false);
     }
@@ -84,12 +85,12 @@ const BlogManagement = () => {
           prevBlogs.filter((blog) => blog.id !== selectedBlog.id)
         );
         setPagination((prev) => ({ ...prev, total: prev.total - 1 }));
-        toast.success("Đã xóa blog thành công!");
+        toast.success("Đã xóa bài viết thành công!");
       } else {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Không xóa được blog");
+      toast.error("Không xóa được bài viết");
     } finally {
       setDeletingBlogId(null);
       setDeleteModalVisible(false);
@@ -104,7 +105,7 @@ const BlogManagement = () => {
       const response = await updateBlogStatus(blog.id, newStatus);
 
       if (!response.error) {
-        toast.success("Trạng thái blog đã được cập nhật thành công!");
+        toast.success("Trạng thái bài viết đã được cập nhật thành công!");
         setBlogs((prevBlogs) =>
           prevBlogs.map((b) =>
             b.id === blog.id ? { ...b, status: newStatus } : b
@@ -114,7 +115,7 @@ const BlogManagement = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error("Không cập nhật được trạng thái blog");
+      toast.error("Không cập nhật được trạng thái bài viết");
     } finally {
       setLoading(false);
     }
@@ -126,6 +127,11 @@ const BlogManagement = () => {
     setViewModalVisible(true);
   };
 
+  // ✅ Lọc danh sách blogs hiển thị theo trạng thái "isDeleted"
+  const filteredBlogs = showDeleted
+    ? blogs
+    : blogs.filter((blog) => !blog.isDeleted);
+
   const columns = [
     {
       title: "ID",
@@ -134,42 +140,48 @@ const BlogManagement = () => {
       sorter: (a, b) => a.id - b.id,
     },
     {
-      title: "Image",
-      dataIndex: "thumbnail",
+      title: "Hình ảnh",
+      dataIndex: "image",
       key: "image",
-      render: (image) => (
-        <img
-          src={image}
-          alt="blog"
-          className="w-16 h-16 object-cover rounded"
-        />
-      ),
+      render: (image) =>
+        image ? (
+          <img
+            src={image}
+            alt="Blog"
+            className="w-16 h-16 object-cover rounded"
+            onError={(e) => (e.target.src = "/fallback-image.jpg")} // Ảnh mặc định nếu bị lỗi
+          />
+        ) : (
+          <span>Không có ảnh</span>
+        ),
     },
+
     {
-      title: "Tên Blog",
+      title: "Tên bài viết",
       dataIndex: "blogName",
       key: "name",
-    },
-    {
-      title: "Miêu tả",
-      dataIndex: "description",
-      key: "description",
-      ellipsis: true,
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status, record) => (
-        <Switch
-          checked={status === "ACTIVE"}
-          onChange={() => toggleBlogStatus(record)}
-          checkedChildren="Active"
-          unCheckedChildren="Inactive"
-        />
-      ),
+      render: (status, record) =>
+        showDeleted ? (
+          <span>{status}</span> // Chỉ hiển thị text nếu là blog đã xóa
+        ) : (
+          <Switch
+            checked={status === "ACTIVE"}
+            onChange={() => toggleBlogStatus(record)}
+            checkedChildren="Hoạt động"
+            unCheckedChildren="Không hoạt động"
+          />
+        ),
     },
-    {
+  ];
+
+  // Nếu đang xem blog đã xóa, loại bỏ cột "Hành động"
+  if (!showDeleted) {
+    columns.push({
       title: "Hành động",
       key: "actions",
       render: (_, record) => (
@@ -202,47 +214,66 @@ const BlogManagement = () => {
           )}
         </Space>
       ),
-    },
-  ];
+    });
+  }
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Quản Lý Blog</h2>
+      <h2 className="text-2xl font-bold">Quản Lý bài viết</h2>
+      <div className="flex justify-end items-end mb-4">
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => navigate("/admin/blog/add")}
         >
-          Thêm Blog Mới
+          Thêm Bài Viết Mới
         </Button>
       </div>
 
       <Table
         columns={columns}
-        dataSource={blogs}
+        dataSource={filteredBlogs}
         rowKey="id"
         pagination={pagination}
         loading={loading}
         onChange={handleTableChange}
       />
-
       {/* Modal Xem Chi Tiết Blog */}
       <Modal
-        title="Chi Tiết Blog"
+        title="Chi Tiết bài viết"
         open={viewModalVisible}
         onCancel={() => setViewModalVisible(false)}
         footer={null}
+        width={700}
       >
         {selectedBlog && (
           <div>
             <img
-              src={selectedBlog.thumbnail}
+              src={selectedBlog.image}
               alt="Blog"
               className="w-full h-60 object-cover mb-4 rounded"
             />
-            <h3 className="text-xl font-semibold">{selectedBlog.name}</h3>
-            <p className="text-gray-600">{selectedBlog.description}</p>
+            <h3 className="text-xl font-semibold mb-3">
+              {selectedBlog.blogName}
+            </h3>
+            <p className="text-gray-500 italic mb-3">
+              Tác giả:{" "}
+              <span className="font-medium">{selectedBlog.author}</span>
+            </p>
+            <p className="  mb-3">
+              <p className="text-gray-500 italic mb-3">
+                Ngày đăng:{" "}
+                <span className="font-medium">
+                  {new Date(selectedBlog.date).toLocaleDateString("vi-VN")}
+                </span>
+              </p>
+            </p>
+            <div className="mt-4">
+              <h4 className="text-lg font-medium mb-2">Miêu tả:</h4>
+              <p className="text-gray-600 whitespace-pre-line">
+                {selectedBlog.description}
+              </p>
+            </div>
           </div>
         )}
       </Modal>
@@ -260,10 +291,9 @@ const BlogManagement = () => {
         cancelText="Hủy"
         okButtonProps={{ danger: true }}
       >
-        <p>Bạn có chắc chắn muốn xóa blog "{selectedBlog?.name}"?</p>
+        <p>Bạn có chắc chắn muốn xóa bài viết "{selectedBlog?.name}"?</p>
         <p>Hành động này không thể hoàn tác.</p>
       </Modal>
-
       <ToastContainer />
     </div>
   );

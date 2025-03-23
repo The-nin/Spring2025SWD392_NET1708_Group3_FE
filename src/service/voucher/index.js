@@ -20,7 +20,7 @@ export const getAllVouchers = async () => {
     console.log(response);
     return response;
   } catch (error) {
-    return handleError(error, "Không thể lấy danh sách voucher");
+    return handleError(error, "Không thể lấy danh sách khuyến mãi");
   }
 };
 
@@ -40,7 +40,7 @@ export const getVoucherById = async (voucherId) => {
       message: response.data?.message,
     };
   } catch (error) {
-    return handleError(error, "Không thể lấy thông tin voucher");
+    return handleError(error, "Không thể lấy thông tin khuyến mãi");
   }
 };
 
@@ -61,7 +61,7 @@ export const updateVoucher = async (voucherId, voucherData) => {
     console.log(response);
     return response;
   } catch (error) {
-    return handleError(error, "Không thể cập nhật voucher");
+    return handleError(error, "Không thể cập nhật khuyến mãi");
   }
 };
 
@@ -83,11 +83,11 @@ export const createVoucher = async (voucherData) => {
     return {
       error: false,
       result: response.data?.result,
-      message: response.data?.message || "Tạo voucher thành công",
+      message: response.data?.message || "Tạo khuyến mãi thành công",
     };
   } catch (error) {
     console.error("Lỗi phản hồi:", error.response?.data || error.message);
-    return handleError(error, "Không thể tạo voucher");
+    return handleError(error, "Không thể tạo khuyến mãi");
   }
 };
 
@@ -110,7 +110,7 @@ export const deleteVoucher = async (voucherId) => {
     }
     throw new Error(response?.message || "Phản hồi không hợp lệ");
   } catch (error) {
-    return handleError(error, "Không thể xóa voucher");
+    return handleError(error, "Không thể xóa khuyến mãi");
   }
 };
 
@@ -138,7 +138,7 @@ export const updateVoucherStatus = async (voucherId, status) => {
     }
     throw new Error(response?.message || "Phản hồi không hợp lệ");
   } catch (error) {
-    return handleError(error, "Không thể cập nhật trạng thái voucher");
+    return handleError(error, "Không thể cập nhật trạng thái khuyến mãi");
   }
 };
 
@@ -155,10 +155,10 @@ export const getMyVouchers = async (page = 0, size = 10) => {
     );
     return response;
   } catch (error) {
-    console.error("Không thể lấy danh sách voucher: ", error);
+    console.error("Không thể lấy danh sách khuyến mãi: ", error);
     return {
       error: true,
-      message: error.response?.message || "Có lỗi xảy ra khi lấy voucher",
+      message: error.response?.message || "Có lỗi xảy ra khi lấy khuyến mãi",
     };
   }
 };
@@ -173,11 +173,11 @@ export const getAvailableVouchers = async (page = 0, size = 10) => {
     });
     return response;
   } catch (error) {
-    console.error("Không thể lấy danh sách voucher có sẵn: ", error);
+    console.error("Không thể lấy danh sách khuyến mãi có sẵn: ", error);
     return {
       error: true,
       message:
-        error.response?.message || "Có lỗi xảy ra khi lấy danh sách voucher",
+        error.response?.message || "Có lỗi xảy ra khi lấy danh sách khuyến mãi",
     };
   }
 };

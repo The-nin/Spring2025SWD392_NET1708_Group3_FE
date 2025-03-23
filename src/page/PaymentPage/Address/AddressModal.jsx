@@ -63,7 +63,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             />
           </div>
           <div>
-            <label className="block mb-1">Thành phố</label>
+            <label className="block mb-1">Tỉnh/Thành phố</label>
             <input
               type="text"
               name="city"
@@ -74,7 +74,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             />
           </div>
           <div>
-            <label className="block mb-1">Quận</label>
+            <label className="block mb-1">Quận/Huyện</label>
             <input
               type="text"
               name="district"
@@ -85,7 +85,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             />
           </div>
           <div>
-            <label className="block mb-1">Phường</label>
+            <label className="block mb-1">Phường/Xã</label>
             <input
               type="text"
               name="ward"
@@ -96,7 +96,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             />
           </div>
           <div>
-            <label className="block mb-1">Địa chỉ</label>
+            <label className="block mb-1">Địa chỉ cụ thể</label>
             <input
               type="text"
               name="street"
@@ -114,7 +114,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, initialData }) => {
               onChange={handleChange}
               className="mr-2"
             />
-            <label>Đặt là địa chỉ mặc định</label>
+            <label>Đặt làm địa chỉ mặc định</label>
           </div>
           <div className="flex justify-end space-x-4">
             <button

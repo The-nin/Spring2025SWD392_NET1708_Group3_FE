@@ -50,28 +50,28 @@ function ServiceManagement() {
       dataIndex: "description",
       key: "description",
     },
-    {
-      title: "Action",
-      key: "action",
-      render: (_, record) => (
-        <Space>
-          <Tooltip title="Chỉnh sửa">
-            <Button
-              type="primary"
-              icon={<EditOutlined />}
-              // onClick={() => navigate(`/admin/product/edit/${record.id}`)}
-            />
-          </Tooltip>
-          <Tooltip title="Xóa">
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              //   onClick={() => showDeleteConfirm(record)}
-            />
-          </Tooltip>
-        </Space>
-      ),
-    },
+    // {
+    //   title: "Action",
+    //   key: "action",
+    //   render: (_, record) => (
+    //     <Space>
+    //       <Tooltip title="Chỉnh sửa">
+    //         <Button
+    //           type="primary"
+    //           icon={<EditOutlined />}
+    //           // onClick={() => navigate(`/admin/product/edit/${record.id}`)}
+    //         />
+    //       </Tooltip>
+    //       <Tooltip title="Xóa">
+    //         <Button
+    //           danger
+    //           icon={<DeleteOutlined />}
+    //           //   onClick={() => showDeleteConfirm(record)}
+    //         />
+    //       </Tooltip>
+    //     </Space>
+    //   ),
+    // },
   ];
 
   return (

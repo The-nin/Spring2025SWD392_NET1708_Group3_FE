@@ -74,12 +74,9 @@ const EditProduct = () => {
       if (!response.error) {
         const product = response.result;
 
-        const categoryExists = categories.some(
-          (cat) => cat.id === product.category_id
-        );
-        const brandExists = brands.some(
-          (brand) => brand.id === product.brand_id
-        );
+        // Extract category and brand IDs from the response
+        const categoryId = product.category?.id;
+        const brandId = product.brand?.id;
 
         form.setFieldsValue({
           name: product.name,
@@ -88,8 +85,8 @@ const EditProduct = () => {
           ingredient: product.ingredient,
           usageInstruction: product.usageInstruction,
           status: product.status,
-          brand_id: brandExists ? product.brand_id : undefined,
-          category_id: categoryExists ? product.category_id : undefined,
+          brand_id: brandId, // Use the extracted brand ID
+          category_id: categoryId, // Use the extracted category ID
           specification: {
             origin: product.specification?.origin || "",
             brandOrigin: product.specification?.brandOrigin || "",
@@ -98,6 +95,30 @@ const EditProduct = () => {
             skinType: product.specification?.skinType || "",
           },
         });
+
+        // Improved duplicate checking by using a Set-like approach
+        if (product.category) {
+          setCategories((prev) => {
+            // Check if category already exists by ID
+            const exists = prev.some((c) => c.id === product.category.id);
+            if (!exists) {
+              return [...prev, product.category];
+            }
+            return prev; // Return unchanged if already exists
+          });
+        }
+
+        if (product.brand) {
+          setBrands((prev) => {
+            // Check if brand already exists by ID
+            const exists = prev.some((b) => b.id === product.brand.id);
+            if (!exists) {
+              return [...prev, product.brand];
+            }
+            return prev; // Return unchanged if already exists
+          });
+        }
+
         setDescription(product.description || "");
         setIngredient(product.ingredient || "");
         setUsageInstruction(product.usageInstruction || "");
