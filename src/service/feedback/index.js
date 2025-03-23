@@ -4,14 +4,14 @@ import { instance } from "../instance";
  * Thêm đánh giá mới cho sản phẩm (yêu cầu xác thực)
  * @param {string} productId - ID của sản phẩm cần đánh giá
  * @param {number} orderId - ID của đơn hàng
- * @param {number} orderItemIndex - Index của item trong đơn hàng
+ * @param {number} orderItemId - ID của item trong đơn hàng
  * @param {object} feedbackData - Dữ liệu đánh giá (description, rating)
  * @returns {Promise} - Promise chứa kết quả API
  */
 export const addProductFeedback = async (
   productId,
   orderId,
-  orderItemIndex,
+  orderItemId,
   feedbackData
 ) => {
   try {
@@ -26,10 +26,10 @@ export const addProductFeedback = async (
     }
 
     // Kiểm tra dữ liệu đầu vào
-    if (!productId) {
+    if (!productId || !orderId || orderItemId === null) {
       return {
         error: true,
-        message: "Thiếu thông tin sản phẩm",
+        message: "Thiếu thông tin cần thiết để đánh giá",
         validationError: true,
       };
     }
@@ -40,13 +40,20 @@ export const addProductFeedback = async (
       rating: Number(feedbackData.rating),
     };
 
+    // Adjust orderItemId to be zero-based if needed
+    // This is based on the URL you shared showing orderItemId as 0 when the item.id is 1
+
     // Gọi API theo đúng định dạng Swagger
-    const response = await instance.post(`/feedbacks/${productId}`, payload, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await instance.post(
+      `/feedbacks/${orderId}/${orderItemId}/${productId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (response.code === 200 || response.code === 201) {
       return {
