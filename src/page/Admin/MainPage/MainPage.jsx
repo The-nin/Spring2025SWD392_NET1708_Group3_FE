@@ -11,7 +11,8 @@ const { Content } = Layout;
 const MainPage = () => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
-  const adminUser = JSON.parse(localStorage.getItem("adminUser"));
+  // const adminUser = JSON.parse(localStorage.getItem("role"));
+  const role = localStorage.getItem("role");
 
   const handleLogout = () => {
     localStorage.removeItem("adminUser");
@@ -50,7 +51,7 @@ const MainPage = () => {
         <AdminHeader
           collapsed={collapsed}
           toggleCollapsed={toggleCollapsed}
-          adminUser={adminUser}
+          adminUser={role}
         />
         <Content
           style={{
