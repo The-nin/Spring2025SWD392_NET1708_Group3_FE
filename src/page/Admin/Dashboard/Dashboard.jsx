@@ -119,9 +119,13 @@ const Dashboard = () => {
   const prepareTopProductsData = () => {
     if (!dashboardData?.topSellingProducts?.length) return null;
 
-    const labels = dashboardData.topSellingProducts.map(
-      (product) => product.productName
-    );
+    // Truncate product names to prevent overlapping
+    const labels = dashboardData.topSellingProducts.map((product) => {
+      // Truncate long product names to 20 characters + ellipsis
+      return product.productName.length > 20
+        ? product.productName.substring(0, 20) + "..."
+        : product.productName;
+    });
     const data = dashboardData.topSellingProducts.map(
       (product) => product.quantitySold
     );
@@ -228,8 +232,23 @@ const Dashboard = () => {
   // Cấu hình riêng cho biểu đồ sản phẩm bán chạy
   const barChartOptions = {
     ...chartOptions,
+    indexAxis: "y", // Change to horizontal bar chart
     scales: {
       y: {
+        ticks: {
+          autoSkip: false,
+          maxRotation: 0,
+          padding: 10,
+          font: {
+            size: 11,
+          },
+        },
+        title: {
+          display: true,
+          text: "Sản phẩm",
+        },
+      },
+      x: {
         beginAtZero: true,
         suggestedMax: Math.max(
           10,
@@ -242,15 +261,25 @@ const Dashboard = () => {
           text: "Số lượng",
         },
       },
-      x: {
-        title: {
-          display: true,
-          text: "Sản phẩm",
+    },
+    plugins: {
+      ...chartOptions.plugins,
+      tooltip: {
+        callbacks: {
+          // Show full product name in tooltip
+          title: function (tooltipItems) {
+            const index = tooltipItems[0].dataIndex;
+            return (
+              dashboardData?.topSellingProducts?.[index]?.productName ||
+              tooltipItems[0].label
+            );
+          },
         },
       },
     },
-    barPercentage: 0.4,
-    categoryPercentage: 0.2,
+    barPercentage: 0.8,
+    categoryPercentage: 0.8,
+    maintainAspectRatio: false,
   };
 
   const handleDateChange = (dates) => {
