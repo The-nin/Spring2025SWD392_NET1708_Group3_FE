@@ -4,6 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button, DatePicker, Input, Select } from "antd";
 import { LeftOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -66,7 +69,7 @@ export default function RoutineForm() {
   const handleDateChange = (name, date) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: date ? date.format("YYYY-MM-DD") : "",
+      [name]: date ? dayjs(date).format("YYYY-MM-DD") : "",
     }));
   };
 
@@ -106,7 +109,8 @@ export default function RoutineForm() {
       const newDailyRoutines = [...prev.dailyRoutines];
       newDailyRoutines[index] = {
         ...newDailyRoutines[index],
-        [field]: field === "date" && value ? value.format("YYYY-MM-DD") : value,
+        [field]:
+          field === "date" && value ? dayjs(value).format("YYYY-MM-DD") : value,
       };
       return { ...prev, dailyRoutines: newDailyRoutines };
     });
@@ -196,7 +200,7 @@ export default function RoutineForm() {
     setSuccess(null);
 
     const toISODate = (dateString) => {
-      return dayjs(dateString).toISOString();
+      return dayjs(dateString).startOf("day").toISOString();
     };
 
     const requestData = {
@@ -207,7 +211,7 @@ export default function RoutineForm() {
       startDate: toISODate(formData.startDate),
       endDate: toISODate(formData.endDate),
       dailyRoutines: formData.dailyRoutines.map((daily) => ({
-        date: daily.date,
+        date: daily.date, // Đảm bảo định dạng phù hợp với backend
         steps: daily.steps.map((step) => ({
           stepNumber: step.stepNumber,
           timeOfDay: step.timeOfDay || null,
@@ -269,7 +273,6 @@ export default function RoutineForm() {
     }
   };
 
-  // Hàm để vô hiệu hóa ngày trước ngày hiện tại
   const disabledDate = (current) => {
     return current && current < dayjs().startOf("day");
   };
@@ -343,15 +346,11 @@ export default function RoutineForm() {
               </label>
               <DatePicker
                 format="YYYY-MM-DD"
-                value={
-                  formData.startDate
-                    ? dayjs(formData.startDate, "YYYY-MM-DD")
-                    : null
-                }
+                value={formData.startDate ? dayjs(formData.startDate) : null}
                 onChange={(date) => handleDateChange("startDate", date)}
                 className="w-full"
                 disabled={submitting}
-                disabledDate={disabledDate} // Thêm kiểm tra ngày
+                disabledDate={disabledDate}
               />
             </div>
             <div>
@@ -360,15 +359,11 @@ export default function RoutineForm() {
               </label>
               <DatePicker
                 format="YYYY-MM-DD"
-                value={
-                  formData.endDate
-                    ? dayjs(formData.endDate, "YYYY-MM-DD")
-                    : null
-                }
+                value={formData.endDate ? dayjs(formData.endDate) : null}
                 onChange={(date) => handleDateChange("endDate", date)}
                 className="w-full"
                 disabled={submitting}
-                disabledDate={disabledDate} // Thêm kiểm tra ngày
+                disabledDate={disabledDate}
               />
             </div>
           </div>
@@ -401,16 +396,14 @@ export default function RoutineForm() {
                     <DatePicker
                       format="YYYY-MM-DD"
                       value={
-                        dailyRoutine.date
-                          ? dayjs(dailyRoutine.date, "YYYY-MM-DD")
-                          : null
+                        dailyRoutine.date ? dayjs(dailyRoutine.date) : null
                       }
                       onChange={(date) =>
                         handleDailyRoutineChange(dailyIndex, "date", date)
                       }
                       className="w-full"
                       disabled={submitting}
-                      disabledDate={disabledDate} // Thêm kiểm tra ngày
+                      disabledDate={disabledDate}
                     />
                   </div>
                 </div>
