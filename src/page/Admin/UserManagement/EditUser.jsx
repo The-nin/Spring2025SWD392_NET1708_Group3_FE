@@ -17,6 +17,7 @@ const EditUser = () => {
   const { id } = useParams();
   const [imageUrl, setImageUrl] = useState(null);
   const [initialData, setInitialData] = useState(null);
+  const [isCustomer, setIsCustomer] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -26,6 +27,7 @@ const EditUser = () => {
           const userData = response.result;
           setInitialData(userData);
           setImageUrl(userData.avatar);
+          setIsCustomer(userData.roleName === "CUSTOMER");
 
           form.setFieldsValue({
             firstName: userData.firstName || "",
@@ -175,10 +177,13 @@ const EditUser = () => {
           </Form.Item>
 
           <Form.Item name="roleName" label="Vai Trò">
-            <Select>
+            <Select disabled={isCustomer}>
               <Select.Option value="MANAGER">Quản Lí</Select.Option>
               <Select.Option value="STAFF">Nhân Viên</Select.Option>
               <Select.Option value="DELIVERY">Người Giao Hàng</Select.Option>
+              {isCustomer && (
+                <Select.Option value="CUSTOMER">Khách Hàng</Select.Option>
+              )}
             </Select>
           </Form.Item>
 
