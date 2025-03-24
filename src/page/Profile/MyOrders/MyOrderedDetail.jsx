@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { addProductFeedback } from "../../../service/feedback";
 import { toast } from "react-toastify";
 
@@ -12,7 +12,42 @@ const MyOrderedDetail = ({ order, onBack }) => {
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!order) return null;
+  // Tạo một bản sao của order để làm việc với nó
+  const [orderData, setOrderData] = useState(order);
+
+  // Khi component mount, kiểm tra localStorage để lấy dữ liệu đánh giá đã lưu
+  useEffect(() => {
+    if (order) {
+      const storedFeedbacks = localStorage.getItem(
+        `feedbacks_${order.orderId}`
+      );
+      if (storedFeedbacks) {
+        const parsedFeedbacks = JSON.parse(storedFeedbacks);
+
+        // Cập nhật orderData với thông tin đánh giá từ localStorage
+        const updatedItems = order.orderResponseItemList.map((item) => {
+          const savedFeedback = parsedFeedbacks.find(
+            (f) => f.orderItemId === item.id
+          );
+          if (savedFeedback) {
+            return {
+              ...item,
+              hasFeedback: true,
+              feedbackRating: savedFeedback.rating,
+              feedbackDescription: savedFeedback.description,
+            };
+          }
+          return item;
+        });
+
+        setOrderData({ ...order, orderResponseItemList: updatedItems });
+      } else {
+        setOrderData(order);
+      }
+    }
+  }, [order]);
+
+  if (!orderData) return null;
 
   const handleFeedbackChange = (e) => {
     const { name, value } = e.target;
@@ -35,7 +70,7 @@ const MyOrderedDetail = ({ order, onBack }) => {
 
       const response = await addProductFeedback(
         feedbackData.productId,
-        order.orderId,
+        orderData.orderId,
         feedbackData.orderItemId,
         {
           description: feedbackData.description,
@@ -45,6 +80,51 @@ const MyOrderedDetail = ({ order, onBack }) => {
 
       if (!response.error) {
         toast.success("Đánh giá sản phẩm thành công!");
+
+        // Cập nhật trạng thái hasFeedback cho sản phẩm đã đánh giá
+        const updatedItems = orderData.orderResponseItemList.map((item) => {
+          if (item.id === feedbackData.orderItemId) {
+            return {
+              ...item,
+              hasFeedback: true,
+              feedbackRating: parseInt(feedbackData.rating),
+              feedbackDescription: feedbackData.description,
+            };
+          }
+          return item;
+        });
+
+        // Lưu thông tin đánh giá vào localStorage
+        const storedFeedbacks = localStorage.getItem(
+          `feedbacks_${orderData.orderId}`
+        );
+        let feedbacks = storedFeedbacks ? JSON.parse(storedFeedbacks) : [];
+
+        // Thêm đánh giá mới hoặc cập nhật đánh giá cũ
+        const feedbackIndex = feedbacks.findIndex(
+          (f) => f.orderItemId === feedbackData.orderItemId
+        );
+        if (feedbackIndex >= 0) {
+          feedbacks[feedbackIndex] = {
+            orderItemId: feedbackData.orderItemId,
+            rating: parseInt(feedbackData.rating),
+            description: feedbackData.description,
+          };
+        } else {
+          feedbacks.push({
+            orderItemId: feedbackData.orderItemId,
+            rating: parseInt(feedbackData.rating),
+            description: feedbackData.description,
+          });
+        }
+
+        localStorage.setItem(
+          `feedbacks_${orderData.orderId}`,
+          JSON.stringify(feedbacks)
+        );
+
+        // Cập nhật state
+        setOrderData({ ...orderData, orderResponseItemList: updatedItems });
         setShowFeedbackForm(false);
         setFeedbackData({
           productId: null,
@@ -76,7 +156,7 @@ const MyOrderedDetail = ({ order, onBack }) => {
 
   // Check if order is completed/done
   const isOrderCompleted =
-    order.status === "COMPLETED" || order.status === "DONE";
+    orderData.status === "COMPLETED" || orderData.status === "DONE";
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
@@ -91,46 +171,46 @@ const MyOrderedDetail = ({ order, onBack }) => {
       {/* Header Section */}
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Đơn hàng #{order.orderId}
+          Đơn hàng #{orderData.orderId}
         </h2>
         <p className="text-gray-600">
-          Đặt ngày {new Date(order.orderDate).toLocaleDateString()}
+          Đặt ngày {new Date(orderData.orderDate).toLocaleDateString()}
         </p>
       </div>
 
       {/* Order Status Banner */}
       <div
         className={`mb-6 p-4 rounded-lg ${
-          order.status === "PENDING"
+          orderData.status === "PENDING"
             ? "bg-yellow-50 text-yellow-700"
-            : order.status === "COMPLETED" || order.status === "DONE"
+            : orderData.status === "COMPLETED" || orderData.status === "DONE"
             ? "bg-green-50 text-green-700"
-            : order.status === "DELIVERING"
+            : orderData.status === "DELIVERING"
             ? "bg-blue-50 text-blue-700"
-            : order.status === "PROCESSING"
+            : orderData.status === "PROCESSING"
             ? "bg-orange-50 text-orange-700"
-            : order.status === "DELIVERING_FAIL"
+            : orderData.status === "DELIVERING_FAIL"
             ? "bg-red-50 text-red-700"
-            : order.status === "CANCELLED"
+            : orderData.status === "CANCELLED"
             ? "bg-gray-50 text-gray-700"
             : "bg-gray-50 text-gray-700"
         }`}
       >
         <div className="font-semibold">
           Trạng thái:{" "}
-          {order.status === "PENDING"
+          {orderData.status === "PENDING"
             ? "Chờ xử lý"
-            : order.status === "DONE"
+            : orderData.status === "DONE"
             ? "Hoàn thành"
-            : order.status === "DELIVERING"
+            : orderData.status === "DELIVERING"
             ? "Đang giao hàng"
-            : order.status === "PROCESSING"
+            : orderData.status === "PROCESSING"
             ? "Đang xử lý"
-            : order.status === "DELIVERING_FAIL"
+            : orderData.status === "DELIVERING_FAIL"
             ? "Giao hàng thất bại"
-            : order.status === "CANCELLED"
+            : orderData.status === "CANCELLED"
             ? "Đã hủy"
-            : order.status}
+            : orderData.status}
         </div>
       </div>
 
@@ -143,15 +223,17 @@ const MyOrderedDetail = ({ order, onBack }) => {
           <div className="space-y-3">
             <p className="flex justify-between">
               <span className="text-gray-600">Họ tên:</span>
-              <span className="font-medium">{order.address.name}</span>
+              <span className="font-medium">{orderData.address.name}</span>
             </p>
             <p className="flex justify-between">
               <span className="text-gray-600">Số điện thoại:</span>
-              <span className="font-medium">{order.address.phone}</span>
+              <span className="font-medium">{orderData.address.phone}</span>
             </p>
             <p className="flex justify-between">
               <span className="text-gray-600">Địa chỉ:</span>
-              <span className="font-medium">{order.address.addressLine}</span>
+              <span className="font-medium">
+                {orderData.address.addressLine}
+              </span>
             </p>
           </div>
         </div>
@@ -163,19 +245,19 @@ const MyOrderedDetail = ({ order, onBack }) => {
           <div className="space-y-3">
             <p className="flex justify-between">
               <span className="text-gray-600">Phương thức thanh toán:</span>
-              <span className="font-medium">{order.paymentMethod}</span>
+              <span className="font-medium">{orderData.paymentMethod}</span>
             </p>
-            {order.paymentStatus && (
+            {orderData.paymentStatus && (
               <p className="flex justify-between">
                 <span className="text-gray-600">Trạng thái thanh toán:</span>
                 <span
                   className={`font-medium ${
-                    order.paymentStatus === "PAID"
+                    orderData.paymentStatus === "PAID"
                       ? "text-green-600"
                       : "text-red-600"
                   }`}
                 >
-                  {order.paymentStatus === "PAID"
+                  {orderData.paymentStatus === "PAID"
                     ? "Đã thanh toán"
                     : "Chưa thanh toán"}
                 </span>
@@ -186,13 +268,13 @@ const MyOrderedDetail = ({ order, onBack }) => {
       </div>
 
       {/* Product List */}
-      {order.orderResponseItemList && (
+      {orderData.orderResponseItemList && (
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">
             Danh sách sản phẩm
           </h3>
           <div className="bg-gray-50 rounded-lg overflow-hidden">
-            {order.orderResponseItemList.map((item, index) => (
+            {orderData.orderResponseItemList.map((item, index) => (
               <div
                 key={index}
                 className="flex flex-col p-4 border-b last:border-0"
@@ -322,7 +404,7 @@ const MyOrderedDetail = ({ order, onBack }) => {
         <div className="flex justify-between items-center mb-6">
           <span className="text-xl font-bold text-gray-800">Tổng tiền</span>
           <span className="text-xl font-bold text-gray-800">
-            {order.totalAmount.toLocaleString()} đ
+            {orderData.totalAmount.toLocaleString()} đ
           </span>
         </div>
       </div>

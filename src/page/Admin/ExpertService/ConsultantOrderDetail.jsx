@@ -71,7 +71,7 @@ function ConsultantOrderDetail() {
 
       const result = await updateStatus(id, formData);
 
-      if (result) {
+      if (result && result.data) {
         toast.success("Hoàn tất gửi nhận xét");
         await fetchOrderDetail();
         form.resetFields();
@@ -219,21 +219,16 @@ function ConsultantOrderDetail() {
       {orderDetail.routine ? (
         <>
           <Card className="mb-6">
-            <Descriptions title="Thông tin khách hàng" bordered>
-              <Descriptions.Item label="Họ tên khách hàng">
-                {orderDetail.lastName} {orderDetail.firstName}
+            <Descriptions title="Thông tin chu trình" bordered>
+              <Descriptions.Item label="ID">{orderDetail.id}</Descriptions.Item>
+              <Descriptions.Item label="Tên chu trình">
+                {orderDetail.routine.routineName || "N/A"}
               </Descriptions.Item>
-              <Descriptions.Item label="Độ tuổi">
-                {orderDetail.age || "N/A"}
+              <Descriptions.Item label="Mô tả chu trình">
+                {orderDetail.routine.description || "N/A"}
               </Descriptions.Item>
-              <Descriptions.Item label="Loại da">
-                {transSkintype(orderDetail.skinType) || "N/A"}
-              </Descriptions.Item>
-              <Descriptions.Item label="Dị ứng">
-                {orderDetail.allergy || "N/A"}
-              </Descriptions.Item>
-              <Descriptions.Item label="Mô tả">
-                {orderDetail.skinCondition}
+              <Descriptions.Item label="Trạng thái">
+                {orderDetail.routine.routineStatus}
               </Descriptions.Item>
             </Descriptions>
           </Card>

@@ -138,10 +138,12 @@ const MyVoucher = ({ userPoints }) => {
   const handleExchangeVoucher = async (voucher) => {
     try {
       const response = await exchangeVoucher(voucher.id);
-      if (response.code === 200) {
-        toast.success("Đổi voucher thành công!");
-        fetchData();
+      if (response.code === 201) {
+        toast.success(response.message || "Đổi voucher thành công!");
+        await fetchData();
         setIsExchangeModalOpen(false);
+      } else {
+        throw new Error(response.message || "Đổi voucher không thành công");
       }
     } catch (error) {
       console.log("Error response data:", error.response?.data);
