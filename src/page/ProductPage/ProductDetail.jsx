@@ -371,11 +371,13 @@ const ProductDetail = () => {
                   <input
                     type="number"
                     min="1"
+                    max={product.stock}
                     value={quantity}
                     onChange={(e) => {
                       const value = parseInt(e.target.value);
                       if (!isNaN(value) && value > 0) {
-                        setQuantity(value);
+                        // Limit quantity to available stock
+                        setQuantity(Math.min(value, product.stock));
                       } else if (e.target.value === "") {
                         setQuantity("");
                       }
@@ -383,14 +385,26 @@ const ProductDetail = () => {
                     onBlur={() => {
                       if (quantity === "" || quantity < 1) {
                         setQuantity(1);
+                      } else if (quantity > product.stock) {
+                        setQuantity(product.stock);
+                        toast.info(
+                          `Số lượng đã được điều chỉnh theo hàng có sẵn (${product.stock})`
+                        );
                       }
                     }}
                     className="w-12 text-center font-medium border-none focus:ring-0 focus:outline-none"
                   />
                   <button
-                    onClick={() =>
-                      setQuantity(quantity === "" ? 1 : quantity + 1)
-                    }
+                    onClick={() => {
+                      const newQuantity = quantity === "" ? 1 : quantity + 1;
+                      if (newQuantity <= product.stock) {
+                        setQuantity(newQuantity);
+                      } else {
+                        toast.info(
+                          `Chỉ còn ${product.stock} sản phẩm trong kho`
+                        );
+                      }
+                    }}
                     className="p-2 hover:bg-gray-100 rounded-md"
                   >
                     <Plus size={16} />

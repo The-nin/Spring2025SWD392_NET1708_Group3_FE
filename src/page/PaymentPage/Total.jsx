@@ -72,7 +72,13 @@ const Total = ({
     if (!cartData) return 0;
     if (!appliedVoucher) return cartData.totalPrice;
 
-    return Math.max(0, cartData.totalPrice - appliedVoucher.discount);
+    if (appliedVoucher.discountType === "PERCENTAGE") {
+      const discountAmount =
+        (cartData.totalPrice * appliedVoucher.discount) / 100;
+      return Math.max(0, cartData.totalPrice - discountAmount);
+    } else {
+      return Math.max(0, cartData.totalPrice - appliedVoucher.discount);
+    }
   };
 
   return (
@@ -92,7 +98,12 @@ const Total = ({
           <p>Giảm Giá</p>
           <p>
             {appliedVoucher
-              ? `${appliedVoucher.discount.toLocaleString("vi-VN")}đ`
+              ? appliedVoucher.discountType === "PERCENTAGE"
+                ? `${(
+                    ((cartData?.totalPrice || 0) * appliedVoucher.discount) /
+                    100
+                  ).toLocaleString("vi-VN")}đ (${appliedVoucher.discount}%)`
+                : `${appliedVoucher.discount.toLocaleString("vi-VN")}đ`
               : "0đ"}
           </p>
         </div>
@@ -108,21 +119,32 @@ const Total = ({
           <select
             value={voucherCode}
             onChange={(e) => setVoucherCode(e.target.value)}
-            className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:border-gray-900"
+            className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:border-gray-900 text-sm truncate"
             disabled={!vouchers?.length || appliedVoucher}
           >
             <option value="">Chọn voucher</option>
             {vouchers?.map((voucher) => (
-              <option key={voucher.id} value={voucher.code}>
-                {voucher.code} - {voucher.description}
-                (Giảm {voucher.discount.toLocaleString("vi-VN")}đ)
+              <option
+                key={voucher.id}
+                value={voucher.code}
+                className="truncate"
+              >
+                {voucher.code} -{" "}
+                {voucher.description && voucher.description.length > 20
+                  ? voucher.description.substring(0, 20) + "..."
+                  : voucher.description}
+                (
+                {voucher.discountType === "PERCENTAGE"
+                  ? `Giảm ${voucher.discount}%`
+                  : `Giảm ${voucher.discount.toLocaleString("vi-VN")}đ`}
+                )
               </option>
             ))}
           </select>
           {!appliedVoucher ? (
             <button
               onClick={handleApplyVoucher}
-              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-700 disabled:bg-gray-400"
+              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-700 disabled:bg-gray-400 whitespace-nowrap"
               disabled={!voucherCode || !vouchers?.length}
             >
               Áp dụng
@@ -130,7 +152,7 @@ const Total = ({
           ) : (
             <button
               onClick={handleRemoveVoucher}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex-shrink-0"
             >
               ✕
             </button>
@@ -140,9 +162,12 @@ const Total = ({
           <p className="text-red-600 text-sm mt-2">{voucherError}</p>
         )}
         {appliedVoucher && (
-          <p className="text-green-600 text-sm mt-2">
-            Đã áp dụng mã giảm giá: {appliedVoucher.code}
-          </p>
+          <div className="text-green-600 text-sm mt-2 break-words">
+            <p>Đã áp dụng mã giảm giá: {appliedVoucher.code}</p>
+            {appliedVoucher.description && (
+              <p className="text-xs mt-1">{appliedVoucher.description}</p>
+            )}
+          </div>
         )}
       </div>
 

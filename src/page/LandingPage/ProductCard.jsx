@@ -46,7 +46,7 @@ const ProductCard = ({
         toast.success(response.message);
       }
     } catch (error) {
-      toast.error("Failed to add item to cart");
+      toast.error("Không thể thêm sản phẩm vào giỏ hàng");
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +87,7 @@ const ProductCard = ({
 
           {/* Price */}
           <div className="h-[40px] w-full flex items-center justify-center">
-            <p className="font-semibold text-black">${formatPrice(price)}</p>
+            <p className="font-semibold text-black">{formatPrice(price)}đ</p>
           </div>
         </div>
 
@@ -98,7 +98,7 @@ const ProductCard = ({
             onClick={handleAddToCart}
             disabled={isLoading}
           >
-            {isLoading ? "Adding..." : "Add to your Cart"}
+            {isLoading ? "Đang thêm..." : "Thêm vào giỏ hàng"}
           </button>
         </div>
       </div>

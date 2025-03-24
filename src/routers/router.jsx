@@ -161,6 +161,11 @@ export const router = createBrowserRouter([
           </ProtectedUserRoute>
         ),
       },
+
+      {
+        path: "/payment-success",
+        element: <PaymentSuccess />,
+      },
       {
         path: "/payment-success-booking",
         element: <PaymentSuccessBooking />,
