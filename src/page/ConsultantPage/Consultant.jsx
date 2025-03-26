@@ -27,6 +27,7 @@ import { uploadToCloudinary } from "../../service/productManagement";
 import { getServices } from "../../service/serviceManagement";
 import { Link } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { getProfile } from "../../service/profile";
 
 function Consultant() {
   const [form] = Form.useForm();
@@ -39,6 +40,7 @@ function Consultant() {
   const [openModalPayment, setOpenModalPayment] = useState(false);
   const [tempBookingData, setTempBookingData] = useState(null);
   const [expertName, setExpertName] = useState([]);
+  const [user, setUser] = useState([]);
 
   const navigate = useNavigate();
 
@@ -86,6 +88,25 @@ function Consultant() {
     setSelectedDate(dateString);
   };
 
+  const fetchUser = async () => {
+    try {
+      const response = await getProfile();
+      if (response && response.result) {
+        setUser(response.result);
+        form.setFieldsValue({
+          firstName: response.result.firstName,
+          lastName: response.result.lastName,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch user:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
   const onFinish = async (values) => {
     console.log("Received values of form: ", values);
 
@@ -96,15 +117,26 @@ function Consultant() {
         imageFiles.map(async (file) => await uploadToCloudinary(file))
       );
 
+      // const localOffset = moment().format("Z");
+      // const formateAge = values.age.format(
+      //   `YYYY-MM-DD[T00:00:00]${localOffset}`
+      // ); // Giờ địa phương
+      // const formateBookDate = values.bookDate.format(
+      //   `YYYY-MM-DDTHH:mm:ss${localOffset}`
+      // );
+
+      const formateAge = values.age.format("YYYY-MM-DD[T00:00:00]"); // "2000-03-26T00:00:00"
+      const formateBookDate = values.bookDate.format("YYYY-MM-DDTHH:mm:ss");
+
       const bookingData = {
         firstName: values.firstName,
         lastName: values.lastName,
         skinType: values.skinType,
         skinCondition: values.skinCondition,
         allergy: values.allergy || "",
-        bookDate: values.bookDate,
+        bookDate: formateBookDate,
         expertId: values.expertId || "",
-        age: values.age,
+        age: formateAge,
         note: values.note || "",
         skincareServiceId: values.skincareServiceId,
         imageSkins: imageURLs.map((url) => ({ image: url })),
@@ -280,7 +312,7 @@ function Consultant() {
                 </Form.Item>
               </Col>
 
-              <Col span={8}>
+              {/* <Col span={8}>
                 <Form.Item
                   name="age"
                   label="Tuổi"
@@ -290,6 +322,21 @@ function Consultant() {
                 >
                   <InputNumber
                     placeholder="Nhập độ tuổi của bạn"
+                    className="w-full rounded-md h-12"
+                  />
+                </Form.Item>
+              </Col> */}
+              <Col span={8}>
+                <Form.Item
+                  name="age"
+                  label="Năm sinh"
+                  rules={[
+                    { required: true, message: "Bạn cần phải nhập năm sinh" },
+                  ]}
+                >
+                  <DatePicker
+                    placeholder="Nhập năm sinh"
+                    picker="year"
                     className="w-full rounded-md h-12"
                   />
                 </Form.Item>
@@ -377,7 +424,7 @@ function Consultant() {
                   <DatePicker
                     placeholder="Chọn ngày"
                     onChange={handleDateChange}
-                    needConfirm
+                    showTime
                     disabledDate={(current) => {
                       return current && current < moment().startOf("day");
                     }}

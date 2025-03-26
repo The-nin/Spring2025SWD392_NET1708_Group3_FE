@@ -142,7 +142,10 @@ function ConsultantOrderDetail() {
             {orderDetail.lastName} {orderDetail.firstName}
           </Descriptions.Item>
           <Descriptions.Item label="Độ tuổi">
-            {orderDetail.age || "N/A"}
+            {orderDetail.age
+              ? new Date().getFullYear() -
+                new Date(orderDetail.age).getFullYear()
+              : "N/A"}
           </Descriptions.Item>
           <Descriptions.Item label="Loại da">
             {transSkintype(orderDetail.skinType) || "N/A"}
