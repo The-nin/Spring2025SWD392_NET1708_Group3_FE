@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Card, Descriptions, Spin, Tag, Select } from "antd";
 import { LeftOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { instance } from "../../../service/instance";
-import { getAllExperts, getBookingById } from "../../../service/booking";
+import {
+  getAllExperts,
+  getBookingById,
+  updateStatus,
+} from "../../../service/booking";
 
 const { Option } = Select;
 
@@ -29,7 +33,7 @@ export default function StaffMngConsultantDetail() {
         throw new Error("Có lỗi trong việc tải dữ liệu đơn hàng");
       }
       setOrderDetail(response.bookingOrder);
-      console.log(response.bookingOrder)
+      console.log(response.bookingOrder);
     } catch (error) {
       toast.error("Lỗi", error);
     } finally {
@@ -58,6 +62,12 @@ export default function StaffMngConsultantDetail() {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
+
+      const status = "ASSIGNED_EXPERT";
+      const formData = {
+        status: status,
+      };
+
       await instance.post(
         `/admin/booking-order/${id}`,
         { expertId: selectedExpert },
@@ -65,11 +75,16 @@ export default function StaffMngConsultantDetail() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
+      await updateStatus(id, formData);
+
       toast.success(`Đã giao nhiệm vụ cho đơn hàng #${id}`);
       fetchOrderDetail(); // Cập nhật lại chi tiết
     } catch (error) {
       console.error("Lỗi khi giao nhiệm vụ:", error);
-      toast.error("Không thể giao nhiệm vụ!");
+      if (error.response.data.code === 1907) {
+        toast.error("Tư vấn viên đã được đặt lịch vào thời gian này!");
+      }
     } finally {
       setLoading(false);
     }
@@ -158,7 +173,7 @@ export default function StaffMngConsultantDetail() {
       <Card className="mb-6">
         <div className="mb-4 text-lg font-semibold">Phân Tư Vấn Viên</div>
         {orderDetail.expertName ? (
-          <Descriptions bordered >
+          <Descriptions bordered>
             <Descriptions.Item label="Tư vấn viên">
               {getExpertName(orderDetail.expertName)}
             </Descriptions.Item>

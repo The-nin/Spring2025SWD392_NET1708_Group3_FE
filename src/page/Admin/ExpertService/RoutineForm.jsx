@@ -69,7 +69,7 @@ export default function RoutineForm() {
   const handleDateChange = (name, date) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: date ? dayjs(date).format("YYYY-MM-DD") : "",
+      [name]: date ? dayjs(date).format("YYYY-MM-DD[T00:00:00]") : "", // Định dạng LocalDateTime
     }));
   };
 
@@ -200,7 +200,7 @@ export default function RoutineForm() {
     setSuccess(null);
 
     const toISODate = (dateString) => {
-      return dayjs(dateString).startOf("day").toISOString();
+      return dayjs(dateString).format("YYYY-MM-DD[T00:00:00]"); // Định dạng LocalDateTime
     };
 
     const requestData = {
@@ -208,8 +208,8 @@ export default function RoutineForm() {
       description: formData.description,
       routineName: formData.routineName,
       routineStatus: formData.routineStatus,
-      startDate: toISODate(formData.startDate),
-      endDate: toISODate(formData.endDate),
+      startDate: toISODate(formData.startDate), // "2025-03-26T00:00:00"
+      endDate: toISODate(formData.endDate), // "2025-03-27T00:00:00"
       dailyRoutines: formData.dailyRoutines.map((daily) => ({
         date: daily.date, // Đảm bảo định dạng phù hợp với backend
         steps: daily.steps.map((step) => ({

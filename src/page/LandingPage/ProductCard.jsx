@@ -13,6 +13,7 @@ const ProductCard = ({
   price,
   thumbnail,
   slug,
+  stock,
 }) => {
   const navigate = useNavigate();
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -31,24 +32,35 @@ const ProductCard = ({
     // Stop propagation to prevent navigation when clicking the button
     e.stopPropagation();
 
+    // Check if product is out of stock
+    if (stock === 0) {
+      toast.error("Sản phẩm tạm hết hàng");
+      return;
+    }
+
     const token = localStorage.getItem("token");
     if (!token) {
       setShowLoginModal(true);
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const response = await addItemToCart(id, 1);
-      if (response.error) {
-        toast.error(response.message);
-      } else {
-        toast.success(response.message);
+    // Additional check to ensure stock is greater than 0 before making API call
+    if (stock > 0) {
+      setIsLoading(true);
+      try {
+        const response = await addItemToCart(id, 1);
+        if (response.error) {
+          toast.error(response.message);
+        } else {
+          toast.success(response.message);
+        }
+      } catch (error) {
+        toast.error("Không thể thêm sản phẩm vào giỏ hàng");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      toast.error("Không thể thêm sản phẩm vào giỏ hàng");
-    } finally {
-      setIsLoading(false);
+    } else {
+      toast.error("Sản phẩm tạm hết hàng");
     }
   };
 
@@ -62,6 +74,13 @@ const ProductCard = ({
         {tag && (
           <span className="absolute top-2 left-2 text-xs font-semibold bg-gray-100 text-gray-500 px-2 py-1 rounded-full">
             {tag}
+          </span>
+        )}
+
+        {/* Out of stock badge */}
+        {stock === 0 && (
+          <span className="absolute top-2 right-2 text-xs font-semibold bg-red-100 text-red-500 px-2 py-1 rounded-full">
+            Hết hàng
           </span>
         )}
 
@@ -96,9 +115,13 @@ const ProductCard = ({
           <button
             className="w-full bg-black text-white py-2 px-6 rounded-md text-sm opacity-0 group-hover:opacity-100 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddToCart}
-            disabled={isLoading}
+            disabled={isLoading || stock === 0}
           >
-            {isLoading ? "Đang thêm..." : "Thêm vào giỏ hàng"}
+            {isLoading
+              ? "Đang thêm..."
+              : stock === 0
+              ? "Hết hàng"
+              : "Thêm vào giỏ hàng"}
           </button>
         </div>
       </div>

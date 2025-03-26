@@ -205,6 +205,19 @@ const ProductDetail = () => {
   }, [slug]);
 
   const handleAddToCart = async () => {
+    // Check if product is out of stock
+    if (product.stock <= 0) {
+      toast.error("Sản phẩm tạm hết hàng");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      // You might want to handle this case - redirect to login or show login modal
+      toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng");
+      return;
+    }
+
     try {
       const response = await addItemToCart(product.id, quantity);
       if (!response.error) {
@@ -218,6 +231,19 @@ const ProductDetail = () => {
   };
 
   const handleBuyNow = async () => {
+    // Check if product is out of stock
+    if (product.stock <= 0) {
+      toast.error("Sản phẩm tạm hết hàng");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      // You might want to handle this case - redirect to login or show login modal
+      toast.error("Vui lòng đăng nhập để mua sản phẩm");
+      return;
+    }
+
     try {
       const response = await addItemToCart(product.id, quantity);
       if (!response.error) {
@@ -548,12 +574,6 @@ const ProductDetail = () => {
                       <h3 className="text-lg font-medium">
                         Đánh giá từ khách hàng
                       </h3>
-                      <button
-                        onClick={() => setShowReviewForm(!showReviewForm)}
-                        className="text-sm font-medium text-gray-600 hover:text-gray-900"
-                      >
-                        {showReviewForm ? "Hủy đánh giá" : "Viết đánh giá"}
-                      </button>
                     </div>
 
                     {/* Review Form */}
