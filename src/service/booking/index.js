@@ -18,10 +18,26 @@ export const createBooking = async (formData) => {
   
     return response;
   } catch (error) {
-    console.error("Error creating booking:", error);
-    if (error && error.response.data.code === 1905) {
-      toast.error("Bạn chỉ có thể đặt tối đa 3 đơn/ngày");
-    }
+      console.error("Error creating booking:", error);
+      if (error && error.response && error.response.data) {
+        const errorCode = error.response.data.code;
+
+        // Sử dụng switch-case để xử lý các mã lỗi
+        switch (errorCode) {
+          case 1905:
+              toast.error("Bạn chỉ có thể đặt tối đa 3 đơn/ngày");
+              break;
+          case 1906:
+              toast.error("Hết hạn đặt lịch");
+              break;
+          case 1907:
+              toast.error("Tư vấn viên này đã có lịch trong giờ này!!!");
+              break;
+          default:
+              toast.error("Đã xảy ra lỗi, vui lòng thử lại sau.");
+              break;
+        }
+      }
   }
 };
 
@@ -184,6 +200,22 @@ export const updateStatus = async (bookingId, value) => {
     )
     return res
   } catch (error) {
+    console.error("Failed to get booking by user:", error);
+  }
+}
+
+export const showStepsProgress = async (bookingId) => {
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await instance.get(`/process-booking/${bookingId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+    return response.result.status
+  } catch (error){
     console.error("Failed to get booking by user:", error);
   }
 }

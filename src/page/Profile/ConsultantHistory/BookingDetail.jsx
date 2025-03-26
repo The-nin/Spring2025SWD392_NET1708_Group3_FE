@@ -28,6 +28,14 @@ function BookingDetail({ order, onBack }) {
     }
   };
 
+  const showRoutine = [
+    "PENDING",
+    "PAYMENT",
+    "ASSIGNED_EXPERT",
+    "EXPERT_UPDATE_ORDER",
+    "CONTACT_CUSTOMER",
+  ];
+
   const handleCancelBooking = async (orderId) => {
     try {
       const response = await cancelBooking(orderId, cancelReason);
@@ -172,17 +180,17 @@ function BookingDetail({ order, onBack }) {
           </span>
         </div>
 
-        {/* {order.status === "IN_PROGRESS_ROUTINE" && ( */}
-        <div className="flex justify-end">
-          <Button
-            type="primary"
-            className="px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition-colors"
-            onClick={() => navigate(`/my-routine/${order.id}`)}
-          >
-            Xem routine
-          </Button>
-        </div>
-        {/* )} */}
+        {!showRoutine.includes(order.status) && (
+          <div className="flex justify-end">
+            <Button
+              type="primary"
+              className="px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition-colors"
+              onClick={() => navigate(`/my-routine/${order.id}`)}
+            >
+              Xem routine
+            </Button>
+          </div>
+        )}
 
         {order.status === "PENDING" && (
           <div className="flex justify-end">
