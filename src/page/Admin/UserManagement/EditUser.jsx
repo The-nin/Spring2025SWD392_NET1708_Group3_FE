@@ -181,6 +181,7 @@ const EditUser = () => {
               <Select.Option value="MANAGER">Quản Lí</Select.Option>
               <Select.Option value="STAFF">Nhân Viên</Select.Option>
               <Select.Option value="DELIVERY">Người Giao Hàng</Select.Option>
+              <Select.Option value="EXPERT">Chuyên Gia</Select.Option>
               {isCustomer && (
                 <Select.Option value="CUSTOMER">Khách Hàng</Select.Option>
               )}

@@ -134,6 +134,7 @@ const AddUser = () => {
             <Select.Option value="STAFF">Nhân viên</Select.Option>
             <Select.Option value="DELIVERY">Giao hàng</Select.Option>
             <Select.Option value="MANAGER">Quản lí</Select.Option>
+            <Select.Option value="EXPERT">Chuyên gia</Select.Option>
           </Select>
         </Form.Item>
 
