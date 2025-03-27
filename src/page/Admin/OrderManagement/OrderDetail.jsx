@@ -47,7 +47,7 @@ const OrderDetail = () => {
 
       if (
         (userRole === "DELIVERY_STAFF" || userRole === "ADMIN") &&
-        (newStatus === "DONE" || newStatus === "DELIVERY_FAIL")
+        newStatus === "DONE"
       ) {
         if (!deliveryImage) {
           toast.error("Vui lòng tải lên hình ảnh giao hàng");
@@ -59,6 +59,9 @@ const OrderDetail = () => {
 
         // Send the image URL to BE instead of file
         response = await updateDeliveryStatus(id, newStatus, image);
+      } else if (newStatus === "DELIVERING_FAIL") {
+        // For DELIVERING_FAIL, we don't require an image
+        response = await updateDeliveryStatus(id, newStatus, null);
       } else if (newStatus === "DELIVERING") {
         response = await changeToDelivery(id, newStatus);
       } else {
@@ -142,12 +145,9 @@ const OrderDetail = () => {
                 onChange={handleStatusChange}
                 options={availableStatuses}
               />
-              {(currentStatus === "DELIVERING" ||
-                availableStatuses.some(
-                  (status) =>
-                    status.value === "DONE" || status.value === "DELIVERY_FAIL"
-                )) &&
-                (userRole === "DELIVERY_STAFF" || userRole === "ADMIN") && (
+              {currentStatus === "DELIVERING" &&
+                (userRole === "DELIVERY_STAFF" || userRole === "ADMIN") &&
+                availableStatuses.some((status) => status.value === "DONE") && (
                   <input
                     type="file"
                     accept="image/*"

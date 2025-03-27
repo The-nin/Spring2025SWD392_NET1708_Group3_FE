@@ -322,7 +322,7 @@ const OrderManagement = () => {
             color = "text-purple-500";
             statusText = "Đang giao hàng";
             break;
-          case "DELIVERY_FAILED":
+          case "DELIVERING_FAIL":
             color = "text-orange-600";
             statusText = "Giao hàng thất bại";
             break;
