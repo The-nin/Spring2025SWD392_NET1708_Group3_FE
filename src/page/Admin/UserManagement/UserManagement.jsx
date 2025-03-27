@@ -146,12 +146,29 @@ const UserManagement = () => {
       title: "Giới tính",
       dataIndex: "gender",
       key: "gender",
-      render: (gender) => gender || "Không có",
+      render: (gender) => {
+        const genderMapping = {
+          MALE: "Nam",
+          FEMALE: "Nữ",
+        };
+        return genderMapping[gender] || "Không có";
+      },
     },
     {
       title: "Vai trò",
       dataIndex: "roleName",
       key: "roleName",
+      render: (roleName) => {
+        const roleMapping = {
+          ADMIN: "Quản trị viên",
+          CUSTOMER: "Khách hàng",
+          STAFF: "Nhân viên",
+          MANAGER: "Quản lý",
+          DELIVERY_STAFF: "Nhân viên giao hàng",
+          EXPERT: "Chuyên gia",
+        };
+        return roleMapping[roleName] || roleName;
+      },
     },
     {
       title: "Trạng thái",

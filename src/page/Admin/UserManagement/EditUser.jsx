@@ -168,7 +168,6 @@ const EditUser = () => {
             <Select>
               <Select.Option value="MALE">Nam</Select.Option>
               <Select.Option value="FEMALE">Nữ</Select.Option>
-              <Select.Option value="OTHER">Khác</Select.Option>
             </Select>
           </Form.Item>
 
